@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — Pastelería · The Wizard Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #faf9f6;
+    --surface: #ffffff;
+    --border: #e8e4dd;
+    --border-strong: #ccc7be;
+    --text: #1a1814;
+    --text-muted: #7a746a;
+    --text-hint: #b0a99f;
+    --accent: #2d4a3e;
+    --accent-light: #e8f0ec;
+    --danger: #c0392b;
+    --danger-light: #fdf2f2;
+    --green: #1a7a4a;
+    --green-light: #eaf5ef;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 16px;
+  }
+  .logo-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .header-actions { display: flex; gap: 8px; }
+
+  /* ── Buttons ── */
+  .btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, transform 0.1s;
+    text-decoration: none;
+  }
+  .btn:hover { background: var(--bg); }
+  .btn:active { transform: scale(0.97); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-accent:hover { background: #243d33; }
+  .btn-sm { height: 30px; padding: 0 10px; font-size: 12px; }
+  .btn-icon {
+    width: 30px; height: 30px; padding: 0;
+    justify-content: center;
+    border: 1px solid var(--border);
+  }
+  .btn-icon.danger:hover { background: var(--danger-light); border-color: #f5a9a9; color: var(--danger); }
+  .btn-icon.stock-on { color: var(--green); border-color: #a8d5be; }
+  .btn-icon.stock-on:hover { background: var(--green-light); border-color: #7bbfa0; }
+  .btn-icon.stock-off { color: var(--hint); }
+  .btn-icon.stock-off:hover { background: var(--green-light); border-color: #a8d5be; color: var(--green); }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* ── Stats row ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 1.75rem;
+  }
+  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .stat-value { font-size: 24px; font-weight: 600; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red { color: var(--danger); }
+
+  /* ── Section header ── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .section-head h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 14px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .card:hover { border-color: var(--border-strong); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+  .card.no-stock { opacity: 0.55; }
+  .card.editing { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,74,62,0.08); }
+
+  .card-img {
+    position: relative;
+    height: 170px;
+    background: #f0ece6;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .img-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; color: var(--text-hint); font-size: 13px;
+  }
+  .img-placeholder i { font-size: 30px; }
+  .img-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.28);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .card-img:hover .img-overlay { opacity: 1; }
+  .img-overlay span {
+    color: #fff; font-size: 13px; font-weight: 500;
+    background: rgba(0,0,0,0.45); padding: 6px 14px; border-radius: 20px;
+  }
+  input[type="file"] { display: none; }
+
+  .stock-pill {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 10px; font-weight: 600;
+    padding: 3px 9px; border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .stock-pill.in { background: rgba(26,122,74,0.9); color: #fff; }
+  .stock-pill.out { background: rgba(192,57,43,0.85); color: #fff; }
+
+  .card-body { padding: 13px 15px; }
+  .card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .card-desc {
+    font-size: 12px; color: var(--text-muted); line-height: 1.55;
+    margin-bottom: 12px; min-height: 34px;
+  }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; }
+  .card-price { font-size: 15px; font-weight: 600; color: var(--accent); }
+  .card-acts { display: flex; gap: 5px; }
+
+  /* ── Edit panel ── */
+  .edit-panel {
+    border-top: 1px solid var(--border);
+    padding: 13px 15px;
+    display: none;
+    flex-direction: column;
+    gap: 9px;
+    background: #fdfcfb;
+  }
+  .edit-panel.open { display: flex; }
+  .field-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+  .field-input, .field-textarea {
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s;
+  }
+  .field-input { height: 34px; }
+  .field-textarea { min-height: 54px; resize: vertical; line-height: 1.5; }
+  .field-input:focus, .field-textarea:focus { outline: none; border-color: var(--accent); }
+  .field-row { display: flex; gap: 8px; }
+  .field-row > div { flex: 1; }
+
+  /* ── Toggle ── */
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+  .toggle {
+    width: 36px; height: 20px; border-radius: 20px;
+    background: var(--border-strong); cursor: pointer;
+    position: relative; transition: background 0.2s;
+    border: none; flex-shrink: 0;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    border-radius: 50%; background: #fff;
+    transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { left: 18px; }
+  .toggle-label { font-size: 12px; color: var(--text-muted); }
+
+  .panel-foot { display: flex; justify-content: flex-end; gap: 7px; margin-top: 2px; }
+
+  /* ── Add card ── */
+  .add-card {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; min-height: 200px;
+    cursor: pointer; color: var(--text-hint);
+    transition: all 0.15s;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .add-card:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .add-card i { font-size: 28px; }
+  .add-card span { font-size: 13px; font-weight: 500; }
+
+  /* ── Modal ── */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.38);
+    display: none; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    padding: 22px;
+    width: 360px;
+    max-width: calc(100vw - 2rem);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  }
+  .modal h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px; font-weight: 400;
+    margin-bottom: 16px;
+  }
+  .modal-fields { display: flex; flex-direction: column; gap: 11px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+  /* ── QR hint ── */
+  .qr-hint {
+    background: var(--accent-light);
+    border: 1px solid #c4d9cf;
+    border-radius: var(--radius);
+    padding: 12px 15px;
+    font-size: 13px;
+    color: var(--accent);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .qr-hint i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .qr-hint a { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon"><i class="ti ti-wand"></i></div>
+    <div>
+      <div class="logo-text">The Wizard Coffee</div>
+      <div class="logo-sub">Panel de administración · Pastelería</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <a href="menu.html" target="_blank" class="btn"><i class="ti ti-eye"></i> Ver vitrina</a>
+    <button class="btn btn-accent" onclick="openAdd()"><i class="ti ti-plus"></i> Agregar</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="qr-hint">
+    <i class="ti ti-qrcode"></i>
+    <div>
+      La vitrina del cliente está en <strong>menu.html</strong> — comparte ese archivo (o su URL al subirlo) mediante un código QR. Los cambios que hagas aquí se reflejan automáticamente en la vitrina.
+    </div>
+  </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="st-total">0</div></div>
+    <div class="stat"><div class="stat-label">En stock</div><div class="stat-value green" id="st-in">0</div></div>
+    <div class="stat"><div class="stat-label">Sin stock</div><div class="stat-value red" id="st-out">0</div></div>
+    <div class="stat"><div class="stat-label">Con foto</div><div class="stat-value" id="st-photo">0</div></div>
+  </div>
+
+  <div class="section-head">
+    <h2>Productos de pastelería</h2>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- Modal agregar -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal">
+    <h3>Nuevo producto</h3>
+    <div class="modal-fields">
+      <div>
+        <div class="field-label">Nombre</div>
+        <input class="field-input" id="m-name" placeholder="Ej: Croissant de mantequilla" />
+      </div>
+      <div>
+        <div class="field-label">Descripción</div>
+        <textarea class="field-textarea" id="m-desc" placeholder="Descripción breve del producto..."></textarea>
+      </div>
+      <div class="field-row">
+        <div>
+          <div class="field-label">Precio</div>
+          <input class="field-input" id="m-price" placeholder="Ej: $2.500" />
+        </div>
+        <div>
+          <div class="field-label">Stock</div>
+          <div class="toggle-wrap">
+            <button class="toggle on" id="m-toggle" onclick="mToggle()"></button>
+            <span class="toggle-label" id="m-tl">Disponible</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-accent" onclick="addProduct()"><i class="ti ti-plus"></i> Agregar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'wizard_pastry_v2';
+
+const DEFAULT_PRODUCTS = [
+  {id:1,name:'Croissant de mantequilla',desc:'Hojaldrado y dorado, con mantequilla francesa. Crujiente por fuera, suave por dentro.',price:'$2.200',stock:true,img:null},
+  {id:2,name:'Muffin de arándanos',desc:'Esponjoso con arándanos frescos y cobertura de azúcar granulada.',price:'$1.900',stock:true,img:null},
+  {id:3,name:'Cheesecake de fresa',desc:'Base de galleta, relleno cremoso de queso y coulis de fresa natural.',price:'$3.500',stock:true,img:null},
+  {id:4,name:'Brownie de chocolate',desc:'Intenso y húmedo, con trozos de chocolate bitter y nueces tostadas.',price:'$2.100',stock:true,img:null},
+  {id:5,name:'Torta de zanahoria',desc:'Con frosting de queso crema y nueces. Porción individual.',price:'$3.200',stock:false,img:null},
+  {id:6,name:'Galleta de avena',desc:'Receta artesanal con avena integral, pasas y canela.',price:'$1.200',stock:true,img:null},
+];
+
+let products = [];
+let nextId = 10;
+let mStockOn = true;
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      products = data.products || DEFAULT_PRODUCTS;
+      nextId = data.nextId || (Math.max(...products.map(p=>p.id)) + 1);
+    } else {
+      products = DEFAULT_PRODUCTS;
+      save();
+    }
+  } catch(e) { products = DEFAULT_PRODUCTS; }
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ products, nextId }));
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = products.map(p => cardHTML(p)).join('') +
+    `<button class="add-card" onclick="openAdd()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`;
+  products.forEach(p => {
+    const fi = document.getElementById('fi-'+p.id);
+    if (fi) fi.addEventListener('change', e => handleImg(e, p.id));
+  });
+  updateStats();
+}
+
+function cardHTML(p) {
+  return `
+  <div class="card${p.stock ? '' : ' no-stock'}" id="card-${p.id}">
+    <div class="card-img" onclick="document.getElementById('fi-${p.id}').click()">
+      ${p.img ? `<img src="${p.img}" alt="${p.name}" />` :
+        `<div class="img-placeholder"><i class="ti ti-camera"></i><span>Clic para subir foto</span></div>`}
+      <div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img?'Cambiar':'Subir'} foto</span></div>
+      <span class="stock-pill ${p.stock?'in':'out'}">${p.stock?'En stock':'Sin stock'}</span>
+    </div>
+    <input type="file" id="fi-${p.id}" accept="image/*" />
+    <div class="card-body">
+      <div class="card-name">${esc(p.name)}</div>
+      <div class="card-desc">${p.desc ? esc(p.desc) : '<em style="color:#b0a99f;font-style:italic">Sin descripción</em>'}</div>
+      <div class="card-foot">
+        <span class="card-price">${esc(p.price||'—')}</span>
+        <div class="card-acts">
+          <button class="btn-icon btn" title="Editar" onclick="toggleEdit(${p.id})"><i class="ti ti-pencil"></i></button>
+          <button class="btn-icon btn stock-btn${p.stock?' stock-on':' stock-off'}" id="sb-${p.id}" title="${p.stock?'Quitar stock':'Poner en stock'}" onclick="toggleStock(${p.id})"><i class="ti ti-${p.stock?'circle-check':'circle-x'}"></i></button>
+          <button class="btn-icon btn danger" title="Eliminar" onclick="del(${p.id})"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="edit-panel" id="ep-${p.id}">
+      <div>
+        <div class="field-label">Nombre</div>
+        <input class="field-input" id="en-${p.id}" value="${esc(p.name)}" />
+      </div>
+      <div>
+        <div class="field-label">Descripción</div>
+        <textarea class="field-textarea" id="ed-${p.id}">${esc(p.desc||'')}</textarea>
+      </div>
+      <div class="field-row">
+        <div>
+          <div class="field-label">Precio</div>
+          <input class="field-input" id="epr-${p.id}" value="${esc(p.price||'')}" />
+        </div>
+        <div>
+          <div class="field-label">Stock</div>
+          <div class="toggle-wrap">
+            <button class="toggle${p.stock?' on':''}" id="tg-${p.id}" onclick="toggleStock(${p.id})"></button>
+            <span class="toggle-label" id="tgl-${p.id}">${p.stock?'Disponible':'Sin stock'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-sm" onclick="cancelEdit(${p.id})">Cancelar</button>
+        <button class="btn btn-accent btn-sm" onclick="saveEdit(${p.id})">Guardar cambios</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toggleEdit(id) {
+  const ep = document.getElementById('ep-'+id);
+  const card = document.getElementById('card-'+id);
+  const open = ep.classList.contains('open');
+  ep.classList.toggle('open', !open);
+  card.classList.toggle('editing', !open);
+}
+
+function cancelEdit(id) {
+  document.getElementById('ep-'+id).classList.remove('open');
+  document.getElementById('card-'+id).classList.remove('editing');
+}
+
+function toggleStock(id) {
+  const p = products.find(x=>x.id===id);
+  p.stock = !p.stock;
+  save();
+  // Toggle dentro del panel de edición (si está abierto)
+  const tg = document.getElementById('tg-'+id);
+  if (tg) { tg.classList.toggle('on', p.stock); document.getElementById('tgl-'+id).textContent = p.stock ? 'Disponible' : 'Sin stock'; }
+  // Botón rápido en el footer de la tarjeta
+  const sb = document.getElementById('sb-'+id);
+  if (sb) {
+    sb.className = 'btn-icon btn stock-btn ' + (p.stock ? 'stock-on' : 'stock-off');
+    sb.title = p.stock ? 'Quitar stock' : 'Poner en stock';
+    sb.innerHTML = '<i class="ti ti-' + (p.stock ? 'circle-check' : 'circle-x') + '"></i>';
+  }
+  // Pill en la imagen y opacidad de la tarjeta
+  const card = document.getElementById('card-'+id);
+  card.classList.toggle('no-stock', !p.stock);
+  const pill = card.querySelector('.stock-pill');
+  pill.className = 'stock-pill '+(p.stock?'in':'out');
+  pill.textContent = p.stock ? 'En stock' : 'Sin stock';
+  updateStats();
+}
+
+function saveEdit(id) {
+  const p = products.find(x=>x.id===id);
+  p.name = document.getElementById('en-'+id).value;
+  p.desc = document.getElementById('ed-'+id).value;
+  p.price = document.getElementById('epr-'+id).value;
+  save();
+  const wasEditing = document.getElementById('card-'+id).classList.contains('editing');
+  reRenderCard(id);
+  if (wasEditing) {
+    document.getElementById('ep-'+id).classList.add('open');
+    document.getElementById('card-'+id).classList.add('editing');
+  }
+}
+
+function reRenderCard(id) {
+  const p = products.find(x=>x.id===id);
+  const old = document.getElementById('card-'+id);
+  const tmp = document.createElement('div');
+  tmp.innerHTML = cardHTML(p);
+  old.replaceWith(tmp.firstElementChild);
+  const fi = document.getElementById('fi-'+id);
+  if (fi) fi.addEventListener('change', e => handleImg(e, id));
+  updateStats();
+}
+
+function del(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  products = products.filter(x=>x.id!==id);
+  save();
+  render();
+}
+
+function handleImg(e, id) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const p = products.find(x=>x.id===id);
+    p.img = ev.target.result;
+    save();
+    const imgWrap = document.querySelector('#card-'+id+' .card-img');
+    if (imgWrap) {
+      imgWrap.innerHTML = `<img src="${p.img}" alt="${esc(p.name)}" />
+        <div class="img-overlay"><span><i class="ti ti-upload"></i> Cambiar foto</span></div>
+        <span class="stock-pill ${p.stock?'in':'out'}">${p.stock?'En stock':'Sin stock'}</span>`;
+      imgWrap.onclick = () => document.getElementById('fi-'+id).click();
+      const fi = document.getElementById('fi-'+id);
+      if (fi) fi.addEventListener('change', ev2 => handleImg(ev2, id));
+    }
+    updateStats();
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateStats() {
+  document.getElementById('st-total').textContent = products.length;
+  document.getElementById('st-in').textContent = products.filter(p=>p.stock).length;
+  document.getElementById('st-out').textContent = products.filter(p=>!p.stock).length;
+  document.getElementById('st-photo').textContent = products.filter(p=>p.img).length;
+}
+
+/* ── Modal ── */
+function openAdd() {
+  mStockOn = true;
+  document.getElementById('m-name').value = '';
+  document.getElementById('m-desc').value = '';
+  document.getElementById('m-price').value = '';
+  document.getElementById('m-toggle').className = 'toggle on';
+  document.getElementById('m-tl').textContent = 'Disponible';
+  document.getElementById('modal-bg').classList.add('open');
+  document.getElementById('m-name').focus();
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-bg'))
+    document.getElementById('modal-bg').classList.remove('open');
+}
+function mToggle() {
+  mStockOn = !mStockOn;
+  document.getElementById('m-toggle').className = 'toggle'+(mStockOn?' on':'');
+  document.getElementById('m-tl').textContent = mStockOn ? 'Disponible' : 'Sin stock';
+}
+function addProduct() {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name) { alert('El nombre es obligatorio.'); return; }
+  products.push({ id: nextId++, name, desc: document.getElementById('m-desc').value, price: document.getElementById('m-price').value, stock: mStockOn, img: null });
+  save(); render();
+  document.getElementById('modal-bg').classList.remove('open');
+}
+
+load(); render();
+</script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pastelería · The Wizard Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f4ef;
+    --card: #ffffff;
+    --border: #e5e0d8;
+    --text: #1a1814;
+    --muted: #7a746a;
+    --hint: #b5afa7;
+    --accent: #2d4a3e;
+    --accent2: #8b5e2e;
+    --tag-bg: #eaf2ed;
+    --tag-text: #2d4a3e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: var(--accent);
+    color: #fff;
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.65;
+    margin-bottom: 10px;
+  }
+  .hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 8vw, 3.2rem);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .hero-title em { font-style: italic; opacity: 0.8; }
+  .hero-sub {
+    font-size: 14px;
+    opacity: 0.7;
+    font-weight: 300;
+    max-width: 300px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.5;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Main ── */
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+  .section-label span {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Cards ── */
+  .menu-list { display: flex; flex-direction: column; gap: 1px; }
+
+  .item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    gap: 0;
+    transition: box-shadow 0.2s;
+    margin-bottom: 10px;
+  }
+  .item:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+
+  .item-img {
+    width: 110px;
+    flex-shrink: 0;
+    background: #f0ece5;
+    position: relative;
+    overflow: hidden;
+  }
+  .item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .item-img-placeholder {
+    width: 100%; height: 100%; min-height: 110px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--hint);
+  }
+  .item-img-placeholder svg { width: 32px; height: 32px; opacity: 0.5; }
+
+  .item-body {
+    flex: 1;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .item-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .item-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.55;
+    flex: 1;
+  }
+  .item-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+  .item-price {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent2);
+    font-variant-numeric: tabular-nums;
+  }
+  .item-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  /* ── Empty state ── */
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--hint);
+  }
+  .empty svg { width: 48px; height: 48px; margin: 0 auto 16px; display: block; opacity: 0.4; }
+  .empty p { font-size: 14px; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 12px;
+    color: var(--hint);
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+  footer strong { color: var(--muted); }
+
+  /* ── Loader ── */
+  .loader {
+    text-align: center;
+    padding: 4rem;
+    color: var(--hint);
+    font-size: 13px;
+  }
+
+  /* ── Scroll fade-in ── */
+  .item {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeUp 0.4s ease forwards;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">The Wizard Coffee &amp; Bakery</div>
+  <h1 class="hero-title">Nuestra<br/><em>Pastelería</em></h1>
+  <p class="hero-sub">Elaboración artesanal · Productos frescos del día</p>
+  <span class="hero-tag">✦ Solo lo que está disponible hoy</span>
+</div>
+
+<main>
+  <div class="section-label"><span>Disponible ahora</span></div>
+  <div id="menu-list" class="menu-list">
+    <div class="loader">Cargando menú...</div>
+  </div>
+</main>
+
+<footer>
+  <strong>The Wizard Coffee</strong> · Antofagasta, Chile<br />
+  Menú actualizado en tiempo real
+</footer>
+
+<script>
+const STORAGE_KEY = 'wizard_pastry_v2';
+
+function loadProducts() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      return (data.products || []).filter(p => p.stock);
+    }
+  } catch(e) {}
+  return null;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function placeholderSVG() {
+  return `<div class="item-img-placeholder">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+      <line x1="4" y1="22" x2="4" y2="15"/>
+    </svg>
+  </div>`;
+}
+
+function render(products) {
+  const list = document.getElementById('menu-list');
+
+  if (!products || products.length === 0) {
+    list.innerHTML = `<div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+        <path d="M3 2l18 18M10.5 4.5A6.5 6.5 0 0117 11c0 1.2-.33 2.33-.9 3.3M6.5 6.5A6.5 6.5 0 005 11c0 3.59 2.91 6.5 6.5 6.5 1.2 0 2.33-.33 3.3-.9"/>
+      </svg>
+      <p>No hay productos disponibles en este momento.<br/>¡Vuelve pronto!</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = products.map((p, i) => `
+    <div class="item" style="animation-delay:${i * 0.06}s">
+      <div class="item-img">
+        ${p.img ? `<img src="${p.img}" alt="${esc(p.name)}" />` : placeholderSVG()}
+      </div>
+      <div class="item-body">
+        <div class="item-name">${esc(p.name)}</div>
+        ${p.desc ? `<div class="item-desc">${esc(p.desc)}</div>` : ''}
+        <div class="item-foot">
+          <span class="item-price">${esc(p.price || '')}</span>
+          <span class="item-badge">Disponible</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Load and render
+const products = loadProducts();
+
+if (products === null) {
+  // No data yet — show helpful message
+  document.getElementById('menu-list').innerHTML = `<div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p>El menú se actualizará pronto.<br/>¡Vuelve en un momento!</p>
+  </div>`;
+} else {
+  render(products);
+}
+
+// Auto-refresh every 30 seconds to pick up admin changes
+setInterval(() => {
+  const fresh = loadProducts();
+  if (fresh !== null) render(fresh);
+}, 30000);
+</script>
+</body>
+</html>
