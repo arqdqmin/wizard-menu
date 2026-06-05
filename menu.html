@@ -3,324 +3,236 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pastelería · The Wizard Coffee</title>
+<title>Menú · The Wizard Coffee</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f4ef;--card:#fff;--border:#e5e0d8;
+  --text:#1a1814;--muted:#7a746a;--hint:#b5afa7;
+  --accent:#2d4a3e;--accent2:#8b5e2e;
+  --green:#1a7a4a;--green-bg:#eaf5ef;
+  --red:#c0392b;--red-bg:#fdf2f2;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-  :root {
-    --bg: #f7f4ef;
-    --card: #ffffff;
-    --border: #e5e0d8;
-    --text: #1a1814;
-    --muted: #7a746a;
-    --hint: #b5afa7;
-    --accent: #2d4a3e;
-    --accent2: #8b5e2e;
-    --tag-bg: #eaf2ed;
-    --tag-text: #2d4a3e;
-  }
+/* ── Banner ── */
+.banner-wrap{position:relative;width:100%;overflow:hidden;background:#1a1814;height:52vw;max-height:360px;min-height:160px}
+.banner-track{display:flex;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1)}
+.banner-slide{min-width:100%;height:100%;flex-shrink:0}
+.banner-slide img{width:100%;height:100%;object-fit:cover;opacity:.92}
+.banner-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.banner-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:7px}
+.banner-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.45);border:none;cursor:pointer;transition:all .2s;padding:0}
+.banner-dot.active{background:#fff;width:20px;border-radius:10px}
+.banner-arrow{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background .2s}
+.banner-arrow:hover{background:rgba(255,255,255,.35)}
+.banner-arrow.prev{left:12px}
+.banner-arrow.next{right:12px}
 
-  html { scroll-behavior: smooth; }
+/* ── Hero ── */
+.hero{background:var(--accent);color:#fff;padding:2.5rem 1.5rem 2rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='14' fill='none' stroke='%23ffffff' stroke-opacity='0.04' stroke-width='1'/%3E%3C/svg%3E");pointer-events:none}
+.hero-eyebrow{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;opacity:.6;margin-bottom:8px}
+.hero-title{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,7vw,2.8rem);line-height:1.1;margin-bottom:8px}
+.hero-title em{font-style:italic;opacity:.8}
+.hero-sub{font-size:13px;opacity:.65;font-weight:300;max-width:280px;margin:0 auto}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* ── Nav tabs ── */
+.nav-wrap{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.nav-scroll{display:flex;overflow-x:auto;padding:0 1rem;gap:2px;scrollbar-width:none}
+.nav-scroll::-webkit-scrollbar{display:none}
+.nav-tab{flex-shrink:0;padding:14px 14px 12px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color .15s,border-color .15s}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-  /* ── Hero ── */
-  .hero {
-    background: var(--accent);
-    color: #fff;
-    padding: 3rem 1.5rem 2.5rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    pointer-events: none;
-  }
-  .hero-eyebrow {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    opacity: 0.65;
-    margin-bottom: 10px;
-  }
-  .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(2rem, 8vw, 3.2rem);
-    font-weight: 400;
-    line-height: 1.1;
-    margin-bottom: 10px;
-  }
-  .hero-title em { font-style: italic; opacity: 0.8; }
-  .hero-sub {
-    font-size: 14px;
-    opacity: 0.7;
-    font-weight: 300;
-    max-width: 300px;
-    margin: 0 auto 1.5rem;
-    line-height: 1.5;
-  }
-  .hero-tag {
-    display: inline-block;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-  }
+/* ── Main ── */
+main{max-width:720px;margin:0 auto;padding:1.5rem 1rem 4rem}
 
-  /* ── Main ── */
-  main {
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 2rem 1rem 4rem;
-  }
+/* ── Category section ── */
+.cat-section{margin-bottom:2.5rem}
+.cat-title{font-family:'DM Serif Display',serif;font-size:21px;font-weight:400;color:var(--text);margin-bottom:1rem;padding-bottom:10px;border-bottom:1px solid var(--border)}
 
-  /* ── Section label ── */
-  .section-label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 1.25rem;
-  }
-  .section-label span {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    font-weight: 400;
-    color: var(--text);
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+/* ── Item ── */
+.item{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;margin-bottom:10px;transition:box-shadow .2s}
+.item:hover{box-shadow:0 4px 20px rgba(0,0,0,.07)}
+.item.agotado{opacity:.6}
+.item-img{width:100px;flex-shrink:0;background:#f0ece5;position:relative;overflow:hidden}
+.item-img img{width:100%;height:100%;object-fit:cover;display:block}
+.item-img-ph{width:100%;height:100%;min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--hint)}
+.item-img-ph svg{width:28px;height:28px;opacity:.4}
+.item-body{flex:1;padding:13px 15px;display:flex;flex-direction:column;justify-content:space-between;gap:5px}
+.item-name{font-size:14px;font-weight:500;color:var(--text);line-height:1.3}
+.item-desc{font-size:12px;color:var(--muted);line-height:1.55;flex:1}
+.item-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.item-price{font-size:15px;font-weight:600;color:var(--accent2)}
+.item-tag{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.item-tag.in{background:var(--green-bg);color:var(--green)}
+.item-tag.out{background:var(--red-bg);color:var(--red)}
 
-  /* ── Cards ── */
-  .menu-list { display: flex; flex-direction: column; gap: 1px; }
+/* ── Empty ── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--hint)}
+.empty svg{width:40px;height:40px;margin:0 auto 12px;display:block;opacity:.35}
+.empty p{font-size:13px}
 
-  .item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    display: flex;
-    gap: 0;
-    transition: box-shadow 0.2s;
-    margin-bottom: 10px;
-  }
-  .item:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+/* ── Footer ── */
+footer{text-align:center;padding:2rem 1rem;font-size:12px;color:var(--hint);border-top:1px solid var(--border);margin-top:1rem}
+footer strong{color:var(--muted)}
 
-  .item-img {
-    width: 110px;
-    flex-shrink: 0;
-    background: #f0ece5;
-    position: relative;
-    overflow: hidden;
-  }
-  .item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .item-img-placeholder {
-    width: 100%; height: 100%; min-height: 110px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--hint);
-  }
-  .item-img-placeholder svg { width: 32px; height: 32px; opacity: 0.5; }
-
-  .item-body {
-    flex: 1;
-    padding: 14px 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 6px;
-  }
-  .item-name {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1.3;
-  }
-  .item-desc {
-    font-size: 12.5px;
-    color: var(--muted);
-    line-height: 1.55;
-    flex: 1;
-  }
-  .item-foot {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 4px;
-  }
-  .item-price {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--accent2);
-    font-variant-numeric: tabular-nums;
-  }
-  .item-badge {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    background: var(--tag-bg);
-    color: var(--tag-text);
-    padding: 3px 9px;
-    border-radius: 20px;
-  }
-
-  /* ── Empty state ── */
-  .empty {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--hint);
-  }
-  .empty svg { width: 48px; height: 48px; margin: 0 auto 16px; display: block; opacity: 0.4; }
-  .empty p { font-size: 14px; }
-
-  /* ── Footer ── */
-  footer {
-    text-align: center;
-    padding: 2rem 1rem;
-    font-size: 12px;
-    color: var(--hint);
-    border-top: 1px solid var(--border);
-    margin-top: 2rem;
-  }
-  footer strong { color: var(--muted); }
-
-  /* ── Loader ── */
-  .loader {
-    text-align: center;
-    padding: 4rem;
-    color: var(--hint);
-    font-size: 13px;
-  }
-
-  /* ── Scroll fade-in ── */
-  .item {
-    opacity: 0;
-    transform: translateY(12px);
-    animation: fadeUp 0.4s ease forwards;
-  }
-  @keyframes fadeUp {
-    to { opacity: 1; transform: translateY(0); }
-  }
+/* ── Fade in ── */
+.item{opacity:0;transform:translateY(10px);animation:fadeUp .35s ease forwards}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <div class="hero-eyebrow">Wizard Magic Flavors</div>
-  <h1 class="hero-title">Nuestra<br/><em>Pastelería</em></h1>
-  <p class="hero-sub">Elaboración artesanal · Productos frescos del día</p>
-  <span class="hero-tag">✦ Solo lo que está disponible hoy</span>
+<!-- Banner rotativo -->
+<div class="banner-wrap" id="banner-wrap" style="display:none">
+  <div class="banner-track" id="banner-track"></div>
+  <button class="banner-arrow prev" id="banner-prev" onclick="bannerMove(-1)">&#8249;</button>
+  <button class="banner-arrow next" id="banner-next" onclick="bannerMove(1)">&#8250;</button>
+  <div class="banner-dots" id="banner-dots"></div>
 </div>
 
-<main>
-  <div class="section-label"><span>Disponible ahora</span></div>
-  <div id="menu-list" class="menu-list">
-    <div class="loader">Cargando menú...</div>
-  </div>
-</main>
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Antofagasta · Chile</div>
+  <h1 class="hero-title">The Wizard<br/><em>Coffee</em></h1>
+  <p class="hero-sub">Menú del día · Elaboración artesanal</p>
+</div>
 
-<footer>
-  <strong>The Wizard Coffee</strong> · Antofagasta, Chile<br />
-  Menú actualizado en tiempo real
-</footer>
+<!-- Nav tabs categorías -->
+<div class="nav-wrap">
+  <div class="nav-scroll" id="nav-tabs"></div>
+</div>
+
+<main id="main-content"></main>
+
+<footer><strong>The Wizard Coffee</strong> · Antofagasta, Chile<br/>Menú actualizado en tiempo real</footer>
 
 <script>
-const STORAGE_KEY = 'wizard_pastry_v2';
+const STORAGE_KEY = 'wizard_menu_v3';
 
-function loadProducts() {
+let state = { categories:[], products:[], banners:[] };
+let bannerIdx = 0;
+let bannerTimer = null;
+let activeTab = '__all__';
+
+function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      return (data.products || []).filter(p => p.stock);
-    }
+    if (raw) state = JSON.parse(raw);
   } catch(e) {}
-  return null;
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── Banner ── */
+function initBanner() {
+  const banners = state.banners || [];
+  const wrap = document.getElementById('banner-wrap');
+  if (!banners.length) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  const track = document.getElementById('banner-track');
+  track.innerHTML = banners.map(src=>`<div class="banner-slide"><img src="${src}" /></div>`).join('');
+  const dots = document.getElementById('banner-dots');
+  dots.innerHTML = banners.map((_,i)=>`<button class="banner-dot${i===0?' active':''}" onclick="bannerGo(${i})"></button>`).join('');
+  if (banners.length < 2) {
+    document.getElementById('banner-prev').style.display='none';
+    document.getElementById('banner-next').style.display='none';
+    dots.style.display='none';
+  }
+  startBannerAuto();
 }
 
-function placeholderSVG() {
-  return `<div class="item-img-placeholder">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
-      <line x1="4" y1="22" x2="4" y2="15"/>
-    </svg>
-  </div>`;
+function bannerGo(idx) {
+  bannerIdx = idx;
+  const banners = state.banners;
+  document.getElementById('banner-track').style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('.banner-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
 }
 
-function render(products) {
-  const list = document.getElementById('menu-list');
+function bannerMove(dir) {
+  const len = state.banners.length;
+  bannerGo((bannerIdx + dir + len) % len);
+  restartAuto();
+}
 
-  if (!products || products.length === 0) {
-    list.innerHTML = `<div class="empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-        <path d="M3 2l18 18M10.5 4.5A6.5 6.5 0 0117 11c0 1.2-.33 2.33-.9 3.3M6.5 6.5A6.5 6.5 0 005 11c0 3.59 2.91 6.5 6.5 6.5 1.2 0 2.33-.33 3.3-.9"/>
-      </svg>
-      <p>No hay productos disponibles en este momento.<br/>¡Vuelve pronto!</p>
-    </div>`;
+function startBannerAuto() {
+  clearInterval(bannerTimer);
+  if (state.banners.length < 2) return;
+  bannerTimer = setInterval(()=>{ bannerGo((bannerIdx+1)%state.banners.length); }, 4000);
+}
+function restartAuto() { startBannerAuto(); }
+
+/* ── Nav tabs ── */
+function renderNav() {
+  const tabs = document.getElementById('nav-tabs');
+  const cats = catsWithProducts();
+  let html = `<button class="nav-tab${activeTab==='__all__'?' active':''}" onclick="setTab('__all__')">Todo el menú</button>`;
+  cats.forEach(cat => {
+    html += `<button class="nav-tab${activeTab===cat?' active':''}" onclick="setTab('${esc(cat)}')">${esc(cat)}</button>`;
+  });
+  tabs.innerHTML = html;
+}
+
+function catsWithProducts() {
+  return (state.categories||[]).filter(cat => state.products.some(p=>p.cat===cat));
+}
+
+function setTab(cat) {
+  activeTab = cat;
+  renderNav();
+  renderContent();
+}
+
+/* ── Content ── */
+function renderContent() {
+  const main = document.getElementById('main-content');
+  const cats = activeTab === '__all__' ? catsWithProducts() : [activeTab];
+
+  if (!cats.length) {
+    main.innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg><p>El menú se actualizará pronto.</p></div>`;
     return;
   }
 
-  list.innerHTML = products.map((p, i) => `
-    <div class="item" style="animation-delay:${i * 0.06}s">
-      <div class="item-img">
-        ${p.img ? `<img src="${p.img}" alt="${esc(p.name)}" />` : placeholderSVG()}
-      </div>
-      <div class="item-body">
-        <div class="item-name">${esc(p.name)}</div>
-        ${p.desc ? `<div class="item-desc">${esc(p.desc)}</div>` : ''}
-        <div class="item-foot">
-          <span class="item-price">${esc(p.price || '')}</span>
-          <span class="item-badge">Disponible</span>
+  let html = '';
+  cats.forEach(cat => {
+    const products = state.products.filter(p=>p.cat===cat);
+    if (!products.length) return;
+    html += `<div class="cat-section" id="cat-${esc(cat)}"><div class="cat-title">${esc(cat)}</div>`;
+    products.forEach((p,i) => {
+      html += `<div class="item${p.stock?'':' agotado'}" style="animation-delay:${i*.05}s">
+        <div class="item-img">
+          ${p.img?`<img src="${p.img}" alt="${esc(p.name)}" />`:`<div class="item-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>`}
         </div>
-      </div>
-    </div>
-  `).join('');
+        <div class="item-body">
+          <div class="item-name">${esc(p.name)}</div>
+          ${p.desc?`<div class="item-desc">${esc(p.desc)}</div>`:''}
+          <div class="item-foot">
+            <span class="item-price">${esc(p.price||'')}</span>
+            <span class="item-tag ${p.stock?'in':'out'}">${p.stock?'Disponible':'Agotado'}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if (!html) {
+    html = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><p>No hay productos en esta sección.</p></div>`;
+  }
+  main.innerHTML = html;
 }
 
-// Load and render
-const products = loadProducts();
-
-if (products === null) {
-  // No data yet — show helpful message
-  document.getElementById('menu-list').innerHTML = `<div class="empty">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-      <circle cx="12" cy="12" r="10"/>
-      <line x1="12" y1="8" x2="12" y2="12"/>
-      <line x1="12" y1="16" x2="12.01" y2="16"/>
-    </svg>
-    <p>El menú se actualizará pronto.<br/>¡Vuelve en un momento!</p>
-  </div>`;
-} else {
-  render(products);
-}
-
-// Auto-refresh every 30 seconds to pick up admin changes
-setInterval(() => {
-  const fresh = loadProducts();
-  if (fresh !== null) render(fresh);
-}, 30000);
+/* ── Init & auto-refresh ── */
+load();
+initBanner();
+renderNav();
+renderContent();
+setInterval(()=>{ load(); renderNav(); renderContent(); }, 30000);
 </script>
 </body>
 </html>
