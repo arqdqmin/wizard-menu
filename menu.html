@@ -44,15 +44,14 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min
 .hero-fallback-sub{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
 
 /* Banner controls strip */
-.banner-controls{background:#000;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:42px;gap:8px}
-.banner-tabs{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.banner-controls{background:#000;border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 12px;height:48px}
+.banner-tabs{display:flex;align-items:stretch;flex:1;overflow-x:auto;scrollbar-width:none}
 .banner-tabs::-webkit-scrollbar{display:none}
-.banner-tab{flex-shrink:0;background:none;border:none;color:var(--muted);font-family:"DM Sans",sans-serif;font-size:12px;font-weight:500;cursor:pointer;padding:6px 10px;border-radius:20px;transition:all .2s;white-space:nowrap}
-.banner-tab.active{background:var(--gold-dim);color:var(--gold)}
+.banner-tab{flex:1 0 33.333%;min-width:110px;position:relative;background:none;border:none;color:var(--muted);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:500;cursor:pointer;padding:0 14px;transition:color .2s;white-space:nowrap}
+.banner-tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;border-radius:2px;background:transparent;transition:background .2s}
+.banner-tab.active{color:var(--text)}
+.banner-tab.active::after{background:var(--gold)}
 .banner-tab:hover:not(.active){color:var(--text)}
-.autoplay-btn{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}
-.autoplay-btn.on{border-color:var(--gold);color:var(--gold)}
-.autoplay-btn svg{width:14px;height:14px}
 
 /* Nav tabs */
 .nav-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:54px;z-index:20}
@@ -121,6 +120,11 @@ footer strong{color:var(--muted)}
   </a>
 </div>
 
+<!-- Selector de banners -->
+<div class="banner-controls" id="banner-controls" style="display:none">
+  <div class="banner-tabs" id="banner-tabs"></div>
+</div>
+
 <!-- Banner hero -->
 <div class="hero" id="hero">
   <div class="banner-track" id="banner-track"></div>
@@ -133,16 +137,6 @@ footer strong{color:var(--muted)}
     <div class="hero-fallback-title">Wizard</div>
     <div class="hero-fallback-sub">Magic Flavors · Antofagasta</div>
   </div>
-</div>
-
-<!-- Banner controls -->
-<div class="banner-controls" id="banner-controls" style="display:none">
-  <div class="banner-tabs" id="banner-tabs"></div>
-  <button class="autoplay-btn on" id="autoplay-btn" onclick="toggleAutoplay()" title="Auto/Manual">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="5 3 19 12 5 21 5 3"/>
-    </svg>
-  </button>
 </div>
 
 <!-- Nav categorías -->
@@ -163,7 +157,7 @@ const SUPABASE_URL="https://cwatxpuxttgeceahbciw.supabase.co";
 const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw";
 
 let categories=[],products=[],banners=[];
-let bannerIdx=0,bannerTimer=null,autoplay=true;
+let bannerIdx=0,bannerTimer=null,autoplay=false;
 let activeTab="__all__";
 
 async function sbFetch(path){
@@ -194,7 +188,7 @@ function initBanner(){
   fallback.style.display="none";
   track.innerHTML=banners.map(b=>`<div class="banner-slide"><img src="${b.img_url}" loading="lazy"/></div>`).join("");
   document.getElementById("banner-gradient").style.display="block";
-  if(banners.length>1)controls.style.display="flex";
+  controls.style.display=banners.length>1?"flex":"none";
   renderBannerTabs();
   showBannerSlide(0);
   if(autoplay)startAuto();
@@ -237,8 +231,6 @@ function startAuto(){
 
 function toggleAutoplay(){
   autoplay=!autoplay;
-  const btn=document.getElementById("autoplay-btn");
-  btn.classList.toggle("on",autoplay);
   if(autoplay)startAuto();else clearInterval(bannerTimer);
 }
 
