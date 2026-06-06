@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720" viewBox="0 0 720 720">
+  <defs>
+    <filter id="paper" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency=".018 .09" numOctaves="3" seed="17" result="noise"/>
+      <feColorMatrix in="noise" type="saturate" values="0" result="gray"/>
+      <feComponentTransfer in="gray" result="soft">
+        <feFuncA type="table" tableValues="0 .16"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" in2="soft" mode="multiply"/>
+    </filter>
+    <radialGradient id="light" cx="22%" cy="12%" r="90%">
+      <stop offset="0" stop-color="#fff1bd"/>
+      <stop offset=".55" stop-color="#e8cc8b"/>
+      <stop offset="1" stop-color="#cfaa68"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="720" fill="url(#light)" filter="url(#paper)"/>
+  <g fill="none" stroke="#76502a" stroke-opacity=".07">
+    <path d="M-30 120C130 70 245 175 405 120S650 65 760 120"/>
+    <path d="M-20 430C145 370 270 485 430 425S655 370 750 420"/>
+    <circle cx="610" cy="95" r="78"/>
+    <circle cx="105" cy="625" r="92"/>
+  </g>
+</svg>

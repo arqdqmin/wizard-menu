@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="color-scheme" content="only light" />
+<meta name="theme-color" content="#e2c47f" />
 <title>Menú · The Wizard Coffee</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Pirata+One&display=swap" rel="stylesheet" />
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
+  color-scheme:only light;
   --bg:#d8bb7b;--surface:rgba(255,244,204,.48);--surface2:rgba(83,55,26,.12);
   --border:#9a7443;--border2:#6c4b27;
   --text:#2c1b0e;--muted:#65492c;--hint:#8a6b47;
@@ -16,18 +19,17 @@
   --green:#2a9d5c;--green-bg:rgba(42,157,92,.15);
   --red:#c0392b;--red-bg:rgba(192,57,43,.15);
 }
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:"Lora",serif;background:#15100b;color:var(--text);min-height:100vh;max-width:520px;margin:0 auto;position:relative;box-shadow:0 0 80px rgba(0,0,0,.8)}
-body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 20% 15%,rgba(255,246,195,.8),transparent 35%),radial-gradient(circle at 80% 70%,rgba(111,72,30,.16),transparent 42%),repeating-linear-gradient(8deg,rgba(91,58,25,.035) 0 1px,transparent 1px 5px),#d7bb7d}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;color-scheme:only light;background:#d8b873}
+body{font-family:"Lora",serif;background:#e2c47f url("parchment.svg") center top/720px auto repeat;color:var(--text);min-height:100vh;max-width:520px;margin:0 auto;position:relative;box-shadow:0 0 80px rgba(0,0,0,.8);forced-color-adjust:none}
 
 /* Top bar */
-.top-bar{background:linear-gradient(105deg,rgba(242,218,157,.98),rgba(213,178,105,.98));display:flex;align-items:center;justify-content:space-between;padding:12px 18px;height:70px;border-bottom:1px solid var(--border2);position:relative;z-index:30;box-shadow:inset 0 -5px 14px rgba(80,48,20,.1)}
+.top-bar{background-color:#e7ca86;background-image:url("parchment.svg");background-size:720px auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;height:70px;border-bottom:1px solid var(--border2);position:relative;z-index:30;box-shadow:inset 0 -5px 14px rgba(80,48,20,.1)}
 .top-logo{display:flex;align-items:center;gap:11px}
 .top-logo img{width:42px;height:42px;object-fit:contain;border-radius:50%;filter:sepia(.25) contrast(1.1)}
 .top-logo-text{display:flex;flex-direction:column}
 .top-logo-name{font-family:"Pirata One",serif;font-size:27px;font-weight:400;letter-spacing:.02em;color:#3b230f;line-height:.9}
 .top-logo-sub{font-size:8px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-top:5px}
-.top-ig{width:38px;height:38px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text);text-decoration:none;transition:border-color .2s,color .2s;background:rgba(255,245,207,.22)}
+.top-ig{width:38px;height:38px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text);text-decoration:none;transition:border-color .2s,color .2s;background:#ecd59b}
 .top-ig:hover{border-color:var(--gold);color:var(--gold)}
 .top-ig svg{width:18px;height:18px}
 
@@ -45,7 +47,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 .hero-fallback-sub{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
 
 /* Banner controls strip */
-.banner-controls{background:linear-gradient(100deg,#e8cf94,#cfaa66);border-bottom:1px solid var(--border2);display:flex;align-items:stretch;padding:0 10px;height:46px;box-shadow:inset 0 -4px 10px rgba(92,55,22,.12)}
+.banner-controls{background-color:#dfbf79;background-image:url("parchment.svg");background-size:720px auto;border-bottom:1px solid var(--border2);display:flex;align-items:stretch;padding:0 10px;height:46px;box-shadow:inset 0 -4px 10px rgba(92,55,22,.12)}
 .banner-tabs{display:flex;align-items:stretch;flex:1;overflow-x:auto;scrollbar-width:none}
 .banner-tabs::-webkit-scrollbar{display:none}
 .banner-tab{flex:1 0 33.333%;min-width:110px;position:relative;background:none;border:none;color:#5e3c1d;font-family:"Pirata One",serif;font-size:21px;font-weight:400;cursor:pointer;padding:0 10px;transition:color .2s;white-space:nowrap}
@@ -55,24 +57,24 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-grad
 .banner-tab:hover:not(.active){color:var(--text)}
 
 /* Menu categories */
-.nav-wrap{background:linear-gradient(100deg,rgba(238,214,157,.98),rgba(209,173,104,.98));padding:15px 17px 13px;border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:20;box-shadow:0 4px 14px rgba(65,38,15,.16)}
+.nav-wrap{background-color:#e1c17b;background-image:url("parchment.svg");background-size:720px auto;padding:15px 17px 13px;border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:20;box-shadow:0 4px 14px rgba(65,38,15,.16)}
 .nav-heading{font-family:"Pirata One",serif;font-size:26px;font-weight:400;line-height:1;margin-bottom:11px;color:#35200f}
 .nav-scroll{display:flex;gap:8px;overflow-x:auto;padding:0;scrollbar-width:none}
 .nav-scroll::-webkit-scrollbar{display:none}
 .nav-tab{flex-shrink:0;padding:6px 13px;font-size:11px;font-weight:600;color:#694724;border:1px solid transparent;border-radius:999px;background:none;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
 .nav-tab:hover{color:var(--text)}
-.nav-tab.active{color:#2d190b;border-color:#6d451e;background:rgba(255,239,190,.38)}
+.nav-tab.active{color:#2d190b;border-color:#6d451e;background:#f0d99f}
 
 /* Main */
-main{padding:0 0 5rem;background:radial-gradient(circle at 18% 10%,rgba(255,245,201,.48),transparent 32%),repeating-linear-gradient(7deg,rgba(101,66,30,.035) 0 1px,transparent 1px 5px),linear-gradient(105deg,#dfc487,#cda968)}
+main{padding:0 0 5rem;background-color:#dfc080;background-image:url("parchment.svg");background-size:720px auto}
 .cat-section{padding:14px 17px 2px}
 .cat-title{display:none}
 
 /* Item */
-.item{background:rgba(255,244,207,.34);border:1px solid rgba(108,75,39,.5);border-radius:14px;overflow:hidden;display:flex;margin-bottom:10px;min-height:112px;transition:border-color .2s,transform .2s;box-shadow:inset 0 0 18px rgba(255,249,222,.2),0 2px 4px rgba(76,45,17,.08)}
+.item{background:#efdaa4;border:1px solid #9c7546;border-radius:14px;overflow:hidden;display:flex;margin-bottom:10px;min-height:112px;transition:border-color .2s,transform .2s;box-shadow:inset 0 0 18px rgba(255,249,222,.35),0 2px 4px rgba(76,45,17,.08)}
 .item:hover{border-color:var(--border2)}
 .item.agotado{opacity:.5}
-.item-img{width:38%;max-width:160px;flex-shrink:0;background:rgba(73,46,21,.12);overflow:hidden;position:relative;border-right:1px solid rgba(108,75,39,.35)}
+.item-img{width:38%;max-width:160px;flex-shrink:0;background:#d5b878;overflow:hidden;position:relative;border-right:1px solid #a27b49}
 .item-img img{width:100%;height:100%;object-fit:cover;display:block;min-height:112px}
 .item-img-ph{width:100%;height:100%;min-height:112px;display:flex;align-items:center;justify-content:center;color:var(--hint)}
 .item-img-ph svg{width:24px;height:24px;opacity:.3}
@@ -97,7 +99,7 @@ main{padding:0 0 5rem;background:radial-gradient(circle at 18% 10%,rgba(255,245,
 .empty p{font-size:13px;line-height:1.6}
 
 /* Footer */
-footer{text-align:center;padding:2rem 1rem 3rem;font-size:11px;color:#6d4b2a;border-top:1px solid var(--border);background:linear-gradient(100deg,#dec184,#c8a260)}
+footer{text-align:center;padding:2rem 1rem 3rem;font-size:11px;color:#6d4b2a;border-top:1px solid var(--border);background-color:#d8b875;background-image:url("parchment.svg");background-size:720px auto}
 footer strong{color:var(--muted)}
 @media(max-width:370px){
   .top-bar{padding-left:14px;padding-right:14px}
@@ -105,6 +107,11 @@ footer strong{color:var(--muted)}
   .banner-tab{min-width:100px;padding:0 9px;font-size:13px}
   .item-img{width:35%}
   .item-name{font-size:14px}
+}
+@media(max-width:520px){
+  body{box-shadow:none;background-color:#dfbf79}
+  .top-bar,.banner-controls,.nav-wrap,main,footer{background-attachment:scroll}
+  .item{background-color:#f1dda9}
 }
 @supports(padding-bottom:env(safe-area-inset-bottom)){body{padding-bottom:env(safe-area-inset-bottom)}}
 </style>
