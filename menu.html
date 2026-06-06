@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Menú · The Wizard Coffee</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -17,7 +17,7 @@
   --red:#c0392b;--red-bg:rgba(192,57,43,.15);
 }
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:"DM Sans",sans-serif;background:#000;color:var(--text);min-height:100vh;max-width:520px;margin:0 auto;position:relative;box-shadow:0 0 80px rgba(0,0,0,.65)}
+body{font-family:"Manrope",sans-serif;background:#000;color:var(--text);min-height:100vh;max-width:520px;margin:0 auto;position:relative;box-shadow:0 0 80px rgba(0,0,0,.65)}
 
 /* Top bar */
 .top-bar{background:#000;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;height:68px;border-bottom:1px solid rgba(216,189,120,.14);position:relative;z-index:30}
@@ -47,7 +47,7 @@ body{font-family:"DM Sans",sans-serif;background:#000;color:var(--text);min-heig
 .banner-controls{background:#000;border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 14px;height:40px}
 .banner-tabs{display:flex;align-items:stretch;flex:1;overflow-x:auto;scrollbar-width:none}
 .banner-tabs::-webkit-scrollbar{display:none}
-.banner-tab{flex:1 0 33.333%;min-width:110px;position:relative;background:none;border:none;color:var(--muted);font-family:"DM Sans",sans-serif;font-size:14px;font-weight:400;cursor:pointer;padding:0 14px;transition:color .2s;white-space:nowrap}
+.banner-tab{flex:1 0 33.333%;min-width:110px;position:relative;background:none;border:none;color:var(--muted);font-family:inherit;font-size:14px;font-weight:400;cursor:pointer;padding:0 14px;transition:color .2s;white-space:nowrap}
 .banner-tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;border-radius:2px;background:transparent;transition:background .2s}
 .banner-tab.active{color:#fff}
 .banner-tab.active::after{background:var(--gold)}
@@ -55,18 +55,17 @@ body{font-family:"DM Sans",sans-serif;background:#000;color:var(--text);min-heig
 
 /* Menu categories */
 .nav-wrap{background:#000;padding:18px 18px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
-.nav-heading{font-size:25px;font-weight:500;line-height:1;margin-bottom:13px;color:#fff}
+.nav-heading{font-size:18px;font-weight:500;line-height:1.2;margin-bottom:12px;color:#fff}
 .nav-scroll{display:flex;gap:8px;overflow-x:auto;padding:0;scrollbar-width:none}
 .nav-scroll::-webkit-scrollbar{display:none}
-.nav-tab{flex-shrink:0;padding:7px 14px;font-size:12px;font-weight:400;color:var(--muted);border:1px solid transparent;border-radius:999px;background:none;cursor:pointer;white-space:nowrap;font-family:"DM Sans",sans-serif;transition:all .15s}
+.nav-tab{flex-shrink:0;padding:7px 14px;font-size:12px;font-weight:400;color:var(--muted);border:1px solid transparent;border-radius:999px;background:none;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
 .nav-tab:hover{color:var(--text)}
 .nav-tab.active{color:var(--text);border-color:var(--gold);background:var(--gold-dim)}
 
 /* Main */
 main{padding:0 0 5rem;background:#000}
-.cat-section{padding:23px 17px 2px}
-.cat-title{font-size:22px;font-weight:500;color:#fff;margin-bottom:13px;display:flex;align-items:center;gap:12px}
-.cat-title::after{content:"";flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent)}
+.cat-section{padding:14px 17px 2px}
+.cat-title{display:none}
 
 /* Item */
 .item{background:#050505;border:1px solid var(--border);border-radius:15px;overflow:hidden;display:flex;margin-bottom:10px;min-height:112px;transition:border-color .2s,transform .2s}
@@ -149,7 +148,7 @@ footer strong{color:var(--muted)}
 
 <!-- Nav categorías -->
 <div class="nav-wrap">
-  <div class="nav-heading">Explora el menú</div>
+  <div class="nav-heading">Explora la magia</div>
   <div class="nav-scroll" id="nav-tabs">
     <div class="page-loader" style="padding:10px 16px"><div class="spinner"></div></div>
   </div>
