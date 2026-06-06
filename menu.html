@@ -47,11 +47,11 @@ body{font-family:"Lora",serif;background:#e2c47f url("parchment-bg.jpg") center 
 .hero-fallback-sub{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
 
 /* Banner controls strip */
-.banner-controls{background:#dfbf79 url("parchment-bg.jpg") center 13%/100% auto no-repeat;border-bottom:1px solid var(--border2);display:flex;align-items:stretch;padding:0 10px;height:46px;box-shadow:inset 0 -4px 10px rgba(92,55,22,.12)}
+.banner-controls{background:#dfbf79 url("parchment-bg.jpg") center 13%/100% auto no-repeat;border-bottom:1px solid var(--border2);display:flex;align-items:stretch;padding:0 10px;height:36px;box-shadow:inset 0 -3px 8px rgba(92,55,22,.1)}
 .banner-tabs{display:flex;align-items:stretch;flex:1;overflow-x:auto;scrollbar-width:none}
 .banner-tabs::-webkit-scrollbar{display:none}
-.banner-tab{flex:1 0 33.333%;min-width:110px;position:relative;background:none;border:none;color:#5e3c1d;font-family:"Pirata One",serif;font-size:21px;font-weight:400;cursor:pointer;padding:0 10px;transition:color .2s;white-space:nowrap}
-.banner-tab::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;border-radius:2px;background:transparent;transition:background .2s}
+.banner-tab{flex:1 0 33.333%;min-width:110px;position:relative;background:none;border:none;color:#5e3c1d;font-family:"Pirata One",serif;font-size:23px;font-weight:400;line-height:1;cursor:pointer;padding:0 10px 1px;transition:color .2s;white-space:nowrap}
+.banner-tab::after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:2px;border-radius:2px;background:transparent;transition:background .2s}
 .banner-tab.active{color:#241307}
 .banner-tab.active::after{background:#5d3515}
 .banner-tab:hover:not(.active){color:var(--text)}
@@ -67,26 +67,26 @@ body{font-family:"Lora",serif;background:#e2c47f url("parchment-bg.jpg") center 
 
 /* Main */
 main{padding:0 0 5rem;background:#dfc080 url("parchment-bg.jpg") center top/100% auto repeat-y}
-.cat-section{padding:14px 17px 2px}
+.cat-section{padding:12px 17px 2px}
 .cat-title{display:none}
 
 /* Item */
-.item{background:#efdaa4 url("parchment-bg.jpg") center 45%/145% auto no-repeat;border:1px solid #9c7546;border-radius:14px;overflow:hidden;display:flex;margin-bottom:10px;min-height:112px;transition:border-color .2s,transform .2s;box-shadow:inset 0 0 18px rgba(255,249,222,.35),0 2px 4px rgba(76,45,17,.08)}
+.item{background:#efdaa4 url("parchment-bg.jpg") center 45%/145% auto no-repeat;border:1px solid rgba(108,75,39,.55);border-radius:13px;overflow:hidden;display:flex;align-items:stretch;margin-bottom:9px;min-height:104px;padding:7px;gap:10px;transition:border-color .2s,transform .2s;box-shadow:inset 0 0 18px rgba(255,249,222,.35),0 2px 4px rgba(76,45,17,.08)}
 .item:hover{border-color:var(--border2)}
 .item.agotado{opacity:.5}
-.item-img{width:38%;max-width:160px;flex-shrink:0;background:#d5b878 url("parchment-bg.jpg") center 72%/180% auto no-repeat;overflow:hidden;position:relative;border-right:1px solid #a27b49}
-.item-img img{width:100%;height:100%;object-fit:cover;display:block;min-height:112px}
-.item-img-ph{width:100%;height:100%;min-height:112px;display:flex;align-items:center;justify-content:center;color:var(--hint)}
+.item-img{width:37%;max-width:150px;flex-shrink:0;background:#d5b878 url("parchment-bg.jpg") center 72%/180% auto no-repeat;overflow:hidden;position:relative;border:1px solid rgba(95,62,29,.45);border-radius:10px}
+.item-img img{width:100%;height:100%;object-fit:cover;display:block;min-height:88px}
+.item-img-ph{width:100%;height:100%;min-height:88px;display:flex;align-items:center;justify-content:center;color:var(--hint)}
 .item-img-ph svg{width:24px;height:24px;opacity:.3}
-.item-body{flex:1;padding:11px 12px 10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.item-body{flex:1;padding:3px 3px 2px 0;display:flex;flex-direction:column;gap:3px;min-width:0}
 .item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
-.item-name{font-family:"Pirata One",serif;font-size:21px;font-weight:400;color:#301b0c;line-height:1.05;flex:1}
+.item-name{font-family:"Pirata One",serif;font-size:22px;font-weight:400;color:#301b0c;line-height:1.02;flex:1}
 .item-veg{font-size:13px;flex-shrink:0;margin-top:-1px;color:var(--gold)}
 .item-rec{display:inline-flex;align-items:center;gap:4px;background:#67421e;border:1px solid #513015;border-radius:20px;padding:2px 7px;font-size:9px;font-weight:500;color:#f6e4b8;letter-spacing:.02em;align-self:flex-start;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .item-rec svg{width:10px;height:10px;flex-shrink:0}
-.item-desc{font-size:11px;color:#5a3b20;line-height:1.35;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.item-desc{font-size:10.5px;color:#5a3b20;line-height:1.3;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .item-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:auto}
-.item-price{font-family:"Pirata One",serif;font-size:19px;font-weight:400;color:#381e0c;white-space:nowrap;margin-left:auto}
+.item-price{font-family:"Pirata One",serif;font-size:20px;font-weight:400;color:#381e0c;white-space:nowrap;margin-left:auto}
 .item-tag{font-size:8px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:20px}
 .item-tag.in{display:none}
 .item-tag.out{background:var(--red-bg);color:var(--red);border:1px solid rgba(192,57,43,.15)}
@@ -104,9 +104,9 @@ footer strong{color:var(--muted)}
 @media(max-width:370px){
   .top-bar{padding-left:14px;padding-right:14px}
   .top-logo-name{font-size:15px}
-  .banner-tab{min-width:100px;padding:0 9px;font-size:13px}
+  .banner-tab{min-width:100px;padding:0 7px 1px;font-size:20px}
   .item-img{width:35%}
-  .item-name{font-size:14px}
+  .item-name{font-size:19px}
 }
 @media(max-width:520px){
   html,body{background-image:url("parchment-bg.jpg")!important}
