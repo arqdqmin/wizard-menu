@@ -19,15 +19,13 @@
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* Header */
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
 .logo{display:flex;align-items:center;gap:10px}
 .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
 .logo-text{font-size:14px;font-weight:600;line-height:1.2}
 .logo-sub{font-size:11px;color:var(--muted);font-weight:400}
-.header-actions{display:flex;gap:8px}
+.header-actions{display:flex;gap:8px;align-items:center}
 
-/* Buttons */
 .btn{height:36px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border-strong);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s,transform .1s;text-decoration:none;white-space:nowrap}
 .btn:hover{background:var(--bg)}
 .btn:active{transform:scale(.97)}
@@ -38,62 +36,51 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .btn-icon:hover{background:var(--bg)}
 .btn-icon.danger:hover{background:var(--danger-light);border-color:#f5a9a9;color:var(--danger)}
 .btn-icon.stock-on{color:var(--green);border-color:#a8d5be}
-.btn-icon.stock-on:hover{background:var(--green-light);border-color:#7bbfa0}
+.btn-icon.stock-on:hover{background:var(--green-light)}
 .btn-icon.stock-off{color:var(--hint)}
 .btn-icon.stock-off:hover{background:var(--green-light);border-color:#a8d5be;color:var(--green)}
 
-/* Layout */
 .layout{display:flex;min-height:calc(100vh - 58px)}
 
-/* Sidebar */
 .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:1rem 0;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto}
-.sidebar-section{padding:0 12px;margin-bottom:4px}
-.sidebar-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--hint);padding:8px 8px 4px}
-.sidebar-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;user-select:none}
+.sidebar-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--hint);padding:8px 20px 4px}
+.sidebar-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;margin:0 8px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;user-select:none}
 .sidebar-item:hover{background:var(--bg);color:var(--text)}
 .sidebar-item.active{background:var(--accent-light);color:var(--accent);font-weight:500}
 .sidebar-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sidebar-count{font-size:11px;background:var(--border);color:var(--muted);border-radius:20px;padding:1px 7px;margin-left:6px;flex-shrink:0}
 .sidebar-item.active .sidebar-count{background:rgba(45,74,62,.15);color:var(--accent)}
-.sidebar-add-cat{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--hint);transition:all .15s;margin:0 12px}
+.sidebar-add-cat{display:flex;align-items:center;gap:6px;padding:7px 10px;margin:4px 8px 0;border-radius:8px;cursor:pointer;font-size:12px;color:var(--hint);transition:all .15s}
 .sidebar-add-cat:hover{background:var(--bg);color:var(--accent)}
 
-/* Main */
-main{flex:1;padding:1.5rem;overflow-y:auto;max-width:1000px}
+main{flex:1;padding:1.5rem;overflow-y:auto}
 
-/* Stats */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
-@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
 .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
 .stat-value{font-size:22px;font-weight:600}
 .stat-value.green{color:var(--green)}
 .stat-value.red{color:var(--danger)}
 
-/* Banner section */
 .banner-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:1.5rem}
 .banner-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .banner-head h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
 .banner-slides{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
-.banner-slide{position:relative;width:140px;height:90px;flex-shrink:0;border-radius:10px;overflow:hidden;border:1px solid var(--border);cursor:pointer;background:#f0ece5}
+.banner-slide{position:relative;width:140px;height:90px;flex-shrink:0;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#f0ece5}
 .banner-slide img{width:100%;height:100%;object-fit:cover}
-.banner-slide-overlay{position:absolute;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
-.banner-slide:hover .banner-slide-overlay{opacity:1}
-.banner-slide-overlay span{color:#fff;font-size:11px;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:20px}
-.banner-slide-del{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.5);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;transition:opacity .15s}
+.banner-slide-del{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0;transition:opacity .15s}
 .banner-slide:hover .banner-slide-del{opacity:1}
-.banner-add{width:90px;height:90px;flex-shrink:0;border-radius:10px;border:1.5px dashed var(--border-strong);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--hint);font-size:11px;transition:all .15s;background:transparent}
+.banner-add{width:90px;height:90px;flex-shrink:0;border-radius:10px;border:1.5px dashed var(--border-strong);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--hint);font-size:11px;transition:all .15s;background:transparent;font-family:'DM Sans',sans-serif}
 .banner-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .banner-add i{font-size:20px}
+.banner-add.loading{opacity:.5;pointer-events:none}
 
-/* Section head */
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px}
 .section-head h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400}
+.section-actions{display:flex;gap:8px}
 
-/* Grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 
-/* Card */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .15s,box-shadow .15s}
 .card:hover{border-color:var(--border-strong);box-shadow:0 2px 12px rgba(0,0,0,.05)}
 .card.no-stock{opacity:.55}
@@ -105,6 +92,7 @@ main{flex:1;padding:1.5rem;overflow-y:auto;max-width:1000px}
 .img-overlay{position:absolute;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
 .card-img:hover .img-overlay{opacity:1}
 .img-overlay span{color:#fff;font-size:12px;font-weight:500;background:rgba(0,0,0,.45);padding:5px 12px;border-radius:20px}
+.img-uploading{position:absolute;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted)}
 input[type="file"]{display:none}
 .stock-pill{position:absolute;top:8px;right:8px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.04em}
 .stock-pill.in{background:rgba(26,122,74,.9);color:#fff}
@@ -113,10 +101,9 @@ input[type="file"]{display:none}
 .card-name{font-size:14px;font-weight:600;margin-bottom:3px;line-height:1.3}
 .card-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;min-height:30px}
 .card-foot{display:flex;align-items:center;justify-content:space-between}
-.card-price{font-size:15px;font-weight:600;color:var(--accent)}
+.card-price{font-size:14px;font-weight:600;color:var(--accent)}
 .card-acts{display:flex;gap:4px}
 
-/* Edit panel */
 .edit-panel{border-top:1px solid var(--border);padding:12px 14px;display:none;flex-direction:column;gap:8px;background:#fdfcfb}
 .edit-panel.open{display:flex}
 .field-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
@@ -135,13 +122,11 @@ input[type="file"]{display:none}
 .toggle-label{font-size:12px;color:var(--muted)}
 .panel-foot{display:flex;justify-content:flex-end;gap:7px;margin-top:2px}
 
-/* Add card */
 .add-card{border:1.5px dashed var(--border-strong);border-radius:var(--radius-lg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:180px;cursor:pointer;color:var(--hint);transition:all .15s;background:transparent;font-family:'DM Sans',sans-serif}
 .add-card:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .add-card i{font-size:26px}
 .add-card span{font-size:13px;font-weight:500}
 
-/* Modal */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;align-items:center;justify-content:center;z-index:100}
 .modal-bg.open{display:flex}
 .modal{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:380px;max-width:calc(100vw - 2rem);box-shadow:0 8px 40px rgba(0,0,0,.15)}
@@ -149,17 +134,23 @@ input[type="file"]{display:none}
 .modal-fields{display:flex;flex-direction:column;gap:11px}
 .modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
 
-/* Empty */
-.empty-state{text-align:center;padding:3rem 1rem;color:var(--hint)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:var(--radius);font-size:13px;z-index:200;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(250,249,246,.8);display:flex;align-items:center;justify-content:center;z-index:50;font-size:14px;color:var(--muted);gap:10px}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--hint);grid-column:1/-1}
 .empty-state i{font-size:36px;margin-bottom:10px;display:block}
 .empty-state p{font-size:13px}
-
-/* Cat rename inline */
-.cat-rename-input{border:1px solid var(--accent);border-radius:6px;padding:3px 8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);width:130px}
-.cat-rename-input:focus{outline:none}
 </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div> Cargando menú...
+</div>
 
 <header>
   <div class="logo">
@@ -176,9 +167,8 @@ input[type="file"]{display:none}
 </header>
 
 <div class="layout">
-  <!-- Sidebar categorías -->
   <div class="sidebar">
-    <div class="sidebar-label" style="padding:12px 20px 4px">Categorías</div>
+    <div class="sidebar-label">Categorías</div>
     <div id="sidebar-cats"></div>
     <div class="sidebar-add-cat" onclick="openAddCat()">
       <i class="ti ti-folder-plus" style="font-size:15px"></i> Nueva categoría
@@ -186,34 +176,29 @@ input[type="file"]{display:none}
   </div>
 
   <main>
-    <!-- Stats -->
     <div class="stats">
-      <div class="stat"><div class="stat-label">Productos</div><div class="stat-value" id="st-total">0</div></div>
-      <div class="stat"><div class="stat-label">En stock</div><div class="stat-value green" id="st-in">0</div></div>
-      <div class="stat"><div class="stat-label">Agotados</div><div class="stat-value red" id="st-out">0</div></div>
-      <div class="stat"><div class="stat-label">Categorías</div><div class="stat-value" id="st-cats">0</div></div>
+      <div class="stat"><div class="stat-label">Productos</div><div class="stat-value" id="st-total">—</div></div>
+      <div class="stat"><div class="stat-label">En stock</div><div class="stat-value green" id="st-in">—</div></div>
+      <div class="stat"><div class="stat-label">Agotados</div><div class="stat-value red" id="st-out">—</div></div>
+      <div class="stat"><div class="stat-label">Categorías</div><div class="stat-value" id="st-cats">—</div></div>
     </div>
 
-    <!-- Banner -->
     <div class="banner-section">
       <div class="banner-head">
         <h3><i class="ti ti-photo" style="color:var(--accent)"></i> Banner de promociones</h3>
-        <span style="font-size:12px;color:var(--muted)">Las imágenes rotan automáticamente en la vitrina</span>
+        <span style="font-size:12px;color:var(--muted)">Rota automáticamente en la vitrina</span>
       </div>
       <div class="banner-slides" id="banner-slides">
-        <div class="banner-add" onclick="document.getElementById('banner-fi').click()">
+        <button class="banner-add" onclick="document.getElementById('banner-fi').click()">
           <i class="ti ti-plus"></i><span>Agregar imagen</span>
-        </div>
+        </button>
       </div>
-      <input type="file" id="banner-fi" accept="image/*" multiple onchange="addBannerImages(event)" />
+      <input type="file" id="banner-fi" accept="image/*" multiple onchange="uploadBannerImages(event)" />
     </div>
 
-    <!-- Productos -->
     <div class="section-head">
       <h2 id="section-title">Todos los productos</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span id="cat-actions"></span>
-      </div>
+      <div class="section-actions" id="section-actions"></div>
     </div>
     <div class="grid" id="grid"></div>
   </main>
@@ -239,7 +224,7 @@ input[type="file"]{display:none}
     </div>
     <div class="modal-foot">
       <button class="btn" onclick="closeModal('modal-product')">Cancelar</button>
-      <button class="btn btn-accent" onclick="saveProduct()"><i class="ti ti-check"></i> Guardar</button>
+      <button class="btn btn-accent" id="btn-save-product" onclick="saveProduct()"><i class="ti ti-check"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -258,71 +243,113 @@ input[type="file"]{display:none}
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-const STORAGE_KEY = 'wizard_menu_v3';
+const SUPABASE_URL = 'https://cwatxpuxttgeceahbciw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw';
+const BUCKET = 'images';
 
-const DEFAULT_CATS = [
-  'Pociones calientes','Pociones Frías','Pociones de la profesora Sprout',
-  'Bocadillos y dulces','Bocadillos weasley','Picoteo',
-  'Tablas','Sandwiches','Pizzas y quesadillas'
-];
-
-let state = { categories: [], products: [], banners: [], nextId: 1 };
+let categories = [];
+let products = [];
+let banners = [];
 let activeCat = '__all__';
 let mpStockOn = true;
 let editingProductId = null;
 
-/* ── Storage ── */
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+/* ── API helpers ── */
+async function sbFetch(path, opts={}) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...opts.headers
+    },
+    ...opts
+  });
+  if (!res.ok) { const e = await res.text(); throw new Error(e); }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
-function load() {
+
+async function uploadFile(file, path) {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if (!res.ok) throw new Error('Upload failed');
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+async function deleteFile(path) {
+  await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+}
+
+/* ── Load all data ── */
+async function loadAll() {
+  showLoading(true);
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) { state = JSON.parse(raw); }
-    else {
-      state = {"categories": ["Pociones calientes", "Pociones Frías", "Pociones de la profesora Sprout", "Bocadillos y dulces", "Bocadillos weasley", "Picoteo", "Tablas", "Sandwiches", "Pizzas y quesadillas"], "products": [{"id": 1, "name": "Imperio", "desc": "Cappuccino Blue", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 2, "name": "Cruciatus", "desc": "Cappuccino con Jarabe de Granada", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 3, "name": "Avada Kedavra", "desc": "Mocaccino Menta", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 4, "name": "Expresso Patronoun", "desc": "Café Expresso", "price": "$2.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 5, "name": "Expresso Doble Patronoun", "desc": "Café Expresso Doble", "price": "$3.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 6, "name": "Muffiato", "desc": "Café Macchiato", "price": "$3.100", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 7, "name": "Americanum", "desc": "Café Americano (HOT/ICED)", "price": "$3.000", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 8, "name": "Confundo", "desc": "Café Cortado", "price": "$3.300", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 9, "name": "Lattemus", "desc": "Café Latte (HOT/ICED)", "price": "$3.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 10, "name": "Lattemus Special", "desc": "Café Latte Sabores (HOT/ICED)", "price": "$4.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 11, "name": "Mochacorpus", "desc": "Café Mocaccino", "price": "$4.300", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 12, "name": "Mochacorpus Special", "desc": "Café Mocaccino Sabores", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 13, "name": "Cappuportus", "desc": "Café Capuccino", "price": "$3.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 14, "name": "Cappuportus Special", "desc": "Café Capuccino Sabores", "price": "$4.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 15, "name": "Cappuportus Brûlée", "desc": "Café Capuccino Brûlée", "price": "$4.400", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 16, "name": "Bombarda", "desc": "Café Bombón", "price": "$3.600", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 17, "name": "Arresto Momentum", "desc": "Café Afogato", "price": "$3.500", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 18, "name": "Accio Latte", "desc": "Chai Latte (HOT/ICED)", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 19, "name": "Butterbeer", "desc": "Milkshake de Mantequilla de Maní con Canela", "price": "$5.800", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 20, "name": "Azkaban Shake", "desc": "Milkshake de Oreo", "price": "$5.500", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 21, "name": "Crecehuesos", "desc": "Milkshake del día", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 22, "name": "Felix Felicis", "desc": "Café Helado", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 23, "name": "Feraverto", "desc": "Frapuccino Sabores", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 24, "name": "Longbottom's Smoothies", "desc": "Suaves batidos de fruta a base de yogurt", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 25, "name": "It's Leviosa", "desc": "Frapuccino Caramel Latte", "price": "$5.600", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 26, "name": "Hogwarts Teas", "desc": "Té de hoja", "price": "$2.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 27, "name": "Double Hogwarts Teas", "desc": "Tetera de Té de Hoja", "price": "$5.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 28, "name": "Gryffindor Tea", "desc": "Té Chai", "price": "$2.500", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 29, "name": "Hufflepuff Tea", "desc": "Té de Hierbas o Frutas", "price": "$2.500", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 30, "name": "Choco-Choco", "desc": "Chocolate Caliente", "price": "$4.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 31, "name": "Choco-Loco", "desc": "Chocolate Caliente con Marshmellows", "price": "$4.200", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 32, "name": "Elixir de Mandrágora", "desc": "Limonada de Albahaca-Menta", "price": "$4.800", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 33, "name": "Amortentia", "desc": "Limonada de Frutilla-Menta", "price": "$4.800", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 34, "name": "Poción Multijugos", "desc": "Jugos de Pulpa del día", "price": "$4.500", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 35, "name": "Veritaserum", "desc": "Té Helado", "price": "$4.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 36, "name": "Poción Translúcida", "desc": "Agua con o sin gas", "price": "$2.300", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 37, "name": "Poción Gaseosa", "desc": "Bebidas", "price": "$2.300", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 38, "name": "Happee Birthdae", "desc": "Mini torta de bizcocho húmedo de chocolate con un cremoso relleno del mismo sabor.", "price": "$8.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 39, "name": "Tortas Wizard", "desc": "Deliciosas tortas del día hechas en casa.", "price": "$5.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 40, "name": "Cupcake Seleccionador", "desc": "Dulce bizcocho de vainilla cubierto con un cremoso de chocolate.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 41, "name": "Cupcake Hogwarts", "desc": "Rico bizcocho de red velvet relleno con salsa de frutilla.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 42, "name": "Cupcake Lavender", "desc": "Esponjoso bizcocho de limón relleno con una mermelada de frutilla.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 43, "name": "Cupcake Lovegood", "desc": "Delicioso bizcocho de plátano relleno con manjar.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 44, "name": "Cheesecake 9 3/4", "desc": "Suave cheesecake de vainilla cubierto con una delicada salsa de frambuesa.", "price": "$5.500", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 45, "name": "Malfoy's Pie", "desc": "Base de masa sablée rellena con crema de limón y un toque de merengue.", "price": "$4.600", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 46, "name": "La Carta de Hedwig", "desc": "Exquisito kuchen de manzana-nuez con una base de masa sablé.", "price": "$5.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 47, "name": "Sopaipotter", "desc": "Porción de 4 sopaipillas bañadas en chancaca. (*A partir de las 17:00hrs)", "price": "$4.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 48, "name": "Ron Weasley", "desc": "Sabroso sandwich en pan ciabatta con churrasco y queso amarillo.", "price": "$5.500", "cat": "Bocadillos weasley", "stock": true, "img": null}, {"id": 49, "name": "Ginny Weasley", "desc": "Delicioso sandwich de ave-mayo y palta en pan ciabatta.", "price": "$6.500", "cat": "Bocadillos weasley", "stock": true, "img": null}, {"id": 50, "name": "Percy Weasley", "desc": "Rico sandwich con churrasco, tomate, palta y lactonesa en pan ciabatta.", "price": "$7.000", "cat": "Bocadillos weasley", "stock": true, "img": null}, {"id": 51, "name": "Brotes de Sauce Boxeador", "desc": "Porción de papas pequeñas.", "price": "$2.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 52, "name": "Ramas de Sauce Boxeador", "desc": "Porción de papas medianas.", "price": "$4.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 53, "name": "Canastita de Snitch Doradas", "desc": "Popcorn de pollo con salsa cheddar.", "price": "$5.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 54, "name": "Huevos de Acromántulas", "desc": "Porción de bolitas falafel con salsa de cilantro.", "price": "$5.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 55, "name": "Bocaditos Hedwig", "desc": "Porción de 8 nuggets con salsa Golf.", "price": "$4.000", "cat": "Picoteo", "stock": true, "img": null}, {"id": 56, "name": "Peter Pettigrew", "desc": "Cama de papas fritas cubiertas con salsa cheddar, carne mechada, tocino y cebollín.", "price": "$20.500", "cat": "Tablas", "stock": true, "img": null}, {"id": 57, "name": "James Potter", "desc": "Cama de papas fritas cubiertas con salsa cheddar, pollo, tomate, crema ácida y cebollín.", "price": "$19.000", "cat": "Tablas", "stock": true, "img": null}, {"id": 58, "name": "Beso del Dementor", "desc": "Pan artesanal con doble hamburguesa casera, tocino, queso cheddar, pepinillos, lechuga, tomate y mostaza miel.", "price": "$13.500", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 59, "name": "Fawkes en Llamas", "desc": "Pan artesanal con carne mechada, cebolla caramelizada, tocino, huevo frito, ají verde y salsa merkén.", "price": "$13.500", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 60, "name": "Pequeño Pickett", "desc": "Pan artesanal con falafel casero, palta, tomate, lechuga, champiñones salteados y salsa de albahaca.", "price": "$13.000", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 61, "name": "Dobby", "desc": "Sandwich en pan ciabatta con carne mechada, queso, lechuga, pepinillos, palta y salsa de ajo.", "price": "$13.000", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 62, "name": "Croocshanks (Opción kids)", "desc": "Mini pan artesanal con hamburguesa casera y queso.", "price": "$5.000", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 63, "name": "Minerva McGonagall", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella, rodajas de tomate y hojas de albahaca.", "price": "Mini $6.000 / Med $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 64, "name": "Remus Lupin", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella y pepperoni.", "price": "Mini $6.500 / Med $13.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 65, "name": "Rubeus Hagrid", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella, jamón y aceitunas.", "price": "Mini $6.500 / Med $13.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 66, "name": "Alastor Moody", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella, carne mechada, cebolla caramelizada y tocino.", "price": "Mini $7.500 / Med $17.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 67, "name": "Newt Scamander", "desc": "Quesadilla: tortillas rellenas con queso, un mix de verduras salteadas y cebolla caramelizada.", "price": "Normal $6.500 / Grande $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 68, "name": "Bellatrix Lestrange", "desc": "Quesadilla: tortillas rellenas con queso, jamón, tomate, aceitunas y palta.", "price": "Normal $6.500 / Grande $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 69, "name": "Grinderwald", "desc": "Quesadilla: tortillas rellenas con queso, pollo, carne mechada de la casa y cebolla caramelizada.", "price": "Normal $6.500 / Grande $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}], "banners": [], "nextId": 70};
-      save();
-    }
+    const [cats, prods, bans] = await Promise.all([
+      sbFetch('categories?select=*&order=position'),
+      sbFetch('products?select=*&order=position'),
+      sbFetch('banners?select=*&order=position')
+    ]);
+    categories = cats || [];
+    products = prods || [];
+    banners = bans || [];
+    renderAll();
   } catch(e) {
-    state = {"categories": ["Pociones calientes", "Pociones Frías", "Pociones de la profesora Sprout", "Bocadillos y dulces", "Bocadillos weasley", "Picoteo", "Tablas", "Sandwiches", "Pizzas y quesadillas"], "products": [{"id": 1, "name": "Imperio", "desc": "Cappuccino Blue", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 2, "name": "Cruciatus", "desc": "Cappuccino con Jarabe de Granada", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 3, "name": "Avada Kedavra", "desc": "Mocaccino Menta", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 4, "name": "Expresso Patronoun", "desc": "Café Expresso", "price": "$2.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 5, "name": "Expresso Doble Patronoun", "desc": "Café Expresso Doble", "price": "$3.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 6, "name": "Muffiato", "desc": "Café Macchiato", "price": "$3.100", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 7, "name": "Americanum", "desc": "Café Americano (HOT/ICED)", "price": "$3.000", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 8, "name": "Confundo", "desc": "Café Cortado", "price": "$3.300", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 9, "name": "Lattemus", "desc": "Café Latte (HOT/ICED)", "price": "$3.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 10, "name": "Lattemus Special", "desc": "Café Latte Sabores (HOT/ICED)", "price": "$4.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 11, "name": "Mochacorpus", "desc": "Café Mocaccino", "price": "$4.300", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 12, "name": "Mochacorpus Special", "desc": "Café Mocaccino Sabores", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 13, "name": "Cappuportus", "desc": "Café Capuccino", "price": "$3.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 14, "name": "Cappuportus Special", "desc": "Café Capuccino Sabores", "price": "$4.200", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 15, "name": "Cappuportus Brûlée", "desc": "Café Capuccino Brûlée", "price": "$4.400", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 16, "name": "Bombarda", "desc": "Café Bombón", "price": "$3.600", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 17, "name": "Arresto Momentum", "desc": "Café Afogato", "price": "$3.500", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 18, "name": "Accio Latte", "desc": "Chai Latte (HOT/ICED)", "price": "$4.700", "cat": "Pociones calientes", "stock": true, "img": null}, {"id": 19, "name": "Butterbeer", "desc": "Milkshake de Mantequilla de Maní con Canela", "price": "$5.800", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 20, "name": "Azkaban Shake", "desc": "Milkshake de Oreo", "price": "$5.500", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 21, "name": "Crecehuesos", "desc": "Milkshake del día", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 22, "name": "Felix Felicis", "desc": "Café Helado", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 23, "name": "Feraverto", "desc": "Frapuccino Sabores", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 24, "name": "Longbottom's Smoothies", "desc": "Suaves batidos de fruta a base de yogurt", "price": "$5.000", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 25, "name": "It's Leviosa", "desc": "Frapuccino Caramel Latte", "price": "$5.600", "cat": "Pociones Frías", "stock": true, "img": null}, {"id": 26, "name": "Hogwarts Teas", "desc": "Té de hoja", "price": "$2.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 27, "name": "Double Hogwarts Teas", "desc": "Tetera de Té de Hoja", "price": "$5.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 28, "name": "Gryffindor Tea", "desc": "Té Chai", "price": "$2.500", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 29, "name": "Hufflepuff Tea", "desc": "Té de Hierbas o Frutas", "price": "$2.500", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 30, "name": "Choco-Choco", "desc": "Chocolate Caliente", "price": "$4.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 31, "name": "Choco-Loco", "desc": "Chocolate Caliente con Marshmellows", "price": "$4.200", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 32, "name": "Elixir de Mandrágora", "desc": "Limonada de Albahaca-Menta", "price": "$4.800", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 33, "name": "Amortentia", "desc": "Limonada de Frutilla-Menta", "price": "$4.800", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 34, "name": "Poción Multijugos", "desc": "Jugos de Pulpa del día", "price": "$4.500", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 35, "name": "Veritaserum", "desc": "Té Helado", "price": "$4.000", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 36, "name": "Poción Translúcida", "desc": "Agua con o sin gas", "price": "$2.300", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 37, "name": "Poción Gaseosa", "desc": "Bebidas", "price": "$2.300", "cat": "Pociones de la profesora Sprout", "stock": true, "img": null}, {"id": 38, "name": "Happee Birthdae", "desc": "Mini torta de bizcocho húmedo de chocolate con un cremoso relleno del mismo sabor.", "price": "$8.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 39, "name": "Tortas Wizard", "desc": "Deliciosas tortas del día hechas en casa.", "price": "$5.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 40, "name": "Cupcake Seleccionador", "desc": "Dulce bizcocho de vainilla cubierto con un cremoso de chocolate.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 41, "name": "Cupcake Hogwarts", "desc": "Rico bizcocho de red velvet relleno con salsa de frutilla.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 42, "name": "Cupcake Lavender", "desc": "Esponjoso bizcocho de limón relleno con una mermelada de frutilla.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 43, "name": "Cupcake Lovegood", "desc": "Delicioso bizcocho de plátano relleno con manjar.", "price": "$3.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 44, "name": "Cheesecake 9 3/4", "desc": "Suave cheesecake de vainilla cubierto con una delicada salsa de frambuesa.", "price": "$5.500", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 45, "name": "Malfoy's Pie", "desc": "Base de masa sablée rellena con crema de limón y un toque de merengue.", "price": "$4.600", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 46, "name": "La Carta de Hedwig", "desc": "Exquisito kuchen de manzana-nuez con una base de masa sablé.", "price": "$5.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 47, "name": "Sopaipotter", "desc": "Porción de 4 sopaipillas bañadas en chancaca. (*A partir de las 17:00hrs)", "price": "$4.000", "cat": "Bocadillos y dulces", "stock": true, "img": null}, {"id": 48, "name": "Ron Weasley", "desc": "Sabroso sandwich en pan ciabatta con churrasco y queso amarillo.", "price": "$5.500", "cat": "Bocadillos weasley", "stock": true, "img": null}, {"id": 49, "name": "Ginny Weasley", "desc": "Delicioso sandwich de ave-mayo y palta en pan ciabatta.", "price": "$6.500", "cat": "Bocadillos weasley", "stock": true, "img": null}, {"id": 50, "name": "Percy Weasley", "desc": "Rico sandwich con churrasco, tomate, palta y lactonesa en pan ciabatta.", "price": "$7.000", "cat": "Bocadillos weasley", "stock": true, "img": null}, {"id": 51, "name": "Brotes de Sauce Boxeador", "desc": "Porción de papas pequeñas.", "price": "$2.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 52, "name": "Ramas de Sauce Boxeador", "desc": "Porción de papas medianas.", "price": "$4.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 53, "name": "Canastita de Snitch Doradas", "desc": "Popcorn de pollo con salsa cheddar.", "price": "$5.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 54, "name": "Huevos de Acromántulas", "desc": "Porción de bolitas falafel con salsa de cilantro.", "price": "$5.900", "cat": "Picoteo", "stock": true, "img": null}, {"id": 55, "name": "Bocaditos Hedwig", "desc": "Porción de 8 nuggets con salsa Golf.", "price": "$4.000", "cat": "Picoteo", "stock": true, "img": null}, {"id": 56, "name": "Peter Pettigrew", "desc": "Cama de papas fritas cubiertas con salsa cheddar, carne mechada, tocino y cebollín.", "price": "$20.500", "cat": "Tablas", "stock": true, "img": null}, {"id": 57, "name": "James Potter", "desc": "Cama de papas fritas cubiertas con salsa cheddar, pollo, tomate, crema ácida y cebollín.", "price": "$19.000", "cat": "Tablas", "stock": true, "img": null}, {"id": 58, "name": "Beso del Dementor", "desc": "Pan artesanal con doble hamburguesa casera, tocino, queso cheddar, pepinillos, lechuga, tomate y mostaza miel.", "price": "$13.500", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 59, "name": "Fawkes en Llamas", "desc": "Pan artesanal con carne mechada, cebolla caramelizada, tocino, huevo frito, ají verde y salsa merkén.", "price": "$13.500", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 60, "name": "Pequeño Pickett", "desc": "Pan artesanal con falafel casero, palta, tomate, lechuga, champiñones salteados y salsa de albahaca.", "price": "$13.000", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 61, "name": "Dobby", "desc": "Sandwich en pan ciabatta con carne mechada, queso, lechuga, pepinillos, palta y salsa de ajo.", "price": "$13.000", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 62, "name": "Croocshanks (Opción kids)", "desc": "Mini pan artesanal con hamburguesa casera y queso.", "price": "$5.000", "cat": "Sandwiches", "stock": true, "img": null}, {"id": 63, "name": "Minerva McGonagall", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella, rodajas de tomate y hojas de albahaca.", "price": "Mini $6.000 / Med $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 64, "name": "Remus Lupin", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella y pepperoni.", "price": "Mini $6.500 / Med $13.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 65, "name": "Rubeus Hagrid", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella, jamón y aceitunas.", "price": "Mini $6.500 / Med $13.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 66, "name": "Alastor Moody", "desc": "Pizza: base salsa de tomates cubierta con queso mozzarella, carne mechada, cebolla caramelizada y tocino.", "price": "Mini $7.500 / Med $17.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 67, "name": "Newt Scamander", "desc": "Quesadilla: tortillas rellenas con queso, un mix de verduras salteadas y cebolla caramelizada.", "price": "Normal $6.500 / Grande $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 68, "name": "Bellatrix Lestrange", "desc": "Quesadilla: tortillas rellenas con queso, jamón, tomate, aceitunas y palta.", "price": "Normal $6.500 / Grande $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}, {"id": 69, "name": "Grinderwald", "desc": "Quesadilla: tortillas rellenas con queso, pollo, carne mechada de la casa y cebolla caramelizada.", "price": "Normal $6.500 / Grande $12.500", "cat": "Pizzas y quesadillas", "stock": true, "img": null}], "banners": [], "nextId": 70};
+    toast('Error al cargar datos: ' + e.message);
   }
+  showLoading(false);
+}
+
+function renderAll() {
+  renderSidebar();
+  renderGrid();
+  renderBanner();
+  updateStats();
 }
 
 /* ── Sidebar ── */
 function renderSidebar() {
   const el = document.getElementById('sidebar-cats');
-  const all = state.products.length;
-  let html = `<div class="sidebar-section">
-    <div class="sidebar-item${activeCat==='__all__'?' active':''}" onclick="setActiveCat('__all__')">
-      <span class="sidebar-item-name">Todos</span>
-      <span class="sidebar-count">${all}</span>
-    </div>
-  </div><div class="sidebar-section">`;
-  state.categories.forEach(cat => {
-    const count = state.products.filter(p=>p.cat===cat).length;
-    const isActive = activeCat === cat;
-    html += `<div class="sidebar-item${isActive?' active':''}" onclick="setActiveCat('${esc(cat)}')">
-      <span class="sidebar-item-name">${esc(cat)}</span>
+  let html = `<div class="sidebar-item${activeCat==='__all__'?' active':''}" onclick="setActiveCat('__all__')">
+    <span class="sidebar-item-name">Todos</span>
+    <span class="sidebar-count">${products.length}</span>
+  </div>`;
+  categories.forEach(cat => {
+    const count = products.filter(p=>p.cat===cat.name).length;
+    html += `<div class="sidebar-item${activeCat===cat.name?' active':''}" onclick="setActiveCat(${cat.id})">
+      <span class="sidebar-item-name">${esc(cat.name)}</span>
       <span class="sidebar-count">${count}</span>
     </div>`;
   });
-  html += '</div>';
   el.innerHTML = html;
-  document.getElementById('st-cats').textContent = state.categories.length;
+  document.getElementById('st-cats').textContent = categories.length;
 }
 
-function setActiveCat(cat) {
-  activeCat = cat;
+function setActiveCat(id) {
+  activeCat = id;
   renderSidebar();
   renderGrid();
-  // Section title & actions
-  const title = cat === '__all__' ? 'Todos los productos' : cat;
-  document.getElementById('section-title').textContent = title;
-  const acts = document.getElementById('cat-actions');
-  if (cat !== '__all__') {
-    acts.innerHTML = `<button class="btn btn-sm" onclick="renameCat('${esc(cat)}')"><i class="ti ti-pencil"></i> Renombrar</button>
-      <button class="btn btn-sm danger" style="border-color:#f5a9a9;color:var(--danger)" onclick="deleteCat('${esc(cat)}')"><i class="ti ti-trash"></i> Eliminar</button>`;
+  const cat = categories.find(c=>c.id===id);
+  document.getElementById('section-title').textContent = cat ? cat.name : 'Todos los productos';
+  const acts = document.getElementById('section-actions');
+  if (cat) {
+    acts.innerHTML = `<button class="btn btn-sm" onclick="renameCat(${cat.id})"><i class="ti ti-pencil"></i> Renombrar</button>
+      <button class="btn btn-sm" style="border-color:#f5a9a9;color:var(--danger)" onclick="deleteCat(${cat.id})"><i class="ti ti-trash"></i> Eliminar</button>`;
   } else {
     acts.innerHTML = '';
   }
@@ -331,19 +358,14 @@ function setActiveCat(cat) {
 /* ── Grid ── */
 function renderGrid() {
   const grid = document.getElementById('grid');
-  const filtered = activeCat === '__all__'
-    ? state.products
-    : state.products.filter(p => p.cat === activeCat);
-
+  const cat = categories.find(c=>c.id===activeCat);
+  const filtered = activeCat === '__all__' ? products : products.filter(p=>p.cat===(cat?cat.name:''));
   if (!filtered.length) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-      <i class="ti ti-mood-empty"></i><p>No hay productos en esta categoría.</p>
-    </div>
-    <button class="add-card" onclick="openAddProduct()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`;
+    grid.innerHTML = `<div class="empty-state"><i class="ti ti-mood-empty"></i><p>No hay productos aquí.</p></div>
+      <button class="add-card" onclick="openAddProduct()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`;
     return;
   }
-
-  grid.innerHTML = filtered.map(p => cardHTML(p)).join('') +
+  grid.innerHTML = filtered.map(p=>cardHTML(p)).join('') +
     `<button class="add-card" onclick="openAddProduct()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`;
   filtered.forEach(p => {
     const fi = document.getElementById('fi-'+p.id);
@@ -354,19 +376,19 @@ function renderGrid() {
 function cardHTML(p) {
   return `<div class="card${p.stock?'':' no-stock'}" id="card-${p.id}">
   <div class="card-img" onclick="document.getElementById('fi-${p.id}').click()">
-    ${p.img?`<img src="${p.img}" alt="${esc(p.name)}" />`:`<div class="img-placeholder"><i class="ti ti-camera"></i><span>Subir foto</span></div>`}
-    <div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img?'Cambiar':'Subir'} foto</span></div>
+    ${p.img_url?`<img src="${p.img_url}" alt="${esc(p.name)}" />`:`<div class="img-placeholder"><i class="ti ti-camera"></i><span>Subir foto</span></div>`}
+    <div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img_url?'Cambiar':'Subir'} foto</span></div>
     <span class="stock-pill ${p.stock?'in':'out'}">${p.stock?'En stock':'Agotado'}</span>
   </div>
   <input type="file" id="fi-${p.id}" accept="image/*" />
   <div class="card-body">
     <div class="card-name">${esc(p.name)}</div>
-    <div class="card-desc">${p.desc?esc(p.desc):'<em style="color:var(--hint);font-style:italic">Sin descripción</em>'}</div>
+    <div class="card-desc">${p.description?esc(p.description):'<em style="color:var(--hint);font-style:italic">Sin descripción</em>'}</div>
     <div class="card-foot">
       <span class="card-price">${esc(p.price||'—')}</span>
       <div class="card-acts">
         <button class="btn-icon btn" title="Editar" onclick="openEditProduct(${p.id})"><i class="ti ti-pencil"></i></button>
-        <button class="btn-icon btn stock-btn ${p.stock?'stock-on':'stock-off'}" id="sb-${p.id}" title="${p.stock?'Quitar stock':'Poner en stock'}" onclick="toggleStock(${p.id})"><i class="ti ti-${p.stock?'circle-check':'circle-x'}"></i></button>
+        <button class="btn-icon btn ${p.stock?'stock-on':'stock-off'}" id="sb-${p.id}" title="${p.stock?'Quitar stock':'Poner en stock'}" onclick="toggleStock(${p.id})"><i class="ti ti-${p.stock?'circle-check':'circle-x'}"></i></button>
         <button class="btn-icon btn danger" title="Eliminar" onclick="delProduct(${p.id})"><i class="ti ti-trash"></i></button>
       </div>
     </div>
@@ -377,24 +399,25 @@ function cardHTML(p) {
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 /* ── Stock toggle ── */
-function toggleStock(id) {
-  const p = state.products.find(x=>x.id===id);
+async function toggleStock(id) {
+  const p = products.find(x=>x.id===id);
   if (!p) return;
-  p.stock = !p.stock;
-  save();
-  const card = document.getElementById('card-'+id);
-  if (!card) return;
-  card.classList.toggle('no-stock', !p.stock);
-  const pill = card.querySelector('.stock-pill');
-  if (pill) { pill.className='stock-pill '+(p.stock?'in':'out'); pill.textContent=p.stock?'En stock':'Agotado'; }
-  const sb = document.getElementById('sb-'+id);
-  if (sb) {
-    sb.className='btn-icon btn stock-btn '+(p.stock?'stock-on':'stock-off');
-    sb.title=p.stock?'Quitar stock':'Poner en stock';
-    sb.innerHTML=`<i class="ti ti-${p.stock?'circle-check':'circle-x'}"></i>`;
-  }
-  updateStats();
-  renderSidebar();
+  const newStock = !p.stock;
+  try {
+    await sbFetch(`products?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({stock: newStock}) });
+    p.stock = newStock;
+    const card = document.getElementById('card-'+id);
+    if (card) {
+      card.classList.toggle('no-stock', !newStock);
+      const pill = card.querySelector('.stock-pill');
+      if (pill) { pill.className='stock-pill '+(newStock?'in':'out'); pill.textContent=newStock?'En stock':'Agotado'; }
+      const sb = document.getElementById('sb-'+id);
+      if (sb) { sb.className='btn-icon btn '+(newStock?'stock-on':'stock-off'); sb.title=newStock?'Quitar stock':'Poner en stock'; sb.innerHTML=`<i class="ti ti-${newStock?'circle-check':'circle-x'}"></i>`; }
+    }
+    updateStats();
+    renderSidebar();
+    toast(newStock ? 'Producto en stock ✓' : 'Marcado como agotado');
+  } catch(e) { toast('Error al actualizar stock'); }
 }
 
 /* ── Product modal ── */
@@ -407,17 +430,19 @@ function openAddProduct() {
   document.getElementById('mp-toggle').className = 'toggle on';
   document.getElementById('mp-tl').textContent = 'Disponible';
   document.getElementById('modal-product-title').textContent = 'Nuevo producto';
-  populateCatSelect(activeCat !== '__all__' ? activeCat : state.categories[0]);
+  const cat = categories.find(c=>c.id===activeCat);
+  populateCatSelect(cat ? cat.name : (categories[0]?.name||''));
   document.getElementById('modal-product').classList.add('open');
-  document.getElementById('mp-name').focus();
+  setTimeout(()=>document.getElementById('mp-name').focus(), 100);
 }
+
 function openEditProduct(id) {
-  const p = state.products.find(x=>x.id===id);
+  const p = products.find(x=>x.id===id);
   if (!p) return;
   editingProductId = id;
   mpStockOn = p.stock;
   document.getElementById('mp-name').value = p.name;
-  document.getElementById('mp-desc').value = p.desc||'';
+  document.getElementById('mp-desc').value = p.description||'';
   document.getElementById('mp-price').value = p.price||'';
   document.getElementById('mp-toggle').className = 'toggle'+(p.stock?' on':'');
   document.getElementById('mp-tl').textContent = p.stock?'Disponible':'Sin stock';
@@ -425,136 +450,185 @@ function openEditProduct(id) {
   populateCatSelect(p.cat);
   document.getElementById('modal-product').classList.add('open');
 }
+
 function populateCatSelect(selected) {
-  const sel = document.getElementById('mp-cat');
-  sel.innerHTML = state.categories.map(c=>`<option value="${esc(c)}"${c===selected?' selected':''}>${esc(c)}</option>`).join('');
+  document.getElementById('mp-cat').innerHTML = categories.map(c=>`<option value="${esc(c.name)}"${c.name===selected?' selected':''}>${esc(c.name)}</option>`).join('');
 }
+
 function mpToggle() {
   mpStockOn = !mpStockOn;
   document.getElementById('mp-toggle').className='toggle'+(mpStockOn?' on':'');
   document.getElementById('mp-tl').textContent=mpStockOn?'Disponible':'Sin stock';
 }
-function saveProduct() {
+
+async function saveProduct() {
   const name = document.getElementById('mp-name').value.trim();
   if (!name) { alert('El nombre es obligatorio.'); return; }
-  const cat = document.getElementById('mp-cat').value;
-  if (editingProductId !== null) {
-    const p = state.products.find(x=>x.id===editingProductId);
-    p.name = name;
-    p.desc = document.getElementById('mp-desc').value;
-    p.price = document.getElementById('mp-price').value;
-    p.cat = cat;
-    p.stock = mpStockOn;
-  } else {
-    state.products.push({ id: state.nextId++, name, desc: document.getElementById('mp-desc').value, price: document.getElementById('mp-price').value, cat, stock: mpStockOn, img: null });
-  }
-  save();
-  closeModal('modal-product');
-  if (activeCat !== '__all__' && activeCat !== cat) setActiveCat(cat);
-  else { renderGrid(); renderSidebar(); updateStats(); }
+  const body = {
+    name,
+    description: document.getElementById('mp-desc').value,
+    price: document.getElementById('mp-price').value,
+    cat: document.getElementById('mp-cat').value,
+    stock: mpStockOn
+  };
+  const btn = document.getElementById('btn-save-product');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  try {
+    if (editingProductId !== null) {
+      await sbFetch(`products?id=eq.${editingProductId}`, { method:'PATCH', body: JSON.stringify(body) });
+      const p = products.find(x=>x.id===editingProductId);
+      Object.assign(p, body);
+      toast('Producto actualizado ✓');
+    } else {
+      const [newP] = await sbFetch('products', { method:'POST', body: JSON.stringify({...body, position: products.length}) });
+      products.push(newP);
+      toast('Producto agregado ✓');
+    }
+    closeModal('modal-product');
+    renderGrid(); renderSidebar(); updateStats();
+  } catch(e) { toast('Error al guardar: ' + e.message); }
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar';
 }
-function delProduct(id) {
+
+async function delProduct(id) {
   if (!confirm('¿Eliminar este producto?')) return;
-  state.products = state.products.filter(x=>x.id!==id);
-  save(); renderGrid(); renderSidebar(); updateStats();
+  try {
+    await sbFetch(`products?id=eq.${id}`, { method:'DELETE' });
+    products = products.filter(x=>x.id!==id);
+    renderGrid(); renderSidebar(); updateStats();
+    toast('Producto eliminado');
+  } catch(e) { toast('Error al eliminar'); }
 }
 
 /* ── Image upload ── */
-function handleImg(e, id) {
+async function handleImg(e, id) {
   const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const p = state.products.find(x=>x.id===id);
-    p.img = ev.target.result; save();
-    const wrap = document.querySelector('#card-'+id+' .card-img');
-    if (wrap) {
-      wrap.innerHTML = `<img src="${p.img}" alt="${esc(p.name)}" />
-        <div class="img-overlay"><span><i class="ti ti-upload"></i> Cambiar foto</span></div>
-        <span class="stock-pill ${p.stock?'in':'out'}">${p.stock?'En stock':'Agotado'}</span>`;
-      wrap.onclick = () => document.getElementById('fi-'+id).click();
+  const card = document.getElementById('card-'+id);
+  const imgWrap = card?.querySelector('.card-img');
+  if (imgWrap) imgWrap.innerHTML += `<div class="img-uploading"><div class="spinner"></div> Subiendo...</div>`;
+  try {
+    const path = `products/${id}_${Date.now()}.${file.name.split('.').pop()}`;
+    const url = await uploadFile(file, path);
+    await sbFetch(`products?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({img_url: url}) });
+    const p = products.find(x=>x.id===id);
+    if (p) p.img_url = url;
+    if (imgWrap) {
+      imgWrap.innerHTML = `<img src="${url}" alt="" /><div class="img-overlay"><span><i class="ti ti-upload"></i> Cambiar foto</span></div><span class="stock-pill ${p?.stock?'in':'out'}">${p?.stock?'En stock':'Agotado'}</span>`;
+      imgWrap.onclick = () => document.getElementById('fi-'+id).click();
       const fi = document.getElementById('fi-'+id);
       if (fi) fi.addEventListener('change', ev2 => handleImg(ev2, id));
     }
-    updateStats();
-  };
-  reader.readAsDataURL(file);
-}
-
-/* ── Categories ── */
-function openAddCat() { document.getElementById('mc-name').value=''; document.getElementById('modal-cat').classList.add('open'); document.getElementById('mc-name').focus(); }
-function addCategory() {
-  const name = document.getElementById('mc-name').value.trim();
-  if (!name) { alert('Ingresa un nombre.'); return; }
-  if (state.categories.includes(name)) { alert('Ya existe esa categoría.'); return; }
-  state.categories.push(name);
-  save(); closeModal('modal-cat'); renderSidebar(); setActiveCat(name);
-}
-function renameCat(cat) {
-  const newName = prompt('Nuevo nombre para "'+cat+'":', cat);
-  if (!newName || newName.trim()===cat) return;
-  const trimmed = newName.trim();
-  if (state.categories.includes(trimmed)) { alert('Ya existe esa categoría.'); return; }
-  state.categories = state.categories.map(c=>c===cat?trimmed:c);
-  state.products.forEach(p=>{ if(p.cat===cat) p.cat=trimmed; });
-  save(); activeCat=trimmed; renderSidebar(); setActiveCat(trimmed);
-}
-function deleteCat(cat) {
-  const count = state.products.filter(p=>p.cat===cat).length;
-  const msg = count>0 ? `¿Eliminar la categoría "${cat}"? Los ${count} producto(s) dentro quedarán sin categoría.` : `¿Eliminar la categoría "${cat}"?`;
-  if (!confirm(msg)) return;
-  state.categories = state.categories.filter(c=>c!==cat);
-  state.products.forEach(p=>{ if(p.cat===cat) p.cat=''; });
-  save(); activeCat='__all__'; renderSidebar(); setActiveCat('__all__');
+    updateStats(); toast('Foto guardada ✓');
+  } catch(err) { toast('Error al subir imagen'); if (imgWrap) { const u = imgWrap.querySelector('.img-uploading'); if(u) u.remove(); } }
 }
 
 /* ── Banner ── */
-function addBannerImages(e) {
-  const files = Array.from(e.target.files);
-  let loaded = 0;
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      state.banners.push(ev.target.result);
-      loaded++;
-      if (loaded === files.length) { save(); renderBanner(); }
-    };
-    reader.readAsDataURL(file);
-  });
+async function uploadBannerImages(e) {
+  const files = Array.from(e.target.files); if (!files.length) return;
+  const btn = document.querySelector('.banner-add');
+  if (btn) { btn.classList.add('loading'); btn.innerHTML = '<i class="ti ti-loader"></i><span>Subiendo...</span>'; }
+  for (const file of files) {
+    try {
+      const path = `banners/banner_${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split('.').pop()}`;
+      const url = await uploadFile(file, path);
+      const [row] = await sbFetch('banners', { method:'POST', body: JSON.stringify({img_url: url, position: banners.length}) });
+      banners.push(row);
+    } catch(err) { toast('Error al subir banner'); }
+  }
   e.target.value = '';
+  renderBanner();
+  toast('Banner actualizado ✓');
 }
-function delBanner(idx) {
-  state.banners.splice(idx,1); save(); renderBanner();
+
+async function delBanner(id) {
+  try {
+    await sbFetch(`banners?id=eq.${id}`, { method:'DELETE' });
+    banners = banners.filter(b=>b.id!==id);
+    renderBanner(); toast('Imagen eliminada');
+  } catch(e) { toast('Error al eliminar'); }
 }
+
 function renderBanner() {
   const el = document.getElementById('banner-slides');
-  const slides = state.banners.map((src,i)=>`
-    <div class="banner-slide">
-      <img src="${src}" />
-      <div class="banner-slide-overlay"><span>Ver</span></div>
-      <button class="banner-slide-del" onclick="delBanner(${i})"><i class="ti ti-x"></i></button>
-    </div>`).join('');
-  el.innerHTML = slides + `<div class="banner-add" onclick="document.getElementById('banner-fi').click()"><i class="ti ti-plus"></i><span>Agregar</span></div>`;
+  const slides = banners.map(b=>`<div class="banner-slide">
+    <img src="${b.img_url}" />
+    <button class="banner-slide-del" onclick="delBanner(${b.id})"><i class="ti ti-x"></i></button>
+  </div>`).join('');
+  el.innerHTML = slides + `<button class="banner-add" onclick="document.getElementById('banner-fi').click()"><i class="ti ti-plus"></i><span>Agregar</span></button>`;
+}
+
+/* ── Categories ── */
+function openAddCat() {
+  document.getElementById('mc-name').value = '';
+  document.getElementById('modal-cat').classList.add('open');
+  setTimeout(()=>document.getElementById('mc-name').focus(), 100);
+}
+
+async function addCategory() {
+  const name = document.getElementById('mc-name').value.trim();
+  if (!name) { alert('Ingresa un nombre.'); return; }
+  try {
+    const [cat] = await sbFetch('categories', { method:'POST', body: JSON.stringify({name, position: categories.length}) });
+    categories.push(cat);
+    closeModal('modal-cat');
+    renderSidebar(); updateStats();
+    setActiveCat(cat.id);
+    toast('Categoría creada ✓');
+  } catch(e) { toast('Error al crear categoría'); }
+}
+
+async function renameCat(id) {
+  const cat = categories.find(c=>c.id===id);
+  if (!cat) return;
+  const newName = prompt('Nuevo nombre:', cat.name);
+  if (!newName || newName.trim()===cat.name) return;
+  try {
+    await sbFetch(`categories?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({name: newName.trim()}) });
+    const oldName = cat.name;
+    cat.name = newName.trim();
+    products.forEach(p=>{ if(p.cat===oldName) p.cat=cat.name; });
+    renderSidebar(); renderGrid();
+    document.getElementById('section-title').textContent = cat.name;
+    toast('Categoría renombrada ✓');
+  } catch(e) { toast('Error al renombrar'); }
+}
+
+async function deleteCat(id) {
+  const cat = categories.find(c=>c.id===id);
+  if (!cat) return;
+  const count = products.filter(p=>p.cat===cat.name).length;
+  const msg = count>0 ? `¿Eliminar "${cat.name}"? Los ${count} producto(s) quedarán sin categoría.` : `¿Eliminar la categoría "${cat.name}"?`;
+  if (!confirm(msg)) return;
+  try {
+    await sbFetch(`categories?id=eq.${id}`, { method:'DELETE' });
+    categories = categories.filter(c=>c.id!==id);
+    activeCat = '__all__';
+    renderSidebar(); setActiveCat('__all__');
+    toast('Categoría eliminada');
+  } catch(e) { toast('Error al eliminar'); }
 }
 
 /* ── Stats ── */
 function updateStats() {
-  document.getElementById('st-total').textContent = state.products.length;
-  document.getElementById('st-in').textContent = state.products.filter(p=>p.stock).length;
-  document.getElementById('st-out').textContent = state.products.filter(p=>!p.stock).length;
+  document.getElementById('st-total').textContent = products.length;
+  document.getElementById('st-in').textContent = products.filter(p=>p.stock).length;
+  document.getElementById('st-out').textContent = products.filter(p=>!p.stock).length;
 }
 
-/* ── Modal utils ── */
+/* ── UI utils ── */
 function closeModal(id, e) {
-  if (!e || e.target===document.getElementById(id))
-    document.getElementById(id).classList.remove('open');
+  if (!e || e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open');
+}
+function showLoading(v) { document.getElementById('loading-overlay').style.display = v?'flex':'none'; }
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2500);
 }
 
-/* ── Init ── */
-load();
-renderSidebar();
-setActiveCat('__all__');
-updateStats();
-renderBanner();
+loadAll();
 </script>
 </body>
 </html>
