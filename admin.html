@@ -539,9 +539,28 @@ async function addCategory(){
 }
 async function renameCat(id){
   const cat=categories.find(c=>c.id===id);if(!cat)return;
-  const n=prompt("Nuevo nombre:",cat.name);if(!n||n.trim()===cat.name)return;
-  try{await sbFetch(`categories?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({name:n.trim()})});const old=cat.name;cat.name=n.trim();products.forEach(p=>{if(p.cat===old)p.cat=cat.name;});renderSidebar();renderGrid();document.getElementById("section-title").textContent=cat.name;toast("Renombrada ✓");}
-  catch(e){toast("Error al renombrar");}
+  const n=prompt("Nuevo nombre:",cat.name);
+  const newName=n?.trim();
+  if(!newName||newName===cat.name)return;
+  if(categories.some(c=>c.id!==id&&c.name===newName)){alert("Ya existe una categoría con ese nombre.");return;}
+  const oldName=cat.name;
+  let productsUpdated=false;
+  try{
+    await sbFetch(`products?cat=eq.${encodeURIComponent(oldName)}`,{method:"PATCH",body:JSON.stringify({cat:newName})});
+    productsUpdated=true;
+    await sbFetch(`categories?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({name:newName})});
+    cat.name=newName;
+    products.forEach(p=>{if(p.cat===oldName)p.cat=newName;});
+    renderSidebar();renderGrid();
+    document.getElementById("section-title").textContent=newName;
+    toast("Categoría y productos renombrados ✓");
+  }catch(e){
+    if(productsUpdated){
+      try{await sbFetch(`products?cat=eq.${encodeURIComponent(newName)}`,{method:"PATCH",body:JSON.stringify({cat:oldName})});}
+      catch(rollbackError){}
+    }
+    toast("Error al renombrar: "+e.message);
+  }
 }
 async function deleteCat(id){
   const cat=categories.find(c=>c.id===id);if(!cat)return;
