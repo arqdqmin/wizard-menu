@@ -2,128 +2,160 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Menú · The Wizard Coffee</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f7f4ef;--card:#fff;--border:#e5e0d8;
-  --text:#1a1814;--muted:#7a746a;--hint:#b5afa7;
-  --accent:#2d4a3e;--accent2:#8b5e2e;
-  --green:#1a7a4a;--green-bg:#eaf5ef;
-  --red:#c0392b;--red-bg:#fdf2f2;
+  --bg:#0f0e0c;
+  --surface:#1a1916;
+  --surface2:#222019;
+  --border:#2e2b26;
+  --border2:#3a3730;
+  --text:#f0ece4;
+  --muted:#9a9388;
+  --hint:#5a554e;
+  --gold:#c9a84c;
+  --gold-light:#e8c96a;
+  --green:#2a9d5c;
+  --green-bg:rgba(42,157,92,.15);
+  --red:#c0392b;
+  --red-bg:rgba(192,57,43,.15);
 }
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto}
 
-/* Banner */
-.banner-wrap{position:relative;width:100%;overflow:hidden;background:#1a1814;height:52vw;max-height:360px;min-height:160px}
-.banner-track{display:flex;height:100%;transition:transform .6s cubic-bezier(.4,0,.2,1)}
-.banner-slide{min-width:100%;height:100%;flex-shrink:0}
-.banner-slide img{width:100%;height:100%;object-fit:cover;opacity:.92}
-.banner-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:7px}
-.banner-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);border:none;cursor:pointer;transition:all .2s;padding:0}
-.banner-dot.active{background:#fff;width:20px;border-radius:10px}
-.banner-arrow{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;transition:background .2s}
-.banner-arrow:hover{background:rgba(255,255,255,.35)}
-.banner-arrow.prev{left:12px}
-.banner-arrow.next{right:12px}
+/* ── Hero Banner ── */
+.hero{position:relative;width:100%;height:72vw;max-height:420px;min-height:260px;overflow:hidden;background:#0a0908}
+.banner-track{display:flex;height:100%;transition:transform .7s cubic-bezier(.4,0,.2,1)}
+.banner-slide{min-width:100%;height:100%;flex-shrink:0;position:relative}
+.banner-slide img{width:100%;height:100%;object-fit:cover;opacity:.75}
+.hero-no-banner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(160deg,#1a1612 0%,#0d0b09 100%)}
+.hero-logo{font-family:'DM Serif Display',serif;font-size:clamp(2rem,10vw,3.2rem);color:var(--gold);line-height:1}
+.hero-logo em{font-style:italic;opacity:.8}
+.hero-tagline{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:4px}
 
-/* Hero */
-.hero{background:var(--accent);color:#fff;padding:2.5rem 1.5rem 2rem;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='14' fill='none' stroke='%23ffffff' stroke-opacity='0.04' stroke-width='1'/%3E%3C/svg%3E");pointer-events:none}
-.hero-eyebrow{font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;opacity:.6;margin-bottom:8px}
-.hero-title{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,7vw,2.8rem);line-height:1.1;margin-bottom:8px}
-.hero-title em{font-style:italic;opacity:.8}
-.hero-sub{font-size:13px;opacity:.65;font-weight:300;max-width:280px;margin:0 auto}
+/* Gradient overlay on banner */
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top, rgba(15,14,12,.95) 0%, rgba(15,14,12,.3) 50%, rgba(15,14,12,.1) 100%);pointer-events:none}
 
-/* Nav tabs */
-.nav-wrap{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
-.nav-scroll{display:flex;overflow-x:auto;padding:0 1rem;gap:2px;scrollbar-width:none}
+/* Banner text */
+.hero-content{position:absolute;bottom:0;left:0;right:0;padding:20px 20px 24px}
+.hero-eyebrow{font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.9;margin-bottom:6px}
+.hero-title{font-family:'DM Serif Display',serif;font-size:clamp(1.5rem,6vw,2.2rem);line-height:1.15;color:var(--text);margin-bottom:6px}
+.hero-sub{font-size:12px;color:rgba(240,236,228,.65);line-height:1.5;max-width:280px}
+
+/* Banner controls */
+.banner-dots{position:absolute;top:16px;right:16px;display:flex;gap:5px}
+.banner-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);border:none;cursor:pointer;padding:0;transition:all .2s}
+.banner-dot.active{background:var(--gold);width:16px;border-radius:6px}
+
+/* ── Header strip (when no banner) ── */
+.top-bar{display:flex;align-items:center;justify-content:center;padding:18px 20px 14px;border-bottom:1px solid var(--border)}
+.top-bar-logo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold)}
+.top-bar-logo em{font-style:italic}
+
+/* ── Nav tabs ── */
+.nav-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.nav-scroll{display:flex;overflow-x:auto;padding:0 12px;gap:0;scrollbar-width:none}
 .nav-scroll::-webkit-scrollbar{display:none}
-.nav-tab{flex-shrink:0;padding:14px 14px 12px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color .15s,border-color .15s}
+.nav-tab{flex-shrink:0;padding:13px 14px 11px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:color .15s,border-color .15s;letter-spacing:.01em}
 .nav-tab:hover{color:var(--text)}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 
-/* Main */
-main{max-width:720px;margin:0 auto;padding:1.5rem 1rem 4rem}
+/* ── Main ── */
+main{padding:0 0 5rem}
 
-/* Category section */
-.cat-section{margin-bottom:2.5rem}
-.cat-title{font-family:'DM Serif Display',serif;font-size:21px;font-weight:400;color:var(--text);margin-bottom:1rem;padding-bottom:10px;border-bottom:1px solid var(--border)}
+/* ── Category section ── */
+.cat-section{padding:24px 16px 8px}
+.cat-title{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.cat-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* Item */
-.item{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;margin-bottom:10px;transition:box-shadow .2s}
-.item:hover{box-shadow:0 4px 20px rgba(0,0,0,.07)}
-.item.agotado{opacity:.6}
-.item-img{width:100px;flex-shrink:0;background:#f0ece5;position:relative;overflow:hidden}
-.item-img img{width:100%;height:100%;object-fit:cover;display:block}
-.item-img-ph{width:100%;height:100%;min-height:100px;display:flex;align-items:center;justify-content:center;color:var(--hint)}
-.item-img-ph svg{width:28px;height:28px;opacity:.35}
-.item-body{flex:1;padding:13px 15px;display:flex;flex-direction:column;gap:5px}
+/* ── Item card ── */
+.item{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;margin-bottom:10px;transition:border-color .2s,transform .15s;cursor:default;position:relative}
+.item:active{transform:scale(.99)}
+.item.agotado{opacity:.5}
+
+.item-img{width:110px;flex-shrink:0;background:var(--surface2);position:relative;overflow:hidden}
+.item-img img{width:100%;height:100%;object-fit:cover;display:block;min-height:110px}
+.item-img-ph{width:110px;height:110px;display:flex;align-items:center;justify-content:center;color:var(--hint)}
+.item-img-ph svg{width:26px;height:26px;opacity:.3}
+
+.item-body{flex:1;padding:13px 14px;display:flex;flex-direction:column;gap:4px;min-height:110px}
 .item-name{font-size:14px;font-weight:500;color:var(--text);line-height:1.3}
-.item-desc{font-size:12px;color:var(--muted);line-height:1.55;flex:1}
-.item-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
-.item-price{font-size:15px;font-weight:600;color:var(--accent2)}
-.item-tag{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
-.item-tag.in{background:var(--green-bg);color:var(--green)}
-.item-tag.out{background:var(--red-bg);color:var(--red)}
+.item-desc{font-size:11.5px;color:var(--muted);line-height:1.55;flex:1}
+.item-foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.item-price{font-size:15px;font-weight:600;color:var(--gold);letter-spacing:.01em}
+.item-tag{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:20px}
+.item-tag.in{background:var(--green-bg);color:var(--green);border:1px solid rgba(42,157,92,.25)}
+.item-tag.out{background:var(--red-bg);color:var(--red);border:1px solid rgba(192,57,43,.2)}
 
-/* Loading */
-.page-loader{display:flex;align-items:center;justify-content:center;padding:4rem;gap:10px;color:var(--hint);font-size:13px}
-.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+/* ── Loader ── */
+.page-loader{display:flex;align-items:center;justify-content:center;padding:5rem 2rem;gap:10px;color:var(--muted);font-size:13px}
+.spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Empty */
-.empty{text-align:center;padding:3rem 1rem;color:var(--hint)}
-.empty svg{width:40px;height:40px;margin:0 auto 12px;display:block;opacity:.35}
-.empty p{font-size:13px}
+/* ── Empty ── */
+.empty{text-align:center;padding:4rem 2rem;color:var(--hint)}
+.empty p{font-size:13px;line-height:1.6}
 
-/* Fade in */
-.item{opacity:0;transform:translateY(10px);animation:fadeUp .35s ease forwards}
+/* ── Fade in ── */
+.item{opacity:0;transform:translateY(8px);animation:fadeUp .3s ease forwards}
 @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
 
-/* Footer */
-footer{text-align:center;padding:2rem 1rem;font-size:12px;color:var(--hint);border-top:1px solid var(--border);margin-top:1rem}
+/* ── Footer ── */
+footer{text-align:center;padding:2rem 1rem 3rem;font-size:11px;color:var(--hint);border-top:1px solid var(--border)}
 footer strong{color:var(--muted)}
+
+/* ── Safe area ── */
+@supports(padding-bottom: env(safe-area-inset-bottom)){
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
 </style>
 </head>
 <body>
 
-<div class="banner-wrap" id="banner-wrap" style="display:none">
-  <div class="banner-track" id="banner-track"></div>
-  <button class="banner-arrow prev" onclick="bannerMove(-1)">&#8249;</button>
-  <button class="banner-arrow next" onclick="bannerMove(1)">&#8250;</button>
+<!-- Hero / Banner -->
+<div class="hero" id="hero">
+  <div class="banner-track" id="banner-track">
+    <!-- slides inserted by JS -->
+  </div>
+  <div class="hero-overlay" id="hero-overlay" style="display:none"></div>
+  <div class="hero-content" id="hero-content" style="display:none">
+    <div class="hero-eyebrow">The Wizard Coffee</div>
+    <div class="hero-title" id="hero-promo-title"></div>
+  </div>
   <div class="banner-dots" id="banner-dots"></div>
+  <!-- fallback when no banner -->
+  <div class="hero-no-banner" id="hero-fallback">
+    <div class="hero-logo">The Wizard<br/><em>Coffee</em></div>
+    <div class="hero-tagline">Magic Flavors · Antofagasta</div>
+  </div>
 </div>
 
-<div class="hero">
-  <div class="hero-eyebrow">Antofagasta · Chile</div>
-  <h1 class="hero-title">The Wizard<br/><em>Coffee</em></h1>
-  <p class="hero-sub">Menú del día · Elaboración artesanal</p>
-</div>
-
+<!-- Nav tabs -->
 <div class="nav-wrap">
-  <div class="nav-scroll" id="nav-tabs"></div>
+  <div class="nav-scroll" id="nav-tabs">
+    <div class="page-loader" style="padding:12px 16px"><div class="spinner"></div></div>
+  </div>
 </div>
 
 <main id="main-content">
   <div class="page-loader"><div class="spinner"></div> Cargando menú...</div>
 </main>
 
-<footer><strong>The Wizard Coffee</strong> · Antofagasta, Chile<br/>Menú actualizado en tiempo real</footer>
+<footer>
+  <strong>The Wizard Coffee</strong> · Antofagasta, Chile<br/>
+  Menú actualizado · Sujeto a disponibilidad en vitrina
+</footer>
 
 <script>
 const SUPABASE_URL = 'https://cwatxpuxttgeceahbciw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw';
 
-let categories = [];
-let products = [];
-let banners = [];
-let bannerIdx = 0;
-let bannerTimer = null;
+let categories = [], products = [], banners = [];
+let bannerIdx = 0, bannerTimer = null;
 let activeTab = '__all__';
 
 async function sbFetch(path) {
@@ -141,60 +173,74 @@ async function loadAll() {
       sbFetch('banners?select=*&order=position')
     ]);
     categories = cats || [];
-    products = prods || [];
-    banners = bans || [];
-    initBanner();
+    products   = prods || [];
+    banners    = bans  || [];
+    initHero();
     renderNav();
     renderContent();
   } catch(e) {
-    document.getElementById('main-content').innerHTML = '<div class="empty"><p>Error al cargar el menú. Intenta recargar la página.</p></div>';
+    document.getElementById('main-content').innerHTML = '<div class="empty"><p>Error al cargar el menú.<br/>Intenta recargar la página.</p></div>';
   }
 }
 
-/* Banner */
-function initBanner() {
-  const wrap = document.getElementById('banner-wrap');
-  if (!banners.length) { wrap.style.display='none'; return; }
-  wrap.style.display='block';
-  document.getElementById('banner-track').innerHTML = banners.map(b=>`<div class="banner-slide"><img src="${b.img_url}" /></div>`).join('');
-  const dots = document.getElementById('banner-dots');
-  if (banners.length > 1) {
-    dots.innerHTML = banners.map((_,i)=>`<button class="banner-dot${i===0?' active':''}" onclick="bannerGo(${i})"></button>`).join('');
-    startAuto();
-  } else {
-    dots.style.display='none';
-    document.querySelector('.banner-arrow.prev').style.display='none';
-    document.querySelector('.banner-arrow.next').style.display='none';
+/* ── Hero / Banner ── */
+function initHero() {
+  const track    = document.getElementById('banner-track');
+  const overlay  = document.getElementById('hero-overlay');
+  const content  = document.getElementById('hero-content');
+  const fallback = document.getElementById('hero-fallback');
+  const dots     = document.getElementById('banner-dots');
+
+  if (!banners.length) {
+    fallback.style.display = 'flex';
+    return;
   }
+
+  fallback.style.display = 'none';
+  overlay.style.display  = 'block';
+  content.style.display  = 'block';
+
+  track.innerHTML = banners.map(b =>
+    `<div class="banner-slide"><img src="${b.img_url}" /></div>`
+  ).join('');
+
+  if (banners.length > 1) {
+    dots.innerHTML = banners.map((_,i) =>
+      `<button class="banner-dot${i===0?' active':''}" onclick="bannerGo(${i})"></button>`
+    ).join('');
+    startAuto();
+  }
+
+  updateHeroText();
+}
+
+function updateHeroText() {
+  // No text over banner — clean look, just the image
+  document.getElementById('hero-content').style.display = 'none';
 }
 
 function bannerGo(idx) {
   bannerIdx = idx;
-  document.getElementById('banner-track').style.transform=`translateX(-${idx*100}%)`;
-  document.querySelectorAll('.banner-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
-}
-
-function bannerMove(dir) {
-  bannerGo((bannerIdx+dir+banners.length)%banners.length);
-  clearInterval(bannerTimer); startAuto();
+  document.getElementById('banner-track').style.transform = `translateX(-${idx * 100}%)`;
+  document.querySelectorAll('.banner-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
 }
 
 function startAuto() {
   clearInterval(bannerTimer);
   if (banners.length < 2) return;
-  bannerTimer = setInterval(()=>bannerGo((bannerIdx+1)%banners.length), 4000);
+  bannerTimer = setInterval(() => bannerGo((bannerIdx + 1) % banners.length), 4500);
 }
 
-/* Nav */
+/* ── Nav ── */
 function catsWithProducts() {
-  return categories.filter(cat=>products.some(p=>p.cat===cat.name));
+  return categories.filter(c => products.some(p => p.cat === c.name));
 }
 
 function renderNav() {
   const cats = catsWithProducts();
-  let html = `<button class="nav-tab${activeTab==='__all__'?' active':''}" onclick="setTab('__all__')">Todo el menú</button>`;
-  cats.forEach(cat=>{
-    html+=`<button class="nav-tab${activeTab===cat.name?' active':''}" onclick="setTab('${esc(cat.name)}')">${esc(cat.name)}</button>`;
+  let html = `<button class="nav-tab${activeTab==='__all__'?' active':''}" onclick="setTab('__all__')">Todo</button>`;
+  cats.forEach(c => {
+    html += `<button class="nav-tab${activeTab===c.name?' active':''}" onclick="setTab('${esc(c.name)}')">${esc(c.name)}</button>`;
   });
   document.getElementById('nav-tabs').innerHTML = html;
 }
@@ -203,38 +249,49 @@ function setTab(name) {
   activeTab = name;
   renderNav();
   renderContent();
-  window.scrollTo({top: document.querySelector('.nav-wrap').offsetTop - 1, behavior:'smooth'});
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-/* Content */
+/* ── Content ── */
 function renderContent() {
   const main = document.getElementById('main-content');
-  const cats = activeTab==='__all__' ? catsWithProducts() : categories.filter(c=>c.name===activeTab);
+  const cats = activeTab === '__all__'
+    ? catsWithProducts()
+    : categories.filter(c => c.name === activeTab);
+
   let html = '';
-  cats.forEach(cat=>{
-    const prods = products.filter(p=>p.cat===cat.name);
+  cats.forEach(cat => {
+    const prods = products.filter(p => p.cat === cat.name);
     if (!prods.length) return;
-    html+=`<div class="cat-section"><div class="cat-title">${esc(cat.name)}</div>`;
-    prods.forEach((p,i)=>{
-      html+=`<div class="item${p.stock?'':' agotado'}" style="animation-delay:${i*.05}s">
+    html += `<div class="cat-section"><div class="cat-title">${esc(cat.name)}</div>`;
+    prods.forEach((p, i) => {
+      html += `<div class="item${p.stock?'':' agotado'}" style="animation-delay:${i * .04}s">
         <div class="item-img">
-          ${p.img_url?`<img src="${p.img_url}" alt="${esc(p.name)}" />`:`<div class="item-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>`}
+          ${p.img_url
+            ? `<img src="${p.img_url}" alt="${esc(p.name)}" loading="lazy" />`
+            : `<div class="item-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>`
+          }
         </div>
         <div class="item-body">
           <div class="item-name">${esc(p.name)}</div>
-          ${p.description?`<div class="item-desc">${esc(p.description)}</div>`:''}
+          ${p.description ? `<div class="item-desc">${esc(p.description)}</div>` : ''}
           <div class="item-foot">
-            <span class="item-price">${esc(p.price||'')}</span>
-            <span class="item-tag ${p.stock?'in':'out'}">${p.stock?'Disponible':'Agotado'}</span>
+            <span class="item-price">${esc(p.price || '')}</span>
+            <span class="item-tag ${p.stock?'in':'out'}">${p.stock ? 'Disponible' : 'Agotado'}</span>
           </div>
         </div>
       </div>`;
     });
-    html+='</div>';
+    html += '</div>';
   });
-  if (!html) html=`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg><p>No hay productos disponibles en este momento.</p></div>`;
+
+  if (!html) {
+    html = '<div class="empty"><p>No hay productos disponibles<br/>en este momento.</p></div>';
+  }
+
   main.innerHTML = html;
 }
 
