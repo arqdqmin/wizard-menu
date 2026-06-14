@@ -50,6 +50,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .sidebar-item.active .sidebar-count{background:rgba(45,74,62,.15);color:var(--accent)}
 .sidebar-add-cat{display:flex;align-items:center;gap:6px;padding:7px 10px;margin:4px 8px 0;border-radius:8px;cursor:pointer;font-size:12px;color:var(--hint);transition:all .15s}
 .sidebar-add-cat:hover{background:var(--bg);color:var(--accent)}
+.sidebar-order-actions{display:flex;gap:5px;padding:8px 8px 2px}
+.sidebar-order-actions .btn{flex:1;padding:0 7px;justify-content:center}
+.sidebar-item.ordering{cursor:default;padding-right:5px}
+.sidebar-move{display:flex;gap:3px;margin-left:5px}
+.sidebar-move button{width:24px;height:24px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--muted);cursor:pointer}
+.sidebar-move button:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
+.sidebar-move button:disabled{opacity:.25;cursor:default}
 main{flex:1;padding:1.5rem;overflow-y:auto}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
@@ -86,6 +93,11 @@ main{flex:1;padding:1.5rem;overflow-y:auto}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .15s,box-shadow .15s}
 .card:hover{border-color:var(--border-strong);box-shadow:0 2px 12px rgba(0,0,0,.05)}
 .card.no-stock{opacity:.55}
+.card.ordering{border-color:#b9cfc5;box-shadow:0 3px 14px rgba(45,74,62,.08)}
+.card-order-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--accent-light);border-bottom:1px solid #cdded6;font-size:12px;color:var(--accent);font-weight:600}
+.card-order-buttons{display:flex;gap:5px}
+.card-order-buttons button{width:30px;height:28px;border:1px solid #a9c5b8;border-radius:7px;background:#fff;color:var(--accent);cursor:pointer}
+.card-order-buttons button:disabled{opacity:.3;cursor:default}
 .card-img{position:relative;height:160px;background:#f0ece6;cursor:pointer;overflow:hidden}
 .card-img img{width:100%;height:100%;object-fit:cover}
 .img-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--hint);font-size:12px}
@@ -93,6 +105,8 @@ main{flex:1;padding:1.5rem;overflow-y:auto}
 .img-overlay{position:absolute;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s}
 .card-img:hover .img-overlay{opacity:1}
 .img-overlay span{color:#fff;font-size:12px;font-weight:500;background:rgba(0,0,0,.45);padding:5px 12px;border-radius:20px}
+.crop-img-btn{position:absolute;left:8px;bottom:8px;height:28px;padding:0 9px;border:1px solid rgba(255,255,255,.65);border-radius:8px;background:rgba(0,0,0,.62);color:#fff;font-family:"DM Sans",sans-serif;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;z-index:3}
+.crop-img-btn:hover{background:rgba(0,0,0,.82)}
 .img-uploading{position:absolute;inset:0;background:rgba(255,255,255,.75);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);gap:6px}
 input[type="file"]{display:none}
 .stock-pill{position:absolute;top:8px;right:8px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.04em}
@@ -133,6 +147,13 @@ input[type="file"]{display:none}
 .modal h3{font-family:"DM Serif Display",serif;font-size:18px;font-weight:400;margin-bottom:16px}
 .modal-fields{display:flex;flex-direction:column;gap:11px}
 .modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.crop-modal{width:430px}
+.crop-stage{width:min(100%,340px);aspect-ratio:1;margin:0 auto 14px;border-radius:12px;overflow:hidden;background:#eee;border:1px solid var(--border-strong)}
+.crop-stage canvas{display:block;width:100%;height:100%}
+.crop-controls{display:grid;grid-template-columns:76px 1fr;gap:10px 12px;align-items:center}
+.crop-controls label{font-size:12px;font-weight:600;color:var(--muted)}
+.crop-controls input[type="range"]{display:block;width:100%;accent-color:var(--accent)}
+.order-hint{font-size:12px;color:var(--muted);background:var(--accent-light);border:1px solid #cdded6;border-radius:8px;padding:8px 10px}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 16px;border-radius:var(--radius);font-size:13px;z-index:200;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
 .loading-overlay{position:fixed;inset:0;background:rgba(250,249,246,.85);display:flex;align-items:center;justify-content:center;z-index:50;font-size:14px;color:var(--muted);gap:10px}
@@ -167,6 +188,9 @@ input[type="file"]{display:none}
   <div class="sidebar">
     <div class="sidebar-label">Categorías</div>
     <div id="sidebar-cats"></div>
+    <div class="sidebar-order-actions" id="category-order-actions">
+      <button class="btn btn-sm" onclick="startCategoryOrder()"><i class="ti ti-arrows-sort"></i> Ordenar</button>
+    </div>
     <div class="sidebar-add-cat" onclick="openAddCat()">
       <i class="ti ti-folder-plus" style="font-size:15px"></i> Nueva categoría
     </div>
@@ -254,6 +278,27 @@ input[type="file"]{display:none}
   </div>
 </div>
 
+<!-- Modal recorte de imagen -->
+<div class="modal-bg" id="modal-crop" onclick="closeModal('modal-crop',event)">
+  <div class="modal crop-modal">
+    <h3>Recortar imagen cuadrada</h3>
+    <div class="crop-stage"><canvas id="crop-canvas" width="720" height="720"></canvas></div>
+    <div class="crop-controls">
+      <label for="crop-zoom">Zoom</label>
+      <input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1" oninput="drawCrop()" />
+      <label for="crop-x">Horizontal</label>
+      <input type="range" id="crop-x" min="0" max="100" step="1" value="50" oninput="drawCrop()" />
+      <label for="crop-y">Vertical</label>
+      <input type="range" id="crop-y" min="0" max="100" step="1" value="50" oninput="drawCrop()" />
+    </div>
+    <div class="hint-text" style="margin-top:12px">Ajusta la imagen dentro del cuadrado. La original seguirá guardada en Storage.</div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('modal-crop')">Cancelar</button>
+      <button class="btn btn-accent" id="btn-save-crop" onclick="saveCrop()"><i class="ti ti-crop"></i> Guardar recorte</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -265,6 +310,9 @@ let categories=[], products=[], banners=[];
 let activeCat="__all__";
 let mpStockOn=true, mpVegOn=false;
 let editingProductId=null;
+let categoryOrderMode=false,productOrderMode=false;
+let categoryOrderBackup=[],productOrderBackup=[],productOrderIds=[];
+let cropState={id:null,img:null};
 
 async function sbFetch(path,opts={}){
   const res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
@@ -304,46 +352,93 @@ function renderAll(){renderSidebar();renderGrid();renderBanners();updateStats();
 /* Sidebar */
 function renderSidebar(){
   const el=document.getElementById("sidebar-cats");
-  let html=`<div class="sidebar-item${activeCat==="__all__"?" active":""}" onclick="setActiveCat('__all__')">
+  let html=categoryOrderMode?"":`<div class="sidebar-item${activeCat==="__all__"?" active":""}" onclick="setActiveCat('__all__')">
     <span class="sidebar-item-name">Todos</span><span class="sidebar-count">${products.length}</span></div>`;
-  categories.forEach(c=>{
+  categories.forEach((c,i)=>{
     const n=products.filter(p=>p.cat===c.name).length;
-    html+=`<div class="sidebar-item${activeCat===c.id?" active":""}" onclick="setActiveCat(${c.id})">
-      <span class="sidebar-item-name">${esc(c.name)}</span><span class="sidebar-count">${n}</span></div>`;
+    html+=`<div class="sidebar-item${activeCat===c.id?" active":""}${categoryOrderMode?" ordering":""}" ${categoryOrderMode?"":`onclick="setActiveCat(${c.id})"`}>
+      <span class="sidebar-item-name">${esc(c.name)}</span>
+      ${categoryOrderMode?`<span class="sidebar-move">
+        <button onclick="moveCategory(${i},-1)" ${i===0?"disabled":""} title="Subir"><i class="ti ti-chevron-up"></i></button>
+        <button onclick="moveCategory(${i},1)" ${i===categories.length-1?"disabled":""} title="Bajar"><i class="ti ti-chevron-down"></i></button>
+      </span>`:`<span class="sidebar-count">${n}</span>`}</div>`;
   });
   el.innerHTML=html;
+  document.getElementById("category-order-actions").innerHTML=categoryOrderMode
+    ?`<button class="btn btn-sm btn-accent" onclick="saveCategoryOrder()"><i class="ti ti-check"></i> Guardar</button>
+      <button class="btn btn-sm" onclick="cancelCategoryOrder()">Cancelar</button>`
+    :`<button class="btn btn-sm" onclick="startCategoryOrder()"><i class="ti ti-arrows-sort"></i> Ordenar</button>`;
   document.getElementById("st-cats").textContent=categories.length;
 }
 
 function setActiveCat(id){
+  if(categoryOrderMode)return;
+  if(productOrderMode)cancelProductOrder();
   activeCat=id;renderSidebar();renderGrid();
   const cat=categories.find(c=>c.id===id);
   document.getElementById("section-title").textContent=cat?cat.name:"Todos los productos";
   const acts=document.getElementById("section-actions");
-  acts.innerHTML=cat?`<button class="btn btn-sm" onclick="renameCat(${cat.id})"><i class="ti ti-pencil"></i> Renombrar</button>
+  acts.innerHTML=cat?`<button class="btn btn-sm" onclick="startProductOrder()"><i class="ti ti-arrows-sort"></i> Ordenar productos</button>
+    <button class="btn btn-sm" onclick="renameCat(${cat.id})"><i class="ti ti-pencil"></i> Renombrar</button>
     <button class="btn btn-sm" style="border-color:#f5a9a9;color:var(--danger)" onclick="deleteCat(${cat.id})"><i class="ti ti-trash"></i> Eliminar</button>`:"";
+}
+
+function startCategoryOrder(){
+  if(productOrderMode)cancelProductOrder();
+  categoryOrderBackup=categories.map(c=>({...c}));
+  categoryOrderMode=true;renderSidebar();
+}
+
+function moveCategory(index,direction){
+  const target=index+direction;
+  if(target<0||target>=categories.length)return;
+  [categories[index],categories[target]]=[categories[target],categories[index]];
+  renderSidebar();
+}
+
+async function saveCategoryOrder(){
+  showLoading(true);
+  try{
+    await Promise.all(categories.map((c,i)=>sbFetch(`categories?id=eq.${c.id}`,{method:"PATCH",body:JSON.stringify({position:i})})));
+    categories.forEach((c,i)=>c.position=i);
+    categoryOrderMode=false;categoryOrderBackup=[];renderSidebar();
+    toast("Orden de categorías guardado ✓");
+  }catch(e){toast("Error al guardar el orden");}
+  showLoading(false);
+}
+
+function cancelCategoryOrder(){
+  categories=categoryOrderBackup.map(c=>({...c}));
+  categoryOrderMode=false;categoryOrderBackup=[];renderSidebar();
 }
 
 /* Grid */
 function renderGrid(){
   const grid=document.getElementById("grid");
   const cat=categories.find(c=>c.id===activeCat);
-  const filtered=activeCat==="__all__"?products:products.filter(p=>p.cat===(cat?cat.name:""));
+  let filtered=activeCat==="__all__"?products.slice():products.filter(p=>p.cat===(cat?cat.name:""));
+  if(productOrderMode)filtered=productOrderIds.map(id=>products.find(p=>p.id===id)).filter(Boolean);
   if(!filtered.length){
     grid.innerHTML=`<div class="empty-state"><i class="ti ti-mood-empty"></i><p>No hay productos aquí.</p></div>
       <button class="add-card" onclick="openAddProduct()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`;
     return;
   }
-  grid.innerHTML=filtered.map(p=>cardHTML(p)).join("")+
-    `<button class="add-card" onclick="openAddProduct()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`;
+  grid.innerHTML=filtered.map((p,i)=>cardHTML(p,i,filtered.length)).join("")+
+    (productOrderMode?"":`<button class="add-card" onclick="openAddProduct()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`);
   filtered.forEach(p=>{const fi=document.getElementById("fi-"+p.id);if(fi)fi.addEventListener("change",e=>handleImg(e,p.id));});
 }
 
-function cardHTML(p){
-  return `<div class="card${p.stock?"":" no-stock"}" id="card-${p.id}">
-  <div class="card-img" onclick="document.getElementById('fi-${p.id}').click()">
+function cardHTML(p,index,total){
+  return `<div class="card${p.stock?"":" no-stock"}${productOrderMode?" ordering":""}" id="card-${p.id}">
+  ${productOrderMode?`<div class="card-order-bar"><span><i class="ti ti-grip-vertical"></i> Posición ${index+1}</span>
+    <span class="card-order-buttons">
+      <button onclick="moveProduct(${p.id},-1)" ${index===0?"disabled":""} title="Mover arriba"><i class="ti ti-arrow-up"></i></button>
+      <button onclick="moveProduct(${p.id},1)" ${index===total-1?"disabled":""} title="Mover abajo"><i class="ti ti-arrow-down"></i></button>
+    </span></div>`:""}
+  <div class="card-img" ${productOrderMode?"":`onclick="document.getElementById('fi-${p.id}').click()"`}>
     ${p.img_url?`<img src="${p.img_url}" alt="${esc(p.name)}" />`:`<div class="img-placeholder"><i class="ti ti-camera"></i><span>Subir foto</span></div>`}
-    <div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img_url?"Cambiar":"Subir"} foto</span></div>
+    ${productOrderMode?"":`<div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img_url?"Cambiar":"Subir"} foto</span></div>`}
+    ${p.img_url&&!productOrderMode?`<button class="crop-img-btn" onclick="event.stopPropagation();openCropEditor(${p.id})"><i class="ti ti-crop"></i> Recortar</button>`:""}
     <span class="stock-pill ${p.stock?"in":"out"}">${p.stock?"En stock":"Agotado"}</span>
     ${p.vegetarian?`<span class="veg-pill">🌿</span>`:""}
   </div>
@@ -362,6 +457,40 @@ function cardHTML(p){
     </div>
   </div>
 </div>`;
+}
+
+function startProductOrder(){
+  const cat=categories.find(c=>c.id===activeCat);if(!cat)return;
+  productOrderBackup=products.map(p=>({...p}));
+  productOrderIds=products.filter(p=>p.cat===cat.name).sort((a,b)=>(a.position??0)-(b.position??0)).map(p=>p.id);
+  productOrderMode=true;
+  document.getElementById("section-actions").innerHTML=`<button class="btn btn-sm btn-accent" onclick="saveProductOrder()"><i class="ti ti-check"></i> Guardar orden</button>
+    <button class="btn btn-sm" onclick="cancelProductOrder()">Cancelar</button>`;
+  renderGrid();
+}
+
+function moveProduct(id,direction){
+  const index=productOrderIds.indexOf(id),target=index+direction;
+  if(index<0||target<0||target>=productOrderIds.length)return;
+  [productOrderIds[index],productOrderIds[target]]=[productOrderIds[target],productOrderIds[index]];
+  renderGrid();
+}
+
+async function saveProductOrder(){
+  showLoading(true);
+  try{
+    await Promise.all(productOrderIds.map((id,i)=>sbFetch(`products?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({position:i})})));
+    productOrderIds.forEach((id,i)=>{const p=products.find(x=>x.id===id);if(p)p.position=i;});
+    productOrderMode=false;productOrderBackup=[];productOrderIds=[];
+    setActiveCat(activeCat);toast("Orden de productos guardado ✓");
+  }catch(e){toast("Error al guardar el orden");}
+  showLoading(false);
+}
+
+function cancelProductOrder(){
+  if(productOrderBackup.length)products=productOrderBackup.map(p=>({...p}));
+  productOrderMode=false;productOrderBackup=[];productOrderIds=[];
+  const current=activeCat;activeCat="__all__";setActiveCat(current);
 }
 
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
@@ -465,9 +594,70 @@ async function handleImg(e,id){
     const url=await uploadFile(file,path);
     await sbFetch(`products?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({img_url:url})});
     const p=products.find(x=>x.id===id);if(p)p.img_url=url;
-    if(wrap){wrap.innerHTML=`<img src="${url}" /><div class="img-overlay"><span><i class="ti ti-upload"></i> Cambiar foto</span></div><span class="stock-pill ${p?.stock?"in":"out"}">${p?.stock?"En stock":"Agotado"}</span>${p?.vegetarian?'<span class="veg-pill">🌿</span>':""}`; wrap.onclick=()=>document.getElementById("fi-"+id).click();const fi=document.getElementById("fi-"+id);if(fi)fi.addEventListener("change",ev=>handleImg(ev,id));}
+    if(wrap){wrap.innerHTML=`<img src="${url}" /><div class="img-overlay"><span><i class="ti ti-upload"></i> Cambiar foto</span></div><button class="crop-img-btn" onclick="event.stopPropagation();openCropEditor(${id})"><i class="ti ti-crop"></i> Recortar</button><span class="stock-pill ${p?.stock?"in":"out"}">${p?.stock?"En stock":"Agotado"}</span>${p?.vegetarian?'<span class="veg-pill">🌿</span>':""}`; wrap.onclick=()=>document.getElementById("fi-"+id).click();const fi=document.getElementById("fi-"+id);if(fi)fi.addEventListener("change",ev=>handleImg(ev,id));}
     updateStats();toast("Foto guardada ✓");
   }catch(err){toast("Error al subir imagen");const u=document.querySelector(`#card-${id} .img-uploading`);if(u)u.remove();}
+}
+
+/* Square image crop */
+async function openCropEditor(id){
+  const p=products.find(x=>x.id===id);if(!p?.img_url)return;
+  showLoading(true);
+  try{
+    const response=await fetch(p.img_url);
+    if(!response.ok)throw new Error("No se pudo cargar la imagen");
+    const objectUrl=URL.createObjectURL(await response.blob());
+    const img=new Image();
+    img.onload=()=>{
+      cropState={id,img,objectUrl};
+      document.getElementById("crop-zoom").value="1";
+      document.getElementById("crop-x").value="50";
+      document.getElementById("crop-y").value="50";
+      document.getElementById("modal-crop").classList.add("open");
+      drawCrop();showLoading(false);
+    };
+    img.onerror=()=>{URL.revokeObjectURL(objectUrl);showLoading(false);toast("No se pudo abrir la imagen para recortar");};
+    img.src=objectUrl;
+  }catch(e){showLoading(false);toast("No se pudo abrir la imagen para recortar");}
+}
+
+function drawCrop(){
+  if(!cropState.img)return;
+  const canvas=document.getElementById("crop-canvas");
+  const ctx=canvas.getContext("2d");
+  const img=cropState.img,size=canvas.width;
+  const zoom=Number(document.getElementById("crop-zoom").value);
+  const posX=Number(document.getElementById("crop-x").value)/100;
+  const posY=Number(document.getElementById("crop-y").value)/100;
+  const scale=Math.max(size/img.naturalWidth,size/img.naturalHeight)*zoom;
+  const width=img.naturalWidth*scale,height=img.naturalHeight*scale;
+  const x=-(width-size)*posX,y=-(height-size)*posY;
+  ctx.clearRect(0,0,size,size);
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+  ctx.drawImage(img,x,y,width,height);
+}
+
+async function saveCrop(){
+  if(!cropState.id||!cropState.img)return;
+  const btn=document.getElementById("btn-save-crop");
+  btn.disabled=true;btn.textContent="Guardando...";
+  try{
+    const canvas=document.getElementById("crop-canvas");
+    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Crop failed")),"image/jpeg",.9));
+    const file=new File([blob],`crop_${cropState.id}.jpg`,{type:"image/jpeg"});
+    const path=`products/${cropState.id}_crop_${Date.now()}.jpg`;
+    const url=await uploadFile(file,path);
+    await sbFetch(`products?id=eq.${cropState.id}`,{method:"PATCH",body:JSON.stringify({img_url:url})});
+    const p=products.find(x=>x.id===cropState.id);if(p)p.img_url=url;
+    closeCropModal();renderGrid();toast("Recorte cuadrado guardado ✓");
+  }catch(e){toast("Error al guardar el recorte");}
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-crop"></i> Guardar recorte';
+}
+
+function closeCropModal(){
+  document.getElementById("modal-crop").classList.remove("open");
+  if(cropState.objectUrl)URL.revokeObjectURL(cropState.objectUrl);
+  cropState={id:null,img:null};
 }
 
 /* Banner */
@@ -572,7 +762,12 @@ async function deleteCat(id){
 
 /* Stats & utils */
 function updateStats(){document.getElementById("st-total").textContent=products.length;document.getElementById("st-in").textContent=products.filter(p=>p.stock).length;document.getElementById("st-out").textContent=products.filter(p=>!p.stock).length;}
-function closeModal(id,e){if(!e||e.target===document.getElementById(id))document.getElementById(id).classList.remove("open");}
+function closeModal(id,e){
+  if(!e||e.target===document.getElementById(id)){
+    if(id==="modal-crop")closeCropModal();
+    else document.getElementById(id).classList.remove("open");
+  }
+}
 function showLoading(v){document.getElementById("loading-overlay").style.display=v?"flex":"none";}
 let toastTimer;
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2500);}
