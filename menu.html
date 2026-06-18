@@ -1,307 +1,2098 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="color-scheme" content="only light" />
-<meta name="theme-color" content="#e2c47f" />
+<!DOCTYPE html><html class="stitch-anim-fade-in" lang="es" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCl54lw6fo6tLrpuD_0I5rEitz8Mp-RZY4vSxUjzqviYeiZo3BDrVam6CvkpT1uque4k0fd5LMW1aAUjgxAPXqsl2HmI_H-IGdvoRlRqBRMr2WqqB3Nc1Kj8JeyYlKu2W97nvmqsDf83xqeiqswFyGXxm6RckwY96e1z3cajTK8f1FOWN7fXx--Ciz8oaPkKJggpLCpsJj87sZryb-nym5buiTh-q_x5pkxtG2qiLPlJIbpvORnkVCp2eneAS6gi32hdCcE42ZKrVU&quot;); background-size: 100%; background-repeat: repeat-y; background-attachment: scroll;" data-stitch-swappable="67" data-stitch-swap-kind="bg" tabindex="0" role="button" aria-label="Replace image"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<meta content="only light" name="color-scheme">
+<meta content="#e2c47f" name="theme-color">
 <title>Menú · The Wizard Coffee</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Pirata+One&display=swap" rel="stylesheet" />
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  color-scheme:only light;
-  --bg:#d8bb7b;--surface:rgba(255,244,204,.48);--surface2:rgba(83,55,26,.12);
-  --border:#9a7443;--border2:#6c4b27;
-  --text:#2c1b0e;--muted:#65492c;--hint:#8a6b47;
-  --gold:#6f481e;--gold-dim:rgba(111,72,30,.12);
-  --green:#2a9d5c;--green-bg:rgba(42,157,92,.15);
-  --red:#c0392b;--red-bg:rgba(192,57,43,.15);
+<!-- BEGIN: External Resources -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&amp;family=Pirata+One&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- END: External Resources -->
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="theme-variables">
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
 }
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;color-scheme:only light;background:#d8b873 url("parchment-bg.jpg") center top/720px auto repeat-y}
-body{font-family:"Lora",serif;background:#e2c47f url("parchment-bg.jpg") center top/100% auto repeat-y;color:var(--text);min-height:100vh;max-width:520px;margin:0 auto;position:relative;box-shadow:0 0 80px rgba(0,0,0,.8);forced-color-adjust:none}
 
-/* Top bar */
-.top-bar{background:#e7ca86 url("parchment-bg.jpg") center 8%/100% auto no-repeat;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;height:70px;border-bottom:1px solid var(--border2);position:relative;z-index:30;box-shadow:inset 0 -5px 14px rgba(80,48,20,.1)}
-.top-logo{display:flex;align-items:center;gap:11px}
-.top-logo img{width:42px;height:42px;object-fit:contain;border-radius:50%;filter:sepia(.25) contrast(1.1)}
-.top-logo-text{display:flex;flex-direction:column}
-.top-logo-name{font-family:"Pirata One",serif;font-size:27px;font-weight:400;letter-spacing:.02em;color:#3b230f;line-height:.9}
-.top-logo-sub{font-size:8px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-top:5px}
-.top-ig{width:38px;height:38px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--text);text-decoration:none;transition:border-color .2s,color .2s;background:#ecd59b}
-.top-ig:hover{border-color:var(--gold);color:var(--gold)}
-.top-ig svg{width:18px;height:18px}
-
-/* Hero banner */
-.hero{position:relative;width:100%;height:72vw;max-height:390px;min-height:275px;overflow:hidden;background:#080706}
-.banner-track{display:flex;height:100%;transition:transform .65s cubic-bezier(.4,0,.2,1)}
-.banner-slide{min-width:100%;height:100%;flex-shrink:0;position:relative}
-.banner-slide img{width:100%;height:100%;object-fit:cover;filter:saturate(.9) contrast(1.03)}
-.banner-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.04) 20%,rgba(0,0,0,.3) 55%,rgba(0,0,0,.94) 100%);pointer-events:none}
-.banner-text{position:absolute;bottom:0;left:0;right:0;padding:28px 24px 30px;text-align:center}
-.banner-text-title{font-family:"Pirata One",serif;font-size:clamp(2.2rem,9vw,3.2rem);font-weight:400;line-height:1;color:#f3ddb0;margin-bottom:8px;text-shadow:0 2px 10px #000,0 0 2px #000}
-.banner-text-sub{max-width:380px;margin:0 auto;font-size:13px;color:#fff1cf;line-height:1.45;text-shadow:0 1px 8px #000}
-.hero-fallback{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(160deg,#1a1612,#0d0b09)}
-.hero-fallback-title{font-size:2.5rem;font-weight:500;color:var(--gold)}
-.hero-fallback-sub{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
-
-/* Banner controls strip */
-.banner-controls{background:#dfbf79 url("parchment-bg.jpg") center 13%/100% auto no-repeat;border-bottom:1px solid var(--border2);display:flex;align-items:stretch;padding:0 10px;height:36px;box-shadow:inset 0 -3px 8px rgba(92,55,22,.1)}
-.banner-tabs{display:flex;align-items:stretch;flex:1;overflow-x:auto;scrollbar-width:none}
-.banner-tabs::-webkit-scrollbar{display:none}
-.banner-tab{flex:1 0 33.333%;min-width:110px;position:relative;background:none;border:none;color:#5e3c1d;font-family:"Pirata One",serif;font-size:23px;font-weight:400;line-height:1;cursor:pointer;padding:0 10px 1px;transition:color .2s;white-space:nowrap}
-.banner-tab::after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:2px;border-radius:2px;background:transparent;transition:background .2s}
-.banner-tab.active{color:#241307}
-.banner-tab.active::after{background:#5d3515}
-.banner-tab:hover:not(.active){color:var(--text)}
-
-/* Menu categories */
-.nav-wrap{background:#e1c17b url("parchment-bg.jpg") center 25%/100% auto no-repeat;padding:15px 17px 13px;border-bottom:1px solid var(--border2);position:sticky;top:0;z-index:20;box-shadow:0 4px 14px rgba(65,38,15,.16)}
-.nav-heading{font-family:"Pirata One",serif;font-size:26px;font-weight:400;line-height:1;margin-bottom:11px;color:#35200f}
-.nav-scroll{display:flex;gap:8px;overflow-x:auto;padding:0;scrollbar-width:none}
-.nav-scroll::-webkit-scrollbar{display:none}
-.nav-tab{flex-shrink:0;padding:6px 13px;font-size:11px;font-weight:600;color:#694724;border:1px solid transparent;border-radius:999px;background:none;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
-.nav-tab:hover{color:var(--text)}
-.nav-tab.active{color:#2d190b;border-color:#6d451e;background:#f0d99f}
-
-/* Main */
-main{padding:0 0 5rem;background:#dfc080 url("parchment-bg.jpg") center top/100% auto repeat-y}
-.cat-section{padding:12px 17px 2px}
-.cat-title{display:none}
-
-/* Item */
-.item{background:#efdaa4 url("parchment-bg.jpg") center 45%/145% auto no-repeat;border:1px solid rgba(108,75,39,.55);border-radius:13px;overflow:hidden;display:flex;align-items:stretch;margin-bottom:9px;min-height:104px;padding:7px;gap:10px;transition:border-color .2s,transform .2s;box-shadow:inset 0 0 18px rgba(255,249,222,.35),0 2px 4px rgba(76,45,17,.08)}
-.item:hover{border-color:var(--border2)}
-.item.agotado{opacity:.5}
-.item-img{width:37%;max-width:150px;flex-shrink:0;background:#d5b878 url("parchment-bg.jpg") center 72%/180% auto no-repeat;overflow:hidden;position:relative;border:1px solid rgba(95,62,29,.45);border-radius:10px}
-.item-img img{width:100%;height:100%;object-fit:cover;display:block;min-height:88px}
-.item-img-ph{width:100%;height:100%;min-height:88px;display:flex;align-items:center;justify-content:center;color:var(--hint)}
-.item-img-ph svg{width:24px;height:24px;opacity:.3}
-.item-body{flex:1;padding:3px 3px 2px 0;display:flex;flex-direction:column;gap:3px;min-width:0}
-.item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
-.item-name{font-family:"Pirata One",serif;font-size:22px;font-weight:400;color:#301b0c;line-height:1.02;flex:1}
-.item-veg{font-size:13px;flex-shrink:0;margin-top:-1px;color:var(--gold)}
-.item-rec{display:inline-flex;align-items:center;gap:4px;background:#67421e;border:1px solid #513015;border-radius:20px;padding:2px 7px;font-size:9px;font-weight:500;color:#f6e4b8;letter-spacing:.02em;align-self:flex-start;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.item-rec svg{width:10px;height:10px;flex-shrink:0}
-.item-desc{font-size:10.5px;color:#5a3b20;line-height:1.3;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.item-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:auto}
-.item-price{font-family:"Pirata One",serif;font-size:20px;font-weight:400;color:#381e0c;white-space:nowrap;margin-left:auto}
-.item-tag{font-size:8px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:20px}
-.item-tag.in{display:none}
-.item-tag.out{background:var(--red-bg);color:var(--red);border:1px solid rgba(192,57,43,.15)}
-
-/* Loader */
-.page-loader{display:flex;align-items:center;justify-content:center;padding:5rem 2rem;gap:10px;color:var(--muted);font-size:13px}
-.spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:4rem 2rem;color:var(--hint)}
-.empty p{font-size:13px;line-height:1.6}
-
-/* Footer */
-footer{text-align:center;padding:2rem 1rem 3rem;font-size:11px;color:#6d4b2a;border-top:1px solid var(--border);background:#d8b875 url("parchment-bg.jpg") center bottom/100% auto no-repeat}
-footer strong{color:var(--muted)}
-@media(max-width:370px){
-  .top-bar{padding-left:14px;padding-right:14px}
-  .top-logo-name{font-size:15px}
-  .banner-tab{min-width:100px;padding:0 7px 1px;font-size:20px}
-  .item-img{width:35%}
-  .item-name{font-size:19px}
+/* Magic Light Oval Selection Effect - Restricted to Banner Tabs */
+.banner-tab-btn.active-glow {
+  position: relative !important;
+  z-index: 10 !important;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(243, 221, 176, 0.6) 40%, rgba(243, 221, 176, 0) 70%) !important;
+  color: #000000 !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+  animation: pulse-glow 2s infinite ease-in-out !important;
+  border: none !important;
+  box-shadow: none !important;
 }
-@media(max-width:520px){
-  html,body{background-image:url("parchment-bg.jpg")!important}
-  body{box-shadow:none;background-color:#dfbf79}
-  .top-bar,.banner-controls,.nav-wrap,main,footer{background-attachment:scroll}
-  .top-bar,.banner-controls,.nav-wrap,main,.item,.item-img,footer{background-image:url("parchment-bg.jpg")!important}
-  .item{background-color:#f1dda9}
+
+/* Solid Active State for Category Navigation Tabs */
+.nav-tab.active-glow {
+  background-color: #543208 !important;
+  color: #fbdc99 !important;
+  border-color: #6f481e !important;
+  box-shadow: none !important;
+  animation: none !important;
 }
-@supports(padding-bottom:env(safe-area-inset-bottom)){body{padding-bottom:env(safe-area-inset-bottom)}}
+
+.banner-tab-btn, .nav-tab {
+  border: none !important;
+  outline: none !important;
+}
 </style>
+<style data-purpose="base-layout">
+    body {
+      font-family: "Lora", serif;
+      background-color: #d8bb7b;
+      background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCl54lw6fo6tLrpuD_0I5rEitz8Mp-RZY4vSxUjzqviYeiZo3BDrVam6CvkpT1uque4k0fd5LMW1aAUjgxAPXqsl2HmI_H-IGdvoRlRqBRMr2WqqB3Nc1Kj8JeyYlKu2W97nvmqsDf83xqeiqswFyGXxm6RckwY96e1z3cajTK8f1FOWN7fXx--Ciz8oaPkKJggpLCpsJj87sZryb-nym5buiTh-q_x5pkxtG2qiLPlJIbpvORnkVCp2eneAS6gi32hdCcE42ZKrVU');
+      background-size: 100%;
+      background-repeat: repeat-y;
+      color: #28180b;
+      min-height: 100vh;
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+      box-shadow: 0 0 80px rgba(0,0,0,.3);
+    }
+
+    .parchment-bg {
+      background-color: #e7ca86;
+      background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCl54lw6fo6tLrpuD_0I5rEitz8Mp-RZY4vSxUjzqviYeiZo3BDrVam6CvkpT1uque4k0fd5LMW1aAUjgxAPXqsl2HmI_H-IGdvoRlRqBRMr2WqqB3Nc1Kj8JeyYlKu2W97nvmqsDf83xqeiqswFyGXxm6RckwY96e1z3cajTK8f1FOWN7fXx--Ciz8oaPkKJggpLCpsJj87sZryb-nym5buiTh-q_x5pkxtG2qiLPlJIbpvORnkVCp2eneAS6gi32hdCcE42ZKrVU');
+      background-size: 100%;
+    }
+
+    .pirata-font {
+      font-family: "Pirata One", system-ui;
+    }
+  </style>
+<style data-purpose="components">
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .item-card {
+      background-color: #efdaa4;
+      border: 1px solid rgba(154, 116, 67, 0.3);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .item-card:hover {
+      border-color: #9a7443;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .item-card.agotado {
+      opacity: 0.6;
+      filter: grayscale(0.8);
+    }
+
+    .badge-rec {
+      background: #543208;
+      border: 1px solid #6f481e;
+      color: #fbdc99;
+    }
+
+    .banner-track {
+      display: flex;
+      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-tab {
+      font-family: 'Pirata One', system-ui !important;
+      font-size: 14px !important;
+      border: 1px solid #6d451e !important;
+      border-radius: 999px !important;
+      padding: 6px 14px !important;
+    }
+
+    /* Grid Specifics */
+    .alchemist-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+  </style>
+<!-- END: Custom Styles -->
 </head>
-<body>
-
-<!-- Top bar fija -->
-<div class="top-bar">
-  <div class="top-logo">
-    <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAQ5BDkDASIAAhEBAxEB/8QAHQABAAIDAQEBAQAAAAAAAAAAAAcIBAUGAwIBCf/EAFEQAQABAwIDBAYHBAgEAwYFBQABAgMEBREGEiEHMUGBEyJRYXGRCBQjMkKhsRVSwdEWJDNicoKSokOTsuE0Y3MXRFNUg/AYJSZVwjV0o9LT/8QAGwEBAAIDAQEAAAAAAAAAAAAAAAQFAQMGAgf/xAA0EQEAAgECBgADBgYDAQEBAAAAAQIDBBEFEhMhMUEUUXFSgbHB0fAGIjJCYZEVoeHxI0P/2gAMAwEAAhEDEQA/AKZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Z" alt="The Wizard Coffee" />
-    <div class="top-logo-text">
-      <span class="top-logo-name">Wizard</span>
-      <span class="top-logo-sub">Magic Flavors</span>
-    </div>
-  </div>
-  <a class="top-ig" href="https://www.instagram.com/wizardmagicflavors/" target="_blank" rel="noopener" aria-label="Instagram">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/>
-      <circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/>
-    </svg>
-  </a>
-</div>
-
-<!-- Selector de banners -->
-<div class="banner-controls" id="banner-controls" style="display:none">
-  <div class="banner-tabs" id="banner-tabs"></div>
-</div>
-
-<!-- Banner hero -->
-<div class="hero" id="hero">
-  <div class="banner-track" id="banner-track"></div>
-  <div class="banner-gradient" id="banner-gradient" style="display:none"></div>
-  <div class="banner-text" id="banner-text" style="display:none">
-    <div class="banner-text-title" id="banner-title"></div>
-    <div class="banner-text-sub" id="banner-sub"></div>
-  </div>
-  <div class="hero-fallback" id="hero-fallback">
-    <div class="hero-fallback-title">Wizard</div>
-    <div class="hero-fallback-sub">Magic Flavors · Antofagasta</div>
-  </div>
-</div>
-
-<!-- Nav categorías -->
-<div class="nav-wrap">
-  <div class="nav-heading">Explora la magia</div>
-  <div class="nav-scroll" id="nav-tabs">
-    <div class="page-loader" style="padding:10px 16px"><div class="spinner"></div></div>
-  </div>
-</div>
-
-<main id="main-content">
-  <div class="page-loader"><div class="spinner"></div> Cargando menú...</div>
-</main>
-
-<footer><strong>The Wizard Coffee</strong> · Antofagasta, Chile<br/>Sujeto a disponibilidad en vitrina</footer>
-
-<script>
-const SUPABASE_URL="https://cwatxpuxttgeceahbciw.supabase.co";
-const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw";
-
-let categories=[],products=[],banners=[];
-let bannerIdx=0,bannerTimer=null,autoplay=false;
-let activeTab="__all__";
-
-async function sbFetch(path){
-  const res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}});
-  return res.json();
-}
-
-async function loadAll(){
-  try{
-    const [cats,prods,bans]=await Promise.all([
-      sbFetch("categories?select=*&order=position"),
-      sbFetch("products?select=*&order=position"),
-      sbFetch("banners?select=*&order=position")
-    ]);
-    categories=cats||[];products=prods||[];banners=bans||[];
-    initBanner();renderNav();renderContent();
-  }catch(e){
-    document.getElementById("main-content").innerHTML='<div class="empty"><p>Error al cargar.<br/>Recarga la página.</p></div>';
-  }
-}
-
-/* Banner */
-function initBanner(){
-  const track=document.getElementById("banner-track");
-  const fallback=document.getElementById("hero-fallback");
-  const controls=document.getElementById("banner-controls");
-  if(!banners.length){fallback.style.display="flex";controls.style.display="none";return;}
-  fallback.style.display="none";
-  track.innerHTML=banners.map(b=>`<div class="banner-slide"><img src="${b.img_url}" loading="lazy"/></div>`).join("");
-  document.getElementById("banner-gradient").style.display="block";
-  controls.style.display=banners.length>1?"flex":"none";
-  renderBannerTabs();
-  showBannerSlide(0);
-  if(autoplay)startAuto();
-}
-
-function renderBannerTabs(){
-  const tabs=document.getElementById("banner-tabs");
-  tabs.innerHTML=banners.map((b,i)=>{
-    const label=b.title||(i===0?"Promo 1":i===1?"Promo 2":i===2?"Promo 3":"Slide "+(i+1));
-    return `<button class="banner-tab${i===bannerIdx?" active":""}" onclick="bannerGo(${i},true)">${esc(label)}</button>`;
-  }).join("");
-}
-
-function showBannerSlide(idx){
-  bannerIdx=idx;
-  document.getElementById("banner-track").style.transform=`translateX(-${idx*100}%)`;
-  document.querySelectorAll(".banner-tab").forEach((t,i)=>t.classList.toggle("active",i===idx));
-  const b=banners[idx];
-  const titleEl=document.getElementById("banner-title");
-  const subEl=document.getElementById("banner-sub");
-  const textWrap=document.getElementById("banner-text");
-  if(b&&(b.title||b.subtitle)){
-    titleEl.textContent=b.title||"";
-    subEl.textContent=b.subtitle||"";
-    subEl.style.display=b.subtitle?"block":"none";
-    textWrap.style.display="block";
-  }else{textWrap.style.display="none";}
-}
-
-function bannerGo(idx,manual){
-  showBannerSlide(idx);
-  if(manual){clearInterval(bannerTimer);if(autoplay)startAuto();}
-}
-
-function startAuto(){
-  clearInterval(bannerTimer);
-  if(!autoplay||banners.length<2)return;
-  bannerTimer=setInterval(()=>showBannerSlide((bannerIdx+1)%banners.length),4500);
-}
-
-function toggleAutoplay(){
-  autoplay=!autoplay;
-  if(autoplay)startAuto();else clearInterval(bannerTimer);
-}
-
-/* Nav */
-function catsWithProducts(){return categories.filter(c=>products.some(p=>p.cat===c.name));}
-
-function renderNav(){
-  const cats=catsWithProducts();
-  let html=`<button class="nav-tab${activeTab==="__all__"?" active":""}" onclick="setTab('__all__')">Todo</button>`;
-  cats.forEach(c=>{html+=`<button class="nav-tab${activeTab===c.name?" active":""}" onclick="setTab('${esc(c.name)}')">${esc(c.name)}</button>`;});
-  document.getElementById("nav-tabs").innerHTML=html;
-}
-
-function setTab(name){activeTab=name;renderNav();renderContent();}
-
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-
-/* Content */
-function renderContent(){
-  const main=document.getElementById("main-content");
-  const cats=activeTab==="__all__"?catsWithProducts():categories.filter(c=>c.name===activeTab);
-  let html="";
-  cats.forEach(cat=>{
-    const prods=products.filter(p=>p.cat===cat.name);
-    if(!prods.length)return;
-    html+=`<div class="cat-section"><div class="cat-title">${esc(cat.name)}</div>`;
-    prods.forEach((p,i)=>{
-      html+=`<div class="item${p.stock?"":" agotado"}" style="animation-delay:${i*.04}s">
-        <div class="item-img">
-          ${p.img_url?`<img src="${p.img_url}" alt="${esc(p.name)}" loading="lazy"/>`:`<div class="item-img-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div>`}
+<body class="antialiased">
+<!-- BEGIN: TopBar -->
+<header class="top-bar flex items-center px-5 py-3 border-b border-[#2c1b0e] sticky top-0 z-40 shadow-sm h-[70px] justify-between bg-black">
+<img alt="The Wizard Coffee Logo" class="w-auto h-[55px] object-contain saturate-[0.8] contrast-[1.1] sepia-[0.3]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-tjEpqlqTe4Hf-a3KIXTNB0bmDNHHK919hFcqFjSKFFHlW9kqAHonacZwtr2rRCq5cD8hGyHxcioyaylneaYB0IYB71msjZ8JUq_m3Lo4e9Tp6_1aNPoxTY9ggIwaa09hfg9mR08NaedAUkQpID5wHbC7E3wJjRQ7aLIvSdzb8Gb_odQ-Rbga5bZT4iWYCbp0dXIn_euE_k9HRwbRarC9KtGLrTP9DetmDtMMwWpom7F2M3nXDjAYozm0PUOJzDKKEBTqOGv6x_o">
+<a aria-label="Instagram" class="top-ig text-[#f3ddb0] hover:text-white transition-colors" href="https://www.instagram.com/wizardmagicflavors/" rel="noopener" target="_blank">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewBox="0 0 24 24"><rect height="20" rx="5" ry="5" width="20" x="2" y="2"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" fill="currentColor" r=".8" stroke="none"></circle></svg>
+</a>
+</header>
+<!-- END: TopBar -->
+<!-- BEGIN: HeroBanner -->
+<section class="hero relative w-full h-[75vw] max-h-[400px] overflow-hidden bg-[#080706]" id="hero-container">
+<div class="banner-track h-full" id="banner-track" style="transform: translateX(0%);">
+        <div class="min-w-full h-full relative">
+          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_1_1781595398264.png" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
         </div>
-        <div class="item-body">
-          ${p.recommendation?`<span class="item-rec"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>${esc(p.recommendation)}</span>`:""}
-          <div class="item-top">
-            <div class="item-name">${esc(p.name)}</div>
-            ${p.vegetarian?'<span class="item-veg" title="Vegetariano">🌿</span>':""}
-          </div>
-          ${p.description?`<div class="item-desc">${esc(p.description)}</div>`:""}
-          <div class="item-foot">
-            <span class="item-price">${esc(p.price||"")}</span>
-            <span class="item-tag ${p.stock?"in":"out"}">${p.stock?"Disponible":"Agotado"}</span>
-          </div>
+      
+        <div class="min-w-full h-full relative">
+          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_5_1781474591459.jpeg" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
         </div>
-      </div>`;
-    });
-    html+="</div>";
-  });
-  if(!html)html='<div class="empty"><p>No hay productos disponibles<br/>en este momento.</p></div>';
-  main.innerHTML=html;
-}
+      
+        <div class="min-w-full h-full relative">
+          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_4_1781595349706.jpeg" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
+        </div>
+      </div>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/80 pointer-events-none" id="banner-overlay"></div>
+<div class="absolute left-0 right-0 p-6 text-center bottom-0" id="banner-content">
+<h2 class="pirata-font text-4xl text-[#f3ddb0] mb-1 drop-shadow-lg" id="banner-title">Café de Auror</h2>
+<p class="text-xs text-[#fff1cf] opacity-90 italic" id="banner-sub">Magia de especialidad</p>
+</div>
+<!-- Integrated Header Overlay -->
 
-loadAll();
-setInterval(loadAll,60000);
+<!-- Banner Controls -->
+<div class="absolute top-0 left-0 right-0 bg-[#e7ca86]/40 backdrop-blur-sm h-10 border-b border-[#6c4b27]/30 flex items-center px-2" id="banner-controls">
+<div class="flex overflow-x-auto no-scrollbar w-full justify-between px-4" id="banner-tabs">
+        <button onclick="updateBannerSlide(0)" class="banner-tab-btn flex-shrink-0 h-full pirata-font text-lg transition-colors active-glow">
+          Café de Auror
+        </button>
+      
+        <button onclick="updateBannerSlide(1)" class="banner-tab-btn flex-shrink-0 h-full pirata-font text-lg transition-colors text-[#5e3c1d]">
+          Talleres
+        </button>
+      
+        <button onclick="updateBannerSlide(2)" class="banner-tab-btn flex-shrink-0 h-full pirata-font text-lg transition-colors text-[#5e3c1d]">
+          Cóctels y eventos
+        </button>
+      </div>
+</div>
+</section>
+<!-- END: HeroBanner -->
+<!-- BEGIN: CategoryNavigation -->
+<nav class="nav-wrap sticky top-[70px] z-30 border-b border-[#6c4b27] px-4 py-3 bg-[#d8bb7b]/95 backdrop-blur-md">
+<div class="flex gap-2 overflow-x-auto no-scrollbar" id="nav-tabs"><button onclick="setCategory('__all__')" class="nav-tab shrink-0 active-glow">Todo</button><button onclick="setCategory('Bocadillos y dulces')" class="nav-tab shrink-0 text-[#694724]">Bocadillos y dulces</button><button onclick="setCategory('Pociones calientes')" class="nav-tab shrink-0 text-[#694724]">Pociones calientes</button><button onclick="setCategory('Pociones Frías')" class="nav-tab shrink-0 text-[#694724]">Pociones Frías</button><button onclick="setCategory('Pociones Sprout')" class="nav-tab shrink-0 text-[#694724]">Pociones Sprout</button><button onclick="setCategory('Bocadillos weasley')" class="nav-tab shrink-0 text-[#694724]">Bocadillos weasley</button><button onclick="setCategory('Picoteo')" class="nav-tab shrink-0 text-[#694724]">Picoteo</button><button onclick="setCategory('Tablas')" class="nav-tab shrink-0 text-[#694724]">Tablas</button><button onclick="setCategory('Sandwiches')" class="nav-tab shrink-0 text-[#694724]">Sandwiches</button><button onclick="setCategory('Pizzas y quesadillas')" class="nav-tab shrink-0 text-[#694724]">Pizzas y quesadillas</button></div>
+</nav>
+<!-- END: CategoryNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="min-h-screen pb-20" id="main-content"><div class="alchemist-grid">
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/38_crop_1781596697237.jpg" class="w-full h-full object-cover" alt="Happee Birthdae" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Happee Birthdae</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Mini torta de bizcocho húmedo de chocolate con un cremoso relleno del mismo sabor.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$8.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/40_crop_1781634353059.jpg" class="w-full h-full object-cover" alt="Cupcake Seleccionador" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Seleccionador</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Dulce bizcocho de vainilla cubierto con un cremoso de chocolate.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/41_crop_1781594393083.jpg" class="w-full h-full object-cover" alt="Cupcake Hogwarts" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Hogwarts</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Rico bizcocho de red velvet relleno con salsa de frutilla.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/42_crop_1781594412316.jpg" class="w-full h-full object-cover" alt="Cupcake Lavender" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Lavender</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Esponjoso bizcocho de limón relleno con una mermelada de frutilla.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/39_crop_1781594135071.jpg" class="w-full h-full object-cover" alt="Tortas Wizard" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Tortas Wizard</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Deliciosas tortas del día hechas en casa.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/43_crop_1781632029507.jpg" class="w-full h-full object-cover" alt="Cupcake Lovegood" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Lovegood</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Delicioso bizcocho de plátano relleno con manjar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/44_crop_1781633244074.jpg" class="w-full h-full object-cover" alt="Cheesecake 9 3/4" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cheesecake 9 3/4</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Suave cheesecake de vainilla cubierto con una delicada salsa de frambuesa.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/45_crop_1781633432388.jpg" class="w-full h-full object-cover" alt="Malfoy's Pie" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Malfoy's Pie</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Base de masa sablée rellena con crema de limón y un toque de merengue.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.600</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/46_crop_1781632315320.jpg" class="w-full h-full object-cover" alt="La Carta de Hedwig" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">La Carta de Hedwig</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Exquisito kuchen de manzana-nuez con una base de masa sablé.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/71_crop_1781633136626.jpg" class="w-full h-full object-cover" alt="Bownie Mounstruoso" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Ideal con un Latte Especial</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bownie Mounstruoso</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Brownie de chocolate relleno de manjar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/72_crop_1781633611119.jpg" class="w-full h-full object-cover" alt="Kowalski Cinamon Roll" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Kowalski Cinamon Roll</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Rollito de canela.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/70_1781593737462.png" class="w-full h-full object-cover" alt="Refrigerio de Luna" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Refrigerio de Luna</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Media luna, puede ser rellena con manjar, chocolate o chantilly.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$1.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/47_crop_1781634218278.jpg" class="w-full h-full object-cover" alt="Sopaipotter" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Sopaipotter</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de 4 sopaipillas bañadas en chancaca. (*A partir de las 17:00hrs)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/73_crop_1781633739970.jpg" class="w-full h-full object-cover" alt="Sopaipotter Pebre" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Sopaipotter Pebre</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Sopaipillas con pebre.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/1_crop_1781596953933.jpg" class="w-full h-full object-cover" alt="Imperio" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Un maleficio de sabor</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Imperio</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cappuccino Blue
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/2_crop_1781596867069.jpg" class="w-full h-full object-cover" alt="Cruciatus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cruciatus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cappuccino con Jarabe de Granada
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/3_crop_1781597027849.jpg" class="w-full h-full object-cover" alt="Avada Kedavra" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Avada Kedavra</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Mocaccino Menta
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/4_crop_1781658034071.jpg" class="w-full h-full object-cover" alt="Expresso Patronoun" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Expresso Patronoun</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Expresso, puede ser simple o doble.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Simple $2.200 / Doble $3.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/7_1781592886647.png" class="w-full h-full object-cover" alt="Americanum" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Americanum</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Americano, puede ser doble, frío o caliente.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Confundo</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Cortado
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/9_1781592638991.png" class="w-full h-full object-cover" alt="Lattemus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Lattemus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Latte (HOT/ICED)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/10_crop_1781658153603.jpg" class="w-full h-full object-cover" alt="Lattemus Special" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Lattemus Special</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Latte Sabores (HOT/ICED)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/11_1781592309635.png" class="w-full h-full object-cover" alt="Mochacorpus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Mochacorpus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Mocaccino
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Mochacorpus Special</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Mocaccino Sabores
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/13_crop_1781658212103.jpg" class="w-full h-full object-cover" alt="Cappuportus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cappuportus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Capuccino
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/14_1781592500878.png" class="w-full h-full object-cover" alt="Cappuportus Special" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cappuportus Special</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Capuccino Sabores
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cappuportus Brûlée</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Capuccino Brûlée
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.400</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bombarda</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Bombón
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.600</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/6_crop_1781658128620.jpg" class="w-full h-full object-cover" alt="Muffiato" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Muffiato</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Macchiato
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.100</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/17_crop_1781658257152.jpg" class="w-full h-full object-cover" alt="Arresto Momentum" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Arresto Momentum</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Afogato
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden agotado">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Accio Latte</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chai Latte (HOT/ICED)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  <span class="text-[7px] font-bold uppercase tracking-tighter text-[#c0392b] border border-[#c0392b]/30 bg-[#c0392b]/10 px-1 py-0.5 rounded">Sin Stock</span>
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/31_crop_1781593964689.jpg" class="w-full h-full object-cover" alt="Choco-Loco" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Choco-Loco</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chocolate Caliente con Marshmellows
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/30_crop_1781658181252.jpg" class="w-full h-full object-cover" alt="Choco-Choco" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Choco-Choco</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chocolate Caliente
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/74_crop_1781596034512.jpg" class="w-full h-full object-cover" alt="Choco Hagrid" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Recomendado por Hagrid</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Choco Hagrid</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chocolate XL con marshmellows.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$8.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/19_crop_1781632842913.jpg" class="w-full h-full object-cover" alt="Butterbeer" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Butterbeer</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Milkshake de Mantequilla de Maní con Canela
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.800</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/20_crop_1781595640551.jpg" class="w-full h-full object-cover" alt="Azkaban Shake" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Azkaban Shake</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Milkshake de Oreo
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Crecehuesos</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Milkshake del día
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/22_crop_1781658436399.jpg" class="w-full h-full object-cover" alt="Felix Felicis" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Felix Felicis</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Helado
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Feraverto</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Frapuccino Sabores
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/24_crop_1781596336308.jpg" class="w-full h-full object-cover" alt="Longbottom's Smoothies" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Longbottom's Smoothies</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Suaves batidos de fruta a base de yogurt
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/25_crop_1781596196076.jpg" class="w-full h-full object-cover" alt="It's Leviosa" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">It's Leviosa</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Frapuccino Caramel Latte
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.600</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/35_crop_1781667560517.jpg" class="w-full h-full object-cover" alt="Veritaserum" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Favorito de Snape</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Veritaserum</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té Helado
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/36_1781593613023.png" class="w-full h-full object-cover" alt="Poción Translúcida" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Poción Translúcida</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Agua con o sin gas
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/37_1781593465299.jpeg" class="w-full h-full object-cover" alt="Poción Gaseosa" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Poción Gaseosa</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Bebidas de fantasía con y sin azucar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/75_crop_1781667342887.jpg" class="w-full h-full object-cover" alt="Mocktails Hogwarts" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Mocktails Hogwarts</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Disfruta nuestros mocktails de diferentes sabores!
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.990</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/26_crop_1781592026832.jpg" class="w-full h-full object-cover" alt="Hogwarts Teas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Hogwarts Teas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té de hoja, opción con canela, cedrón o clavo de olor.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/27_crop_1781658328400.jpg" class="w-full h-full object-cover" alt="Tetera Hogwarts Teas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Tetera Hogwarts Teas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Tetera de Té de Hoja para dos personas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/28_crop_1781593189666.jpg" class="w-full h-full object-cover" alt="Gryffindor Tea" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Gryffindor Tea</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té Massala Chai Black.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/29_crop_1781593326081.jpg" class="w-full h-full object-cover" alt="Hufflepuff Tea" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Hufflepuff Tea</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té de Hierbas o Frutas
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/32_crop_1781658358650.jpg" class="w-full h-full object-cover" alt="Elixir de Mandrágora" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Elixir de Mandrágora</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Limonada de Albahaca-Menta
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.800</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/33_crop_1781658381667.jpg" class="w-full h-full object-cover" alt="Amortentia" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Amortentia</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Limonada de Frutilla-Menta
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.800</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/34_crop_1781596226259.jpg" class="w-full h-full object-cover" alt="Poción Multijugos" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Poción Multijugos</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Jugos de Pulpa del día
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/48_crop_1781658301801.jpg" class="w-full h-full object-cover" alt="Ron Weasley" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Ron Weasley</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Sabroso sandwich en pan ciabatta con churrasco y queso amarillo.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Ginny Weasley</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Delicioso sandwich de ave-mayo y palta en pan ciabatta.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$6.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Percy Weasley</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Rico sandwich con churrasco, tomate, palta y lactonesa en pan ciabatta.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$7.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/51_crop_1781597329213.jpg" class="w-full h-full object-cover" alt="Brotes de Sauce Boxeador" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Brotes de Sauce Boxeador</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de papas pequeñas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/52_crop_1781597265979.jpg" class="w-full h-full object-cover" alt="Ramas de Sauce Boxeador" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Ramas de Sauce Boxeador</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de papas medianas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/53_crop_1781660321650.jpg" class="w-full h-full object-cover" alt="Canastita de Snitch Doradas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Canastita de Snitch Doradas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Popcorn de pollo con salsa cheddar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/54_crop_1781597968152.jpg" class="w-full h-full object-cover" alt="Huevos de Acromántulas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Huevos de Acromántulas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de bolitas falafel con salsa de cilantro.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/55_crop_1781597582558.jpg" class="w-full h-full object-cover" alt="Bocaditos Hedwig" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bocaditos Hedwig</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de 8 nuggets con salsa Golf.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/56_crop_1781595947279.jpg" class="w-full h-full object-cover" alt="Peter Pettigrew" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Peter Pettigrew</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cama de papas fritas cubiertas con salsa cheddar, carne mechada, tocino y cebollín.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$20.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/57_crop_1781595729784.jpg" class="w-full h-full object-cover" alt="James Potter" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">James Potter</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cama de papas fritas cubiertas con salsa cheddar, pollo, tomate, crema ácida y cebollín.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$19.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/58_crop_1781598035302.jpg" class="w-full h-full object-cover" alt="Beso del Dementor" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Beso del Dementor</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pan artesanal con doble hamburguesa casera, tocino, queso cheddar, pepinillos, lechuga, tomate y mostaza miel.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/59_crop_1781597829555.jpg" class="w-full h-full object-cover" alt="Fawkes en Llamas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Fawkes en Llamas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pan artesanal con carne mechada, cebolla caramelizada, tocino, huevo frito, ají verde y salsa merkén.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/60_crop_1781597910087.jpg" class="w-full h-full object-cover" alt="Pequeño Pickett" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Pequeño Pickett</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pan artesanal con falafel casero, palta, tomate, lechuga, champiñones salteados y salsa de albahaca.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/61_crop_1781597647457.jpg" class="w-full h-full object-cover" alt="Dobby" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Dobby</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Sandwich en pan ciabatta con carne mechada, queso, lechuga, pepinillos, palta y salsa de ajo.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/62_crop_1781597756189.jpg" class="w-full h-full object-cover" alt="Croocshanks (Opción kids)" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Croocshanks (Opción kids)</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Mini pan artesanal con hamburguesa casera y queso.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/63_crop_1781597390794.jpg" class="w-full h-full object-cover" alt="Minerva McGonagall" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Minerva McGonagall</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella, rodajas de tomate y hojas de albahaca.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $6.000 / Med $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Remus Lupin</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella y pepperoni.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $6.500 / Med $13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/65_crop_1781597083433.jpg" class="w-full h-full object-cover" alt="Rubeus Hagrid" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Rubeus Hagrid</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella, jamón y aceitunas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $6.500 / Med $13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/66_crop_1781597194464.jpg" class="w-full h-full object-cover" alt="Alastor Moody" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Alastor Moody</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella, carne mechada, cebolla caramelizada y tocino.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $7.500 / Med $17.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Newt Scamander</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Quesadilla: tortillas rellenas con queso, un mix de verduras salteadas y cebolla caramelizada.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Normal $6.500 / Grande $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/68_crop_1781598332848.jpg" class="w-full h-full object-cover" alt="Bellatrix Lestrange" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bellatrix Lestrange</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Quesadilla: tortillas rellenas con queso, jamón, tomate, aceitunas y palta.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Normal $6.500 / Grande $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/69_crop_1781598088051.jpg" class="w-full h-full object-cover" alt="Grinderwald" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Grinderwald</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Quesadilla: tortillas rellenas con queso, pollo, carne mechada de la casa y cebolla caramelizada.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Normal $6.500 / Grande $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          </div></main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="parchment-bg text-center py-10 px-4 border-t border-[#9a7443] text-[#6d4b2a] text-[11px] leading-relaxed">
+<p class="font-bold mb-1 tracking-widest uppercase">Wizard magic flavors</p>
+<p class="">Homero Ávila 850, Antofagasta, Chile</p>
+<div class="mt-4 flex justify-center gap-4 opacity-50">
+<span class="w-12 h-[1px] bg-[#6d4b2a] self-center"></span>
+<span class="pirata-font text-lg">X</span>
+<span class="w-12 h-[1px] bg-[#6d4b2a] self-center"></span>
+</div>
+<p class="mt-4 opacity-75 italic">Sujeto a disponibilidad en vitrina</p>
+</footer>
+<!-- END: Footer -->
+<!-- BEGIN: Scripts -->
+<script data-purpose="supabase-config">
+    const SUPABASE_URL = "https://cwatxpuxttgeceahbciw.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw";
+
+    let categories = [];
+    let products = [];
+    let banners = [];
+    let activeTab = "__all__";
+    let bannerIdx = 0;
 </script>
-</body>
-</html>
+<script data-purpose="data-fetching">
+    async function sbFetch(path) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        return await res.json();
+      } catch (err) {
+        console.error("Fetch error:", err);
+        return [];
+      }
+    }
+
+    async function loadData() {
+      const [cats, prods, bans] = await Promise.all([
+        sbFetch("categories?select=*&order=position"),
+        sbFetch("products?select=*&order=position"),
+        sbFetch("banners?select=*&order=position")
+      ]);
+      
+      categories = cats || [];
+      products = prods || [];
+      banners = bans || [];
+      
+      initBanners();
+      renderNav();
+      renderMenu();
+    }
+</script>
+<script data-purpose="ui-rendering">
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function initBanners() {
+      const track = document.getElementById('banner-track');
+      if (!banners.length) return;
+
+      track.innerHTML = banners.map(b => `
+        <div class="min-w-full h-full relative">
+          <img src="${b.img_url}" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="" />
+        </div>
+      `).join('');
+
+      renderBannerTabs();
+      updateBannerSlide(0);
+    }
+
+    function renderBannerTabs() {
+      const tabsCont = document.getElementById('banner-tabs');
+      tabsCont.innerHTML = banners.map((b, i) => `
+        <button onclick="updateBannerSlide(${i})" class="banner-tab-btn flex-shrink-0 px-4 h-full pirata-font text-lg transition-colors ${i === bannerIdx ? 'active-glow' : 'text-[#5e3c1d]'}">
+          ${esc(b.title || 'Promo ' + (i+1))}
+        </button>
+      `).join('');
+    }
+
+    function updateBannerSlide(idx) {
+      bannerIdx = idx;
+      const track = document.getElementById('banner-track');
+      track.style.transform = `translateX(-${idx * 100}%)`;
+      
+      const b = banners[idx];
+      document.getElementById('banner-title').textContent = b?.title || "";
+      document.getElementById('banner-sub').textContent = b?.subtitle || "";
+      
+      document.querySelectorAll('.banner-tab-btn').forEach((btn, i) => {
+        if (i === idx) {
+          btn.classList.add('active-glow');
+          btn.classList.remove('text-[#5e3c1d]');
+        } else {
+          btn.classList.remove('active-glow');
+          btn.classList.add('text-[#5e3c1d]');
+        }
+      });
+    }
+
+    function renderNav() {
+      const validCats = categories.filter(c => products.some(p => p.cat === c.name));
+      const tabsCont = document.getElementById('nav-tabs');
+      
+      let html = `<button onclick="setCategory('__all__')" class="nav-tab shrink-0 ${activeTab === '__all__' ? 'active-glow' : 'text-[#694724]'}">Todo</button>`;
+      
+      validCats.forEach(c => {
+        html += `<button onclick="setCategory('${esc(c.name)}')" class="nav-tab shrink-0 ${activeTab === c.name ? 'active-glow' : 'text-[#694724]'}">${esc(c.name)}</button>`;
+      });
+      
+      tabsCont.innerHTML = html;
+    }
+
+    function setCategory(cat) {
+      activeTab = cat;
+      renderNav();
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const main = document.getElementById('main-content');
+      const filteredCats = activeTab === "__all__" 
+        ? categories.filter(c => products.some(p => p.cat === c.name))
+        : categories.filter(c => c.name === activeTab);
+
+      if (!filteredCats.length) {
+        main.innerHTML = `<div class="py-20 text-center text-[#8a6b47] px-10">
+          <p class="text-sm">No hay pociones disponibles por ahora.</p>
+        </div>`;
+        return;
+      }
+
+      let html = `<div class="alchemist-grid">`;
+      filteredCats.forEach(cat => {
+        const catProds = products.filter(p => p.cat === cat.name);
+        catProds.forEach(p => {
+          html += `
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ${p.stock ? '' : 'agotado'}">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                ${p.img_url 
+                  ? `<img src="${p.img_url}" class="w-full h-full object-cover" alt="${esc(p.name)}" loading="lazy" />`
+                  : `<div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`
+                }
+                ${p.recommendation ? `
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">${esc(p.recommendation)}</span>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">${esc(p.name)}</h5>
+                  ${p.vegetarian ? `<span class="text-xs shrink-0" title="Vegetariano">🌿</span>` : ''}
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  ${esc(p.description)}
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">${esc(p.price)}</span>
+                  ${!p.stock ? `<span class="text-[7px] font-bold uppercase tracking-tighter text-[#c0392b] border border-[#c0392b]/30 bg-[#c0392b]/10 px-1 py-0.5 rounded">Sin Stock</span>` : ''}
+                </div>
+              </div>
+            </article>
+          `;
+        });
+      });
+      html += `</div>`;
+      main.innerHTML = html;
+    }
+
+    loadData();
+    setInterval(loadData, 60000);
+</script>
+<!-- END: Scripts -->
+
+
+</body></html>
