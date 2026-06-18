@@ -1,5 +1,5 @@
 const STATE_URL = "https://audio.twcoffee.cl/api/state.php";
-const PLAYLIST_URL = "playlist.json?v=2";
+const PLAYLIST_URL = "playlist.json?v=1000";
 
 const select = document.getElementById("songSelect");
 const playBtn = document.getElementById("playBtn");
@@ -33,7 +33,7 @@ async function setState(playing) {
   });
 
   const data = await res.json();
-  msg.textContent = data.ok ? "Estado actualizado y sincronizado" : "Error";
+  msg.textContent = data.ok ? "Estado actualizado" : "Error";
 }
 
 playBtn.addEventListener("click", () => setState(true));
