@@ -9,13 +9,12 @@ const songTitle = document.getElementById("songTitle");
 const statusEl = document.getElementById("status");
 
 let playlist = [];
-let lastUpdatedAt = null;
+let lastSong = null;
 let userStarted = false;
 
 async function loadPlaylist() {
   const res = await fetch(PLAYLIST_URL, { cache: "no-store" });
   playlist = await res.json();
-  console.log("Playlist cargada:", playlist);
 }
 
 function findSong(file) {
@@ -27,29 +26,38 @@ async function checkState() {
     const res = await fetch(STATE_URL + Date.now(), { cache: "no-store" });
     const state = await res.json();
 
-    console.log("Estado recibido:", state);
-    statusEl.textContent = "Estado leído: " + state.currentSong;
-
     const song = findSong(state.currentSong);
 
     if (!song) {
-      statusEl.textContent = "Canción no está en playlist.json: " + state.currentSong;
+      statusEl.textContent = "No está en playlist: " + state.currentSong;
       return;
     }
 
     const url = song.url || AUDIO_BASE_URL + song.file;
 
-    if (audio.src !== url) {
+    if (lastSong !== state.currentSong) {
       audio.src = url;
+      lastSong = state.currentSong;
       songTitle.textContent = song.title || song.file;
     }
 
     if (state.playing && userStarted) {
+      let targetTime = 0;
+
+      if (state.startedAt && state.serverTime) {
+        targetTime = (state.serverTime - state.startedAt) / 1000;
+      }
+
+      const diff = Math.abs(audio.currentTime - targetTime);
+
+      if (diff > 0.8) {
+        audio.currentTime = targetTime;
+      }
+
       audio.play().then(() => {
-        statusEl.textContent = "Reproduciendo: " + state.currentSong;
-      }).catch(err => {
-        statusEl.textContent = "Chrome bloqueó el audio. Pulsa Iniciar música.";
-        console.error(err);
+        statusEl.textContent = "Sincronizado: " + Math.round(targetTime) + "s";
+      }).catch(() => {
+        statusEl.textContent = "Pulsa Iniciar música";
       });
     }
 
@@ -58,10 +66,7 @@ async function checkState() {
       statusEl.textContent = "Pausado desde admin";
     }
 
-    lastUpdatedAt = state.updatedAt;
-
   } catch (e) {
-    console.error(e);
     statusEl.textContent = "Error leyendo estado: " + e.message;
   }
 }
