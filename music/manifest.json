@@ -1,0 +1,20 @@
+{
+  "name": "TW Coffee Music",
+  "short_name": "TW Music",
+  "start_url": "/music/",
+  "display": "standalone",
+  "background_color": "#15110f",
+  "theme_color": "#5b3a29",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

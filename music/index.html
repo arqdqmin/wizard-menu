@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TW Coffee Music</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#5b3a29">
+  <style>
+    body{font-family:Arial,sans-serif;background:#15110f;color:#fff;margin:0;display:grid;place-items:center;min-height:100vh}
+    .card{width:min(520px,92vw);background:#241a16;border-radius:22px;padding:28px;box-shadow:0 20px 60px #0008;text-align:center}
+    button{font-size:18px;padding:14px 22px;border:0;border-radius:14px;cursor:pointer;margin:8px}
+    .primary{background:#d6a35d;color:#1b120e;font-weight:bold}
+    .muted{opacity:.75}
+    audio{width:100%;margin-top:18px}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>TW Coffee Music</h1>
+    <p class="muted">Reproductor sincronizado</p>
+    <h2 id="songTitle">Esperando música...</h2>
+    <button id="startBtn" class="primary">Iniciar música</button>
+    <button id="stopBtn">Pausar local</button>
+    <audio id="audio" controls></audio>
+    <p class="muted" id="status">Sin conexión al estado</p>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

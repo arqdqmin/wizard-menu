@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TW Coffee Music Admin</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#15110f;color:#fff;margin:0;padding:24px}
+    .card{max-width:720px;margin:auto;background:#241a16;border-radius:22px;padding:24px;box-shadow:0 20px 60px #0008}
+    button,select,input{font-size:16px;padding:12px;border:0;border-radius:12px;margin:6px}
+    button{cursor:pointer;background:#d6a35d;color:#1b120e;font-weight:bold}
+    select{width:100%;max-width:520px}
+    .muted{opacity:.75}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Panel Música TW Coffee</h1>
+    <p class="muted">Desde aquí cambias la canción para todos los reproductores.</p>
+    <select id="songSelect"></select>
+    <br>
+    <button id="playBtn">Reproducir en todos</button>
+    <button id="pauseBtn">Pausar en todos</button>
+    <p id="msg"></p>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>
