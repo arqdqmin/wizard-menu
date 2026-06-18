@@ -1,634 +1,2098 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin — Pastelería · The Wizard Coffee</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<!DOCTYPE html><html class="stitch-anim-fade-in" lang="es" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuCl54lw6fo6tLrpuD_0I5rEitz8Mp-RZY4vSxUjzqviYeiZo3BDrVam6CvkpT1uque4k0fd5LMW1aAUjgxAPXqsl2HmI_H-IGdvoRlRqBRMr2WqqB3Nc1Kj8JeyYlKu2W97nvmqsDf83xqeiqswFyGXxm6RckwY96e1z3cajTK8f1FOWN7fXx--Ciz8oaPkKJggpLCpsJj87sZryb-nym5buiTh-q_x5pkxtG2qiLPlJIbpvORnkVCp2eneAS6gi32hdCcE42ZKrVU&quot;); background-size: 100%; background-repeat: repeat-y; background-attachment: scroll;" data-stitch-swappable="67" data-stitch-swap-kind="bg" tabindex="0" role="button" aria-label="Replace image"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<meta content="only light" name="color-scheme">
+<meta content="#e2c47f" name="theme-color">
+<title>Menú · The Wizard Coffee</title>
+<!-- BEGIN: External Resources -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&amp;family=Pirata+One&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- END: External Resources -->
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="theme-variables">
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
 
-  :root {
-    --bg: #faf9f6;
-    --surface: #ffffff;
-    --border: #e8e4dd;
-    --border-strong: #ccc7be;
-    --text: #1a1814;
-    --text-muted: #7a746a;
-    --text-hint: #b0a99f;
-    --accent: #2d4a3e;
-    --accent-light: #e8f0ec;
-    --danger: #c0392b;
-    --danger-light: #fdf2f2;
-    --green: #1a7a4a;
-    --green-light: #eaf5ef;
-    --radius: 10px;
-    --radius-lg: 14px;
-  }
+/* Magic Light Oval Selection Effect - Restricted to Banner Tabs */
+.banner-tab-btn.active-glow {
+  position: relative !important;
+  z-index: 10 !important;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(243, 221, 176, 0.6) 40%, rgba(243, 221, 176, 0) 70%) !important;
+  color: #000000 !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+  animation: pulse-glow 2s infinite ease-in-out !important;
+  border: none !important;
+  box-shadow: none !important;
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* Solid Active State for Category Navigation Tabs */
+.nav-tab.active-glow {
+  background-color: #543208 !important;
+  color: #fbdc99 !important;
+  border-color: #6f481e !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
 
-  /* ── Header ── */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    height: 58px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-icon {
-    width: 32px;
-    height: 32px;
-    background: var(--accent);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 16px;
-  }
-  .logo-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.2;
-  }
-  .logo-sub {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 400;
-  }
-  .header-actions { display: flex; gap: 8px; }
-
-  /* ── Buttons ── */
-  .btn {
-    height: 36px;
-    padding: 0 14px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.15s, transform 0.1s;
-    text-decoration: none;
-  }
-  .btn:hover { background: var(--bg); }
-  .btn:active { transform: scale(0.97); }
-  .btn-accent {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-  .btn-accent:hover { background: #243d33; }
-  .btn-sm { height: 30px; padding: 0 10px; font-size: 12px; }
-  .btn-icon {
-    width: 30px; height: 30px; padding: 0;
-    justify-content: center;
-    border: 1px solid var(--border);
-  }
-  .btn-icon.danger:hover { background: var(--danger-light); border-color: #f5a9a9; color: var(--danger); }
-  .btn-icon.stock-on { color: var(--green); border-color: #a8d5be; }
-  .btn-icon.stock-on:hover { background: var(--green-light); border-color: #7bbfa0; }
-  .btn-icon.stock-off { color: var(--hint); }
-  .btn-icon.stock-off:hover { background: var(--green-light); border-color: #a8d5be; color: var(--green); }
-
-  /* ── Main layout ── */
-  main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-  }
-
-  /* ── Stats row ── */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 1.75rem;
-  }
-  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } }
-  .stat {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-  }
-  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
-  .stat-value { font-size: 24px; font-weight: 600; }
-  .stat-value.green { color: var(--green); }
-  .stat-value.red { color: var(--danger); }
-
-  /* ── Section header ── */
-  .section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-  }
-  .section-head h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    font-weight: 400;
-    color: var(--text);
-  }
-
-  /* ── Grid ── */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-    gap: 14px;
-  }
-
-  /* ── Card ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .card:hover { border-color: var(--border-strong); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-  .card.no-stock { opacity: 0.55; }
-  .card.editing { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,74,62,0.08); }
-
-  .card-img {
-    position: relative;
-    height: 170px;
-    background: #f0ece6;
-    cursor: pointer;
-    overflow: hidden;
-  }
-  .card-img img { width: 100%; height: 100%; object-fit: cover; }
-  .img-placeholder {
-    width: 100%; height: 100%;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 8px; color: var(--text-hint); font-size: 13px;
-  }
-  .img-placeholder i { font-size: 30px; }
-  .img-overlay {
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,0.28);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.15s;
-  }
-  .card-img:hover .img-overlay { opacity: 1; }
-  .img-overlay span {
-    color: #fff; font-size: 13px; font-weight: 500;
-    background: rgba(0,0,0,0.45); padding: 6px 14px; border-radius: 20px;
-  }
-  input[type="file"] { display: none; }
-
-  .stock-pill {
-    position: absolute; top: 10px; right: 10px;
-    font-size: 10px; font-weight: 600;
-    padding: 3px 9px; border-radius: 20px;
-    letter-spacing: 0.04em;
-  }
-  .stock-pill.in { background: rgba(26,122,74,0.9); color: #fff; }
-  .stock-pill.out { background: rgba(192,57,43,0.85); color: #fff; }
-
-  .card-body { padding: 13px 15px; }
-  .card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
-  .card-desc {
-    font-size: 12px; color: var(--text-muted); line-height: 1.55;
-    margin-bottom: 12px; min-height: 34px;
-  }
-  .card-foot { display: flex; align-items: center; justify-content: space-between; }
-  .card-price { font-size: 15px; font-weight: 600; color: var(--accent); }
-  .card-acts { display: flex; gap: 5px; }
-
-  /* ── Edit panel ── */
-  .edit-panel {
-    border-top: 1px solid var(--border);
-    padding: 13px 15px;
-    display: none;
-    flex-direction: column;
-    gap: 9px;
-    background: #fdfcfb;
-  }
-  .edit-panel.open { display: flex; }
-  .field-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
-  .field-input, .field-textarea {
-    width: 100%;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    color: var(--text);
-    background: var(--surface);
-    transition: border-color 0.15s;
-  }
-  .field-input { height: 34px; }
-  .field-textarea { min-height: 54px; resize: vertical; line-height: 1.5; }
-  .field-input:focus, .field-textarea:focus { outline: none; border-color: var(--accent); }
-  .field-row { display: flex; gap: 8px; }
-  .field-row > div { flex: 1; }
-
-  /* ── Toggle ── */
-  .toggle-wrap { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
-  .toggle {
-    width: 36px; height: 20px; border-radius: 20px;
-    background: var(--border-strong); cursor: pointer;
-    position: relative; transition: background 0.2s;
-    border: none; flex-shrink: 0;
-  }
-  .toggle.on { background: var(--green); }
-  .toggle::after {
-    content: '';
-    position: absolute;
-    top: 2px; left: 2px;
-    width: 16px; height: 16px;
-    border-radius: 50%; background: #fff;
-    transition: left 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  }
-  .toggle.on::after { left: 18px; }
-  .toggle-label { font-size: 12px; color: var(--text-muted); }
-
-  .panel-foot { display: flex; justify-content: flex-end; gap: 7px; margin-top: 2px; }
-
-  /* ── Add card ── */
-  .add-card {
-    border: 1.5px dashed var(--border-strong);
-    border-radius: var(--radius-lg);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 8px; min-height: 200px;
-    cursor: pointer; color: var(--text-hint);
-    transition: all 0.15s;
-    background: transparent;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .add-card:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-  .add-card i { font-size: 28px; }
-  .add-card span { font-size: 13px; font-weight: 500; }
-
-  /* ── Modal ── */
-  .modal-bg {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.38);
-    display: none; align-items: center; justify-content: center;
-    z-index: 100;
-  }
-  .modal-bg.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    padding: 22px;
-    width: 360px;
-    max-width: calc(100vw - 2rem);
-    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
-  }
-  .modal h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px; font-weight: 400;
-    margin-bottom: 16px;
-  }
-  .modal-fields { display: flex; flex-direction: column; gap: 11px; }
-  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-
-  /* ── QR hint ── */
-  .qr-hint {
-    background: var(--accent-light);
-    border: 1px solid #c4d9cf;
-    border-radius: var(--radius);
-    padding: 12px 15px;
-    font-size: 13px;
-    color: var(--accent);
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 1.5rem;
-  }
-  .qr-hint i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-  .qr-hint a { color: var(--accent); font-weight: 600; }
+.banner-tab-btn, .nav-tab {
+  border: none !important;
+  outline: none !important;
+}
 </style>
+<style data-purpose="base-layout">
+    body {
+      font-family: "Lora", serif;
+      background-color: #d8bb7b;
+      background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCl54lw6fo6tLrpuD_0I5rEitz8Mp-RZY4vSxUjzqviYeiZo3BDrVam6CvkpT1uque4k0fd5LMW1aAUjgxAPXqsl2HmI_H-IGdvoRlRqBRMr2WqqB3Nc1Kj8JeyYlKu2W97nvmqsDf83xqeiqswFyGXxm6RckwY96e1z3cajTK8f1FOWN7fXx--Ciz8oaPkKJggpLCpsJj87sZryb-nym5buiTh-q_x5pkxtG2qiLPlJIbpvORnkVCp2eneAS6gi32hdCcE42ZKrVU');
+      background-size: 100%;
+      background-repeat: repeat-y;
+      color: #28180b;
+      min-height: 100vh;
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+      box-shadow: 0 0 80px rgba(0,0,0,.3);
+    }
+
+    .parchment-bg {
+      background-color: #e7ca86;
+      background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCl54lw6fo6tLrpuD_0I5rEitz8Mp-RZY4vSxUjzqviYeiZo3BDrVam6CvkpT1uque4k0fd5LMW1aAUjgxAPXqsl2HmI_H-IGdvoRlRqBRMr2WqqB3Nc1Kj8JeyYlKu2W97nvmqsDf83xqeiqswFyGXxm6RckwY96e1z3cajTK8f1FOWN7fXx--Ciz8oaPkKJggpLCpsJj87sZryb-nym5buiTh-q_x5pkxtG2qiLPlJIbpvORnkVCp2eneAS6gi32hdCcE42ZKrVU');
+      background-size: 100%;
+    }
+
+    .pirata-font {
+      font-family: "Pirata One", system-ui;
+    }
+  </style>
+<style data-purpose="components">
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .item-card {
+      background-color: #efdaa4;
+      border: 1px solid rgba(154, 116, 67, 0.3);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .item-card:hover {
+      border-color: #9a7443;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .item-card.agotado {
+      opacity: 0.6;
+      filter: grayscale(0.8);
+    }
+
+    .badge-rec {
+      background: #543208;
+      border: 1px solid #6f481e;
+      color: #fbdc99;
+    }
+
+    .banner-track {
+      display: flex;
+      transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-tab {
+      font-family: 'Pirata One', system-ui !important;
+      font-size: 14px !important;
+      border: 1px solid #6d451e !important;
+      border-radius: 999px !important;
+      padding: 6px 14px !important;
+    }
+
+    /* Grid Specifics */
+    .alchemist-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+  </style>
+<!-- END: Custom Styles -->
 </head>
-<body>
-
-<header>
-  <div class="logo">
-    <div class="logo-icon"><i class="ti ti-wand"></i></div>
-    <div>
-      <div class="logo-text">The Wizard Coffee</div>
-      <div class="logo-sub">Panel de administración · Pastelería</div>
-    </div>
-  </div>
-  <div class="header-actions">
-    <a href="menu.html" target="_blank" class="btn"><i class="ti ti-eye"></i> Ver vitrina</a>
-    <button class="btn btn-accent" onclick="openAdd()"><i class="ti ti-plus"></i> Agregar</button>
-  </div>
+<body class="antialiased">
+<!-- BEGIN: TopBar -->
+<header class="top-bar flex items-center px-5 py-3 border-b border-[#2c1b0e] sticky top-0 z-40 shadow-sm h-[70px] justify-between bg-black">
+<img alt="The Wizard Coffee Logo" class="w-auto h-[55px] object-contain saturate-[0.8] contrast-[1.1] sepia-[0.3]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-tjEpqlqTe4Hf-a3KIXTNB0bmDNHHK919hFcqFjSKFFHlW9kqAHonacZwtr2rRCq5cD8hGyHxcioyaylneaYB0IYB71msjZ8JUq_m3Lo4e9Tp6_1aNPoxTY9ggIwaa09hfg9mR08NaedAUkQpID5wHbC7E3wJjRQ7aLIvSdzb8Gb_odQ-Rbga5bZT4iWYCbp0dXIn_euE_k9HRwbRarC9KtGLrTP9DetmDtMMwWpom7F2M3nXDjAYozm0PUOJzDKKEBTqOGv6x_o">
+<a aria-label="Instagram" class="top-ig text-[#f3ddb0] hover:text-white transition-colors" href="https://www.instagram.com/wizardmagicflavors/" rel="noopener" target="_blank">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewBox="0 0 24 24"><rect height="20" rx="5" ry="5" width="20" x="2" y="2"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" fill="currentColor" r=".8" stroke="none"></circle></svg>
+</a>
 </header>
-
-<main>
-
-  <div class="qr-hint">
-    <i class="ti ti-qrcode"></i>
-    <div>
-      La vitrina del cliente está en <strong>menu.html</strong> — comparte ese archivo (o su URL al subirlo) mediante un código QR. Los cambios que hagas aquí se reflejan automáticamente en la vitrina.
-    </div>
-  </div>
-  </div>
-
-  <div class="stats">
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-value" id="st-total">0</div></div>
-    <div class="stat"><div class="stat-label">En stock</div><div class="stat-value green" id="st-in">0</div></div>
-    <div class="stat"><div class="stat-label">Sin stock</div><div class="stat-value red" id="st-out">0</div></div>
-    <div class="stat"><div class="stat-label">Con foto</div><div class="stat-value" id="st-photo">0</div></div>
-  </div>
-
-  <div class="section-head">
-    <h2>Productos de pastelería</h2>
-  </div>
-
-  <div class="grid" id="grid"></div>
-</main>
-
-<!-- Modal agregar -->
-<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
-  <div class="modal">
-    <h3>Nuevo producto</h3>
-    <div class="modal-fields">
-      <div>
-        <div class="field-label">Nombre</div>
-        <input class="field-input" id="m-name" placeholder="Ej: Croissant de mantequilla" />
-      </div>
-      <div>
-        <div class="field-label">Descripción</div>
-        <textarea class="field-textarea" id="m-desc" placeholder="Descripción breve del producto..."></textarea>
-      </div>
-      <div class="field-row">
-        <div>
-          <div class="field-label">Precio</div>
-          <input class="field-input" id="m-price" placeholder="Ej: $2.500" />
+<!-- END: TopBar -->
+<!-- BEGIN: HeroBanner -->
+<section class="hero relative w-full h-[75vw] max-h-[400px] overflow-hidden bg-[#080706]" id="hero-container">
+<div class="banner-track h-full" id="banner-track" style="transform: translateX(0%);">
+        <div class="min-w-full h-full relative">
+          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_1_1781595398264.png" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
         </div>
-        <div>
-          <div class="field-label">Stock</div>
-          <div class="toggle-wrap">
-            <button class="toggle on" id="m-toggle" onclick="mToggle()"></button>
-            <span class="toggle-label" id="m-tl">Disponible</span>
-          </div>
+      
+        <div class="min-w-full h-full relative">
+          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_5_1781474591459.jpeg" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
+        </div>
+      
+        <div class="min-w-full h-full relative">
+          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_4_1781595349706.jpeg" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
         </div>
       </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-accent" onclick="addProduct()"><i class="ti ti-plus"></i> Agregar</button>
-    </div>
-  </div>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/80 pointer-events-none" id="banner-overlay"></div>
+<div class="absolute left-0 right-0 p-6 text-center bottom-0" id="banner-content">
+<h2 class="pirata-font text-4xl text-[#f3ddb0] mb-1 drop-shadow-lg" id="banner-title">Café de Auror</h2>
+<p class="text-xs text-[#fff1cf] opacity-90 italic" id="banner-sub">Magia de especialidad</p>
 </div>
+<!-- Integrated Header Overlay -->
 
-<script>
-const STORAGE_KEY = 'wizard_pastry_v2';
-
-const DEFAULT_PRODUCTS = [
-  {id:1,name:'Croissant de mantequilla',desc:'Hojaldrado y dorado, con mantequilla francesa. Crujiente por fuera, suave por dentro.',price:'$2.200',stock:true,img:null},
-  {id:2,name:'Muffin de arándanos',desc:'Esponjoso con arándanos frescos y cobertura de azúcar granulada.',price:'$1.900',stock:true,img:null},
-  {id:3,name:'Cheesecake de fresa',desc:'Base de galleta, relleno cremoso de queso y coulis de fresa natural.',price:'$3.500',stock:true,img:null},
-  {id:4,name:'Brownie de chocolate',desc:'Intenso y húmedo, con trozos de chocolate bitter y nueces tostadas.',price:'$2.100',stock:true,img:null},
-  {id:5,name:'Torta de zanahoria',desc:'Con frosting de queso crema y nueces. Porción individual.',price:'$3.200',stock:false,img:null},
-  {id:6,name:'Galleta de avena',desc:'Receta artesanal con avena integral, pasas y canela.',price:'$1.200',stock:true,img:null},
-];
-
-let products = [];
-let nextId = 10;
-let mStockOn = true;
-
-function load() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const data = JSON.parse(raw);
-      products = data.products || DEFAULT_PRODUCTS;
-      nextId = data.nextId || (Math.max(...products.map(p=>p.id)) + 1);
-    } else {
-      products = DEFAULT_PRODUCTS;
-      save();
-    }
-  } catch(e) { products = DEFAULT_PRODUCTS; }
-}
-
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ products, nextId }));
-}
-
-function render() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = products.map(p => cardHTML(p)).join('') +
-    `<button class="add-card" onclick="openAdd()"><i class="ti ti-plus"></i><span>Agregar producto</span></button>`;
-  products.forEach(p => {
-    const fi = document.getElementById('fi-'+p.id);
-    if (fi) fi.addEventListener('change', e => handleImg(e, p.id));
-  });
-  updateStats();
-}
-
-function cardHTML(p) {
-  return `
-  <div class="card${p.stock ? '' : ' no-stock'}" id="card-${p.id}">
-    <div class="card-img" onclick="document.getElementById('fi-${p.id}').click()">
-      ${p.img ? `<img src="${p.img}" alt="${p.name}" />` :
-        `<div class="img-placeholder"><i class="ti ti-camera"></i><span>Clic para subir foto</span></div>`}
-      <div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img?'Cambiar':'Subir'} foto</span></div>
-      <span class="stock-pill ${p.stock?'in':'out'}">${p.stock?'En stock':'Sin stock'}</span>
-    </div>
-    <input type="file" id="fi-${p.id}" accept="image/*" />
-    <div class="card-body">
-      <div class="card-name">${esc(p.name)}</div>
-      <div class="card-desc">${p.desc ? esc(p.desc) : '<em style="color:#b0a99f;font-style:italic">Sin descripción</em>'}</div>
-      <div class="card-foot">
-        <span class="card-price">${esc(p.price||'—')}</span>
-        <div class="card-acts">
-          <button class="btn-icon btn" title="Editar" onclick="toggleEdit(${p.id})"><i class="ti ti-pencil"></i></button>
-          <button class="btn-icon btn stock-btn${p.stock?' stock-on':' stock-off'}" id="sb-${p.id}" title="${p.stock?'Quitar stock':'Poner en stock'}" onclick="toggleStock(${p.id})"><i class="ti ti-${p.stock?'circle-check':'circle-x'}"></i></button>
-          <button class="btn-icon btn danger" title="Eliminar" onclick="del(${p.id})"><i class="ti ti-trash"></i></button>
-        </div>
+<!-- Banner Controls -->
+<div class="absolute top-0 left-0 right-0 bg-[#e7ca86]/40 backdrop-blur-sm h-10 border-b border-[#6c4b27]/30 flex items-center px-2" id="banner-controls">
+<div class="flex overflow-x-auto no-scrollbar w-full justify-between px-4" id="banner-tabs">
+        <button onclick="updateBannerSlide(0)" class="banner-tab-btn flex-shrink-0 h-full pirata-font text-lg transition-colors active-glow">
+          Café de Auror
+        </button>
+      
+        <button onclick="updateBannerSlide(1)" class="banner-tab-btn flex-shrink-0 h-full pirata-font text-lg transition-colors text-[#5e3c1d]">
+          Talleres
+        </button>
+      
+        <button onclick="updateBannerSlide(2)" class="banner-tab-btn flex-shrink-0 h-full pirata-font text-lg transition-colors text-[#5e3c1d]">
+          Cóctels y eventos
+        </button>
       </div>
-    </div>
-    <div class="edit-panel" id="ep-${p.id}">
-      <div>
-        <div class="field-label">Nombre</div>
-        <input class="field-input" id="en-${p.id}" value="${esc(p.name)}" />
-      </div>
-      <div>
-        <div class="field-label">Descripción</div>
-        <textarea class="field-textarea" id="ed-${p.id}">${esc(p.desc||'')}</textarea>
-      </div>
-      <div class="field-row">
-        <div>
-          <div class="field-label">Precio</div>
-          <input class="field-input" id="epr-${p.id}" value="${esc(p.price||'')}" />
-        </div>
-        <div>
-          <div class="field-label">Stock</div>
-          <div class="toggle-wrap">
-            <button class="toggle${p.stock?' on':''}" id="tg-${p.id}" onclick="toggleStock(${p.id})"></button>
-            <span class="toggle-label" id="tgl-${p.id}">${p.stock?'Disponible':'Sin stock'}</span>
-          </div>
-        </div>
-      </div>
-      <div class="panel-foot">
-        <button class="btn btn-sm" onclick="cancelEdit(${p.id})">Cancelar</button>
-        <button class="btn btn-accent btn-sm" onclick="saveEdit(${p.id})">Guardar cambios</button>
-      </div>
-    </div>
-  </div>`;
-}
+</div>
+</section>
+<!-- END: HeroBanner -->
+<!-- BEGIN: CategoryNavigation -->
+<nav class="nav-wrap sticky top-[70px] z-30 border-b border-[#6c4b27] px-4 py-3 bg-[#d8bb7b]/95 backdrop-blur-md">
+<div class="flex gap-2 overflow-x-auto no-scrollbar" id="nav-tabs"><button onclick="setCategory('__all__')" class="nav-tab shrink-0 active-glow">Todo</button><button onclick="setCategory('Bocadillos y dulces')" class="nav-tab shrink-0 text-[#694724]">Bocadillos y dulces</button><button onclick="setCategory('Pociones calientes')" class="nav-tab shrink-0 text-[#694724]">Pociones calientes</button><button onclick="setCategory('Pociones Frías')" class="nav-tab shrink-0 text-[#694724]">Pociones Frías</button><button onclick="setCategory('Pociones Sprout')" class="nav-tab shrink-0 text-[#694724]">Pociones Sprout</button><button onclick="setCategory('Bocadillos weasley')" class="nav-tab shrink-0 text-[#694724]">Bocadillos weasley</button><button onclick="setCategory('Picoteo')" class="nav-tab shrink-0 text-[#694724]">Picoteo</button><button onclick="setCategory('Tablas')" class="nav-tab shrink-0 text-[#694724]">Tablas</button><button onclick="setCategory('Sandwiches')" class="nav-tab shrink-0 text-[#694724]">Sandwiches</button><button onclick="setCategory('Pizzas y quesadillas')" class="nav-tab shrink-0 text-[#694724]">Pizzas y quesadillas</button></div>
+</nav>
+<!-- END: CategoryNavigation -->
+<!-- BEGIN: MainContent -->
+<main class="min-h-screen pb-20" id="main-content"><div class="alchemist-grid">
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/38_crop_1781596697237.jpg" class="w-full h-full object-cover" alt="Happee Birthdae" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Happee Birthdae</h5>
+                  
+                </div>
 
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Mini torta de bizcocho húmedo de chocolate con un cremoso relleno del mismo sabor.
+                </p>
 
-function toggleEdit(id) {
-  const ep = document.getElementById('ep-'+id);
-  const card = document.getElementById('card-'+id);
-  const open = ep.classList.contains('open');
-  ep.classList.toggle('open', !open);
-  card.classList.toggle('editing', !open);
-}
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$8.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/40_crop_1781634353059.jpg" class="w-full h-full object-cover" alt="Cupcake Seleccionador" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Seleccionador</h5>
+                  
+                </div>
 
-function cancelEdit(id) {
-  document.getElementById('ep-'+id).classList.remove('open');
-  document.getElementById('card-'+id).classList.remove('editing');
-}
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Dulce bizcocho de vainilla cubierto con un cremoso de chocolate.
+                </p>
 
-function toggleStock(id) {
-  const p = products.find(x=>x.id===id);
-  p.stock = !p.stock;
-  save();
-  // Toggle dentro del panel de edición (si está abierto)
-  const tg = document.getElementById('tg-'+id);
-  if (tg) { tg.classList.toggle('on', p.stock); document.getElementById('tgl-'+id).textContent = p.stock ? 'Disponible' : 'Sin stock'; }
-  // Botón rápido en el footer de la tarjeta
-  const sb = document.getElementById('sb-'+id);
-  if (sb) {
-    sb.className = 'btn-icon btn stock-btn ' + (p.stock ? 'stock-on' : 'stock-off');
-    sb.title = p.stock ? 'Quitar stock' : 'Poner en stock';
-    sb.innerHTML = '<i class="ti ti-' + (p.stock ? 'circle-check' : 'circle-x') + '"></i>';
-  }
-  // Pill en la imagen y opacidad de la tarjeta
-  const card = document.getElementById('card-'+id);
-  card.classList.toggle('no-stock', !p.stock);
-  const pill = card.querySelector('.stock-pill');
-  pill.className = 'stock-pill '+(p.stock?'in':'out');
-  pill.textContent = p.stock ? 'En stock' : 'Sin stock';
-  updateStats();
-}
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/41_crop_1781594393083.jpg" class="w-full h-full object-cover" alt="Cupcake Hogwarts" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Hogwarts</h5>
+                  
+                </div>
 
-function saveEdit(id) {
-  const p = products.find(x=>x.id===id);
-  p.name = document.getElementById('en-'+id).value;
-  p.desc = document.getElementById('ed-'+id).value;
-  p.price = document.getElementById('epr-'+id).value;
-  save();
-  const wasEditing = document.getElementById('card-'+id).classList.contains('editing');
-  reRenderCard(id);
-  if (wasEditing) {
-    document.getElementById('ep-'+id).classList.add('open');
-    document.getElementById('card-'+id).classList.add('editing');
-  }
-}
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Rico bizcocho de red velvet relleno con salsa de frutilla.
+                </p>
 
-function reRenderCard(id) {
-  const p = products.find(x=>x.id===id);
-  const old = document.getElementById('card-'+id);
-  const tmp = document.createElement('div');
-  tmp.innerHTML = cardHTML(p);
-  old.replaceWith(tmp.firstElementChild);
-  const fi = document.getElementById('fi-'+id);
-  if (fi) fi.addEventListener('change', e => handleImg(e, id));
-  updateStats();
-}
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/42_crop_1781594412316.jpg" class="w-full h-full object-cover" alt="Cupcake Lavender" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Lavender</h5>
+                  
+                </div>
 
-function del(id) {
-  if (!confirm('¿Eliminar este producto?')) return;
-  products = products.filter(x=>x.id!==id);
-  save();
-  render();
-}
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Esponjoso bizcocho de limón relleno con una mermelada de frutilla.
+                </p>
 
-function handleImg(e, id) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const p = products.find(x=>x.id===id);
-    p.img = ev.target.result;
-    save();
-    const imgWrap = document.querySelector('#card-'+id+' .card-img');
-    if (imgWrap) {
-      imgWrap.innerHTML = `<img src="${p.img}" alt="${esc(p.name)}" />
-        <div class="img-overlay"><span><i class="ti ti-upload"></i> Cambiar foto</span></div>
-        <span class="stock-pill ${p.stock?'in':'out'}">${p.stock?'En stock':'Sin stock'}</span>`;
-      imgWrap.onclick = () => document.getElementById('fi-'+id).click();
-      const fi = document.getElementById('fi-'+id);
-      if (fi) fi.addEventListener('change', ev2 => handleImg(ev2, id));
-    }
-    updateStats();
-  };
-  reader.readAsDataURL(file);
-}
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/39_crop_1781594135071.jpg" class="w-full h-full object-cover" alt="Tortas Wizard" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Tortas Wizard</h5>
+                  
+                </div>
 
-function updateStats() {
-  document.getElementById('st-total').textContent = products.length;
-  document.getElementById('st-in').textContent = products.filter(p=>p.stock).length;
-  document.getElementById('st-out').textContent = products.filter(p=>!p.stock).length;
-  document.getElementById('st-photo').textContent = products.filter(p=>p.img).length;
-}
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Deliciosas tortas del día hechas en casa.
+                </p>
 
-/* ── Modal ── */
-function openAdd() {
-  mStockOn = true;
-  document.getElementById('m-name').value = '';
-  document.getElementById('m-desc').value = '';
-  document.getElementById('m-price').value = '';
-  document.getElementById('m-toggle').className = 'toggle on';
-  document.getElementById('m-tl').textContent = 'Disponible';
-  document.getElementById('modal-bg').classList.add('open');
-  document.getElementById('m-name').focus();
-}
-function closeModal(e) {
-  if (!e || e.target === document.getElementById('modal-bg'))
-    document.getElementById('modal-bg').classList.remove('open');
-}
-function mToggle() {
-  mStockOn = !mStockOn;
-  document.getElementById('m-toggle').className = 'toggle'+(mStockOn?' on':'');
-  document.getElementById('m-tl').textContent = mStockOn ? 'Disponible' : 'Sin stock';
-}
-function addProduct() {
-  const name = document.getElementById('m-name').value.trim();
-  if (!name) { alert('El nombre es obligatorio.'); return; }
-  products.push({ id: nextId++, name, desc: document.getElementById('m-desc').value, price: document.getElementById('m-price').value, stock: mStockOn, img: null });
-  save(); render();
-  document.getElementById('modal-bg').classList.remove('open');
-}
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/43_crop_1781632029507.jpg" class="w-full h-full object-cover" alt="Cupcake Lovegood" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cupcake Lovegood</h5>
+                  
+                </div>
 
-load(); render();
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Delicioso bizcocho de plátano relleno con manjar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/44_crop_1781633244074.jpg" class="w-full h-full object-cover" alt="Cheesecake 9 3/4" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cheesecake 9 3/4</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Suave cheesecake de vainilla cubierto con una delicada salsa de frambuesa.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/45_crop_1781633432388.jpg" class="w-full h-full object-cover" alt="Malfoy's Pie" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Malfoy's Pie</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Base de masa sablée rellena con crema de limón y un toque de merengue.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.600</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/46_crop_1781632315320.jpg" class="w-full h-full object-cover" alt="La Carta de Hedwig" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">La Carta de Hedwig</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Exquisito kuchen de manzana-nuez con una base de masa sablé.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/71_crop_1781633136626.jpg" class="w-full h-full object-cover" alt="Bownie Mounstruoso" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Ideal con un Latte Especial</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bownie Mounstruoso</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Brownie de chocolate relleno de manjar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/72_crop_1781633611119.jpg" class="w-full h-full object-cover" alt="Kowalski Cinamon Roll" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Kowalski Cinamon Roll</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Rollito de canela.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/70_1781593737462.png" class="w-full h-full object-cover" alt="Refrigerio de Luna" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Refrigerio de Luna</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Media luna, puede ser rellena con manjar, chocolate o chantilly.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$1.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/47_crop_1781634218278.jpg" class="w-full h-full object-cover" alt="Sopaipotter" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Sopaipotter</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de 4 sopaipillas bañadas en chancaca. (*A partir de las 17:00hrs)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/73_crop_1781633739970.jpg" class="w-full h-full object-cover" alt="Sopaipotter Pebre" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Sopaipotter Pebre</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Sopaipillas con pebre.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/1_crop_1781596953933.jpg" class="w-full h-full object-cover" alt="Imperio" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Un maleficio de sabor</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Imperio</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cappuccino Blue
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/2_crop_1781596867069.jpg" class="w-full h-full object-cover" alt="Cruciatus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cruciatus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cappuccino con Jarabe de Granada
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/3_crop_1781597027849.jpg" class="w-full h-full object-cover" alt="Avada Kedavra" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Avada Kedavra</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Mocaccino Menta
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/4_crop_1781658034071.jpg" class="w-full h-full object-cover" alt="Expresso Patronoun" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Expresso Patronoun</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Expresso, puede ser simple o doble.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Simple $2.200 / Doble $3.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/7_1781592886647.png" class="w-full h-full object-cover" alt="Americanum" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Americanum</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Americano, puede ser doble, frío o caliente.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Confundo</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Cortado
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/9_1781592638991.png" class="w-full h-full object-cover" alt="Lattemus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Lattemus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Latte (HOT/ICED)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/10_crop_1781658153603.jpg" class="w-full h-full object-cover" alt="Lattemus Special" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Lattemus Special</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Latte Sabores (HOT/ICED)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/11_1781592309635.png" class="w-full h-full object-cover" alt="Mochacorpus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Mochacorpus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Mocaccino
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Mochacorpus Special</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Mocaccino Sabores
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/13_crop_1781658212103.jpg" class="w-full h-full object-cover" alt="Cappuportus" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cappuportus</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Capuccino
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.700</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/14_1781592500878.png" class="w-full h-full object-cover" alt="Cappuportus Special" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cappuportus Special</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Capuccino Sabores
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Cappuportus Brûlée</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Capuccino Brûlée
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.400</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bombarda</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Bombón
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.600</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/6_crop_1781658128620.jpg" class="w-full h-full object-cover" alt="Muffiato" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Muffiato</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Macchiato
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.100</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/17_crop_1781658257152.jpg" class="w-full h-full object-cover" alt="Arresto Momentum" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Arresto Momentum</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Afogato
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$3.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden agotado">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Accio Latte</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chai Latte (HOT/ICED)
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.700</span>
+                  <span class="text-[7px] font-bold uppercase tracking-tighter text-[#c0392b] border border-[#c0392b]/30 bg-[#c0392b]/10 px-1 py-0.5 rounded">Sin Stock</span>
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/31_crop_1781593964689.jpg" class="w-full h-full object-cover" alt="Choco-Loco" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Choco-Loco</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chocolate Caliente con Marshmellows
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.200</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/30_crop_1781658181252.jpg" class="w-full h-full object-cover" alt="Choco-Choco" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Choco-Choco</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chocolate Caliente
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/74_crop_1781596034512.jpg" class="w-full h-full object-cover" alt="Choco Hagrid" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Recomendado por Hagrid</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Choco Hagrid</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Chocolate XL con marshmellows.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$8.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/19_crop_1781632842913.jpg" class="w-full h-full object-cover" alt="Butterbeer" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Butterbeer</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Milkshake de Mantequilla de Maní con Canela
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.800</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/20_crop_1781595640551.jpg" class="w-full h-full object-cover" alt="Azkaban Shake" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Azkaban Shake</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Milkshake de Oreo
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Crecehuesos</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Milkshake del día
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/22_crop_1781658436399.jpg" class="w-full h-full object-cover" alt="Felix Felicis" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Felix Felicis</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Café Helado
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Feraverto</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Frapuccino Sabores
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/24_crop_1781596336308.jpg" class="w-full h-full object-cover" alt="Longbottom's Smoothies" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Longbottom's Smoothies</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Suaves batidos de fruta a base de yogurt
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/25_crop_1781596196076.jpg" class="w-full h-full object-cover" alt="It's Leviosa" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">It's Leviosa</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Frapuccino Caramel Latte
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.600</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/35_crop_1781667560517.jpg" class="w-full h-full object-cover" alt="Veritaserum" loading="lazy">
+                
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">Favorito de Snape</span>
+                    </div>
+                  </div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Veritaserum</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té Helado
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/36_1781593613023.png" class="w-full h-full object-cover" alt="Poción Translúcida" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Poción Translúcida</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Agua con o sin gas
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/37_1781593465299.jpeg" class="w-full h-full object-cover" alt="Poción Gaseosa" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Poción Gaseosa</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Bebidas de fantasía con y sin azucar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.300</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/75_crop_1781667342887.jpg" class="w-full h-full object-cover" alt="Mocktails Hogwarts" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Mocktails Hogwarts</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Disfruta nuestros mocktails de diferentes sabores!
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.990</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/26_crop_1781592026832.jpg" class="w-full h-full object-cover" alt="Hogwarts Teas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Hogwarts Teas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té de hoja, opción con canela, cedrón o clavo de olor.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/27_crop_1781658328400.jpg" class="w-full h-full object-cover" alt="Tetera Hogwarts Teas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Tetera Hogwarts Teas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Tetera de Té de Hoja para dos personas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/28_crop_1781593189666.jpg" class="w-full h-full object-cover" alt="Gryffindor Tea" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Gryffindor Tea</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té Massala Chai Black.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/29_crop_1781593326081.jpg" class="w-full h-full object-cover" alt="Hufflepuff Tea" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Hufflepuff Tea</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Té de Hierbas o Frutas
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/32_crop_1781658358650.jpg" class="w-full h-full object-cover" alt="Elixir de Mandrágora" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Elixir de Mandrágora</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Limonada de Albahaca-Menta
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.800</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/33_crop_1781658381667.jpg" class="w-full h-full object-cover" alt="Amortentia" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Amortentia</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Limonada de Frutilla-Menta
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.800</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/34_crop_1781596226259.jpg" class="w-full h-full object-cover" alt="Poción Multijugos" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Poción Multijugos</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Jugos de Pulpa del día
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/48_crop_1781658301801.jpg" class="w-full h-full object-cover" alt="Ron Weasley" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Ron Weasley</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Sabroso sandwich en pan ciabatta con churrasco y queso amarillo.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Ginny Weasley</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Delicioso sandwich de ave-mayo y palta en pan ciabatta.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$6.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Percy Weasley</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Rico sandwich con churrasco, tomate, palta y lactonesa en pan ciabatta.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$7.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/51_crop_1781597329213.jpg" class="w-full h-full object-cover" alt="Brotes de Sauce Boxeador" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Brotes de Sauce Boxeador</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de papas pequeñas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$2.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/52_crop_1781597265979.jpg" class="w-full h-full object-cover" alt="Ramas de Sauce Boxeador" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Ramas de Sauce Boxeador</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de papas medianas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/53_crop_1781660321650.jpg" class="w-full h-full object-cover" alt="Canastita de Snitch Doradas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Canastita de Snitch Doradas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Popcorn de pollo con salsa cheddar.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/54_crop_1781597968152.jpg" class="w-full h-full object-cover" alt="Huevos de Acromántulas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Huevos de Acromántulas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de bolitas falafel con salsa de cilantro.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.900</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/55_crop_1781597582558.jpg" class="w-full h-full object-cover" alt="Bocaditos Hedwig" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bocaditos Hedwig</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Porción de 8 nuggets con salsa Golf.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$4.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/56_crop_1781595947279.jpg" class="w-full h-full object-cover" alt="Peter Pettigrew" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Peter Pettigrew</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cama de papas fritas cubiertas con salsa cheddar, carne mechada, tocino y cebollín.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$20.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/57_crop_1781595729784.jpg" class="w-full h-full object-cover" alt="James Potter" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">James Potter</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Cama de papas fritas cubiertas con salsa cheddar, pollo, tomate, crema ácida y cebollín.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$19.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/58_crop_1781598035302.jpg" class="w-full h-full object-cover" alt="Beso del Dementor" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Beso del Dementor</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pan artesanal con doble hamburguesa casera, tocino, queso cheddar, pepinillos, lechuga, tomate y mostaza miel.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/59_crop_1781597829555.jpg" class="w-full h-full object-cover" alt="Fawkes en Llamas" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Fawkes en Llamas</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pan artesanal con carne mechada, cebolla caramelizada, tocino, huevo frito, ají verde y salsa merkén.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/60_crop_1781597910087.jpg" class="w-full h-full object-cover" alt="Pequeño Pickett" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Pequeño Pickett</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pan artesanal con falafel casero, palta, tomate, lechuga, champiñones salteados y salsa de albahaca.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/61_crop_1781597647457.jpg" class="w-full h-full object-cover" alt="Dobby" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Dobby</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Sandwich en pan ciabatta con carne mechada, queso, lechuga, pepinillos, palta y salsa de ajo.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$13.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/62_crop_1781597756189.jpg" class="w-full h-full object-cover" alt="Croocshanks (Opción kids)" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Croocshanks (Opción kids)</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Mini pan artesanal con hamburguesa casera y queso.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">$5.000</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/63_crop_1781597390794.jpg" class="w-full h-full object-cover" alt="Minerva McGonagall" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Minerva McGonagall</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella, rodajas de tomate y hojas de albahaca.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $6.000 / Med $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Remus Lupin</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella y pepperoni.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $6.500 / Med $13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/65_crop_1781597083433.jpg" class="w-full h-full object-cover" alt="Rubeus Hagrid" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Rubeus Hagrid</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella, jamón y aceitunas.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $6.500 / Med $13.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/66_crop_1781597194464.jpg" class="w-full h-full object-cover" alt="Alastor Moody" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Alastor Moody</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Pizza: base salsa de tomates cubierta con queso mozzarella, carne mechada, cebolla caramelizada y tocino.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Mini $7.500 / Med $17.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Newt Scamander</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Quesadilla: tortillas rellenas con queso, un mix de verduras salteadas y cebolla caramelizada.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Normal $6.500 / Grande $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/68_crop_1781598332848.jpg" class="w-full h-full object-cover" alt="Bellatrix Lestrange" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Bellatrix Lestrange</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Quesadilla: tortillas rellenas con queso, jamón, tomate, aceitunas y palta.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Normal $6.500 / Grande $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/69_crop_1781598088051.jpg" class="w-full h-full object-cover" alt="Grinderwald" loading="lazy">
+                
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">Grinderwald</h5>
+                  
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  Quesadilla: tortillas rellenas con queso, pollo, carne mechada de la casa y cebolla caramelizada.
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">Normal $6.500 / Grande $12.500</span>
+                  
+                </div>
+              </div>
+            </article>
+          </div></main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="parchment-bg text-center py-10 px-4 border-t border-[#9a7443] text-[#6d4b2a] text-[11px] leading-relaxed">
+<p class="font-bold mb-1 tracking-widest uppercase">Wizard magic flavors</p>
+<p class="">Homero Ávila 850, Antofagasta, Chile</p>
+<div class="mt-4 flex justify-center gap-4 opacity-50">
+<span class="w-12 h-[1px] bg-[#6d4b2a] self-center"></span>
+<span class="pirata-font text-lg">X</span>
+<span class="w-12 h-[1px] bg-[#6d4b2a] self-center"></span>
+</div>
+<p class="mt-4 opacity-75 italic">Sujeto a disponibilidad en vitrina</p>
+</footer>
+<!-- END: Footer -->
+<!-- BEGIN: Scripts -->
+<script data-purpose="supabase-config">
+    const SUPABASE_URL = "https://cwatxpuxttgeceahbciw.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw";
+
+    let categories = [];
+    let products = [];
+    let banners = [];
+    let activeTab = "__all__";
+    let bannerIdx = 0;
 </script>
-</body>
-</html>
+<script data-purpose="data-fetching">
+    async function sbFetch(path) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        return await res.json();
+      } catch (err) {
+        console.error("Fetch error:", err);
+        return [];
+      }
+    }
+
+    async function loadData() {
+      const [cats, prods, bans] = await Promise.all([
+        sbFetch("categories?select=*&order=position"),
+        sbFetch("products?select=*&order=position"),
+        sbFetch("banners?select=*&order=position")
+      ]);
+      
+      categories = cats || [];
+      products = prods || [];
+      banners = bans || [];
+      
+      initBanners();
+      renderNav();
+      renderMenu();
+    }
+</script>
+<script data-purpose="ui-rendering">
+    function esc(s) {
+      return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    function initBanners() {
+      const track = document.getElementById('banner-track');
+      if (!banners.length) return;
+
+      track.innerHTML = banners.map(b => `
+        <div class="min-w-full h-full relative">
+          <img src="${b.img_url}" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="" />
+        </div>
+      `).join('');
+
+      renderBannerTabs();
+      updateBannerSlide(0);
+    }
+
+    function renderBannerTabs() {
+      const tabsCont = document.getElementById('banner-tabs');
+      tabsCont.innerHTML = banners.map((b, i) => `
+        <button onclick="updateBannerSlide(${i})" class="banner-tab-btn flex-shrink-0 px-4 h-full pirata-font text-lg transition-colors ${i === bannerIdx ? 'active-glow' : 'text-[#5e3c1d]'}">
+          ${esc(b.title || 'Promo ' + (i+1))}
+        </button>
+      `).join('');
+    }
+
+    function updateBannerSlide(idx) {
+      bannerIdx = idx;
+      const track = document.getElementById('banner-track');
+      track.style.transform = `translateX(-${idx * 100}%)`;
+      
+      const b = banners[idx];
+      document.getElementById('banner-title').textContent = b?.title || "";
+      document.getElementById('banner-sub').textContent = b?.subtitle || "";
+      
+      document.querySelectorAll('.banner-tab-btn').forEach((btn, i) => {
+        if (i === idx) {
+          btn.classList.add('active-glow');
+          btn.classList.remove('text-[#5e3c1d]');
+        } else {
+          btn.classList.remove('active-glow');
+          btn.classList.add('text-[#5e3c1d]');
+        }
+      });
+    }
+
+    function renderNav() {
+      const validCats = categories.filter(c => products.some(p => p.cat === c.name));
+      const tabsCont = document.getElementById('nav-tabs');
+      
+      let html = `<button onclick="setCategory('__all__')" class="nav-tab shrink-0 ${activeTab === '__all__' ? 'active-glow' : 'text-[#694724]'}">Todo</button>`;
+      
+      validCats.forEach(c => {
+        html += `<button onclick="setCategory('${esc(c.name)}')" class="nav-tab shrink-0 ${activeTab === c.name ? 'active-glow' : 'text-[#694724]'}">${esc(c.name)}</button>`;
+      });
+      
+      tabsCont.innerHTML = html;
+    }
+
+    function setCategory(cat) {
+      activeTab = cat;
+      renderNav();
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const main = document.getElementById('main-content');
+      const filteredCats = activeTab === "__all__" 
+        ? categories.filter(c => products.some(p => p.cat === c.name))
+        : categories.filter(c => c.name === activeTab);
+
+      if (!filteredCats.length) {
+        main.innerHTML = `<div class="py-20 text-center text-[#8a6b47] px-10">
+          <p class="text-sm">No hay pociones disponibles por ahora.</p>
+        </div>`;
+        return;
+      }
+
+      let html = `<div class="alchemist-grid">`;
+      filteredCats.forEach(cat => {
+        const catProds = products.filter(p => p.cat === cat.name);
+        catProds.forEach(p => {
+          html += `
+            <article class="item-card rounded-xl shadow-sm overflow-hidden ${p.stock ? '' : 'agotado'}">
+              <div class="w-full aspect-square relative overflow-hidden bg-black/5">
+                ${p.img_url 
+                  ? `<img src="${p.img_url}" class="w-full h-full object-cover" alt="${esc(p.name)}" loading="lazy" />`
+                  : `<div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`
+                }
+                ${p.recommendation ? `
+                  <div class="absolute top-1 left-1 right-1">
+                    <div class="badge-rec flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[7px] font-bold shadow-md">
+                      <svg class="w-2 h-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                      <span class="truncate">${esc(p.recommendation)}</span>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+              
+              <div class="p-2.5 flex flex-col flex-1">
+                <div class="flex items-start justify-between gap-1 mb-1">
+                  <h5 class="pirata-font text-lg leading-tight text-[#301b0c] line-clamp-3">${esc(p.name)}</h5>
+                  ${p.vegetarian ? `<span class="text-xs shrink-0" title="Vegetariano">🌿</span>` : ''}
+                </div>
+
+                <p class="text-[9px] text-[#5a3b20] leading-tight line-clamp-3 mb-2">
+                  ${esc(p.description)}
+                </p>
+
+                <div class="mt-auto flex items-center justify-between">
+                  <span class="pirata-font text-lg text-[#381e0c]">${esc(p.price)}</span>
+                  ${!p.stock ? `<span class="text-[7px] font-bold uppercase tracking-tighter text-[#c0392b] border border-[#c0392b]/30 bg-[#c0392b]/10 px-1 py-0.5 rounded">Sin Stock</span>` : ''}
+                </div>
+              </div>
+            </article>
+          `;
+        });
+      });
+      html += `</div>`;
+      main.innerHTML = html;
+    }
+
+    loadData();
+    setInterval(loadData, 60000);
+</script>
+<!-- END: Scripts -->
+
+
+</body></html>
