@@ -1,5 +1,5 @@
 const AUDIO_BASE_URL = "https://audio.twcoffee.cl/";
-const STATE_URL = "https://audio.twcoffee.cl/api/state.php?t=";
+const STATE_URL = "https://audio.twcoffee.cl/api/state.php?nocache=";
 const PLAYLIST_URL = "playlist.json?v=3";
 
 const audio = document.getElementById("audio");
