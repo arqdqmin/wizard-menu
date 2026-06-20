@@ -69,8 +69,16 @@ main{flex:1;padding:1.5rem;overflow-y:auto}
 .banner-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-bottom:1.5rem}
 .banner-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .banner-head h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+.banner-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.autoslide-control{height:30px;padding:0 10px;border:1px solid var(--border-strong);border-radius:var(--radius);display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);background:var(--surface);cursor:pointer;user-select:none}
+.autoslide-control input{display:block;width:14px;height:14px;accent-color:var(--accent)}
 .banner-slides-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
 .banner-card{width:200px;flex-shrink:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--bg)}
+.banner-card.ordering{border-color:#b9cfc5;box-shadow:0 3px 14px rgba(45,74,62,.08)}
+.banner-order-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 8px;background:var(--accent-light);border-bottom:1px solid #cdded6;font-size:11px;color:var(--accent);font-weight:600}
+.banner-order-buttons{display:flex;gap:4px}
+.banner-order-buttons button{width:26px;height:25px;border:1px solid #a9c5b8;border-radius:6px;background:#fff;color:var(--accent);cursor:pointer}
+.banner-order-buttons button:disabled{opacity:.3;cursor:default}
 .banner-card-img{position:relative;height:110px;background:#f0ece5;cursor:pointer}
 .banner-card-img img{width:100%;height:100%;object-fit:cover}
 .banner-card-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--hint);font-size:12px;flex-direction:column;gap:4px}
@@ -82,6 +90,8 @@ main{flex:1;padding:1.5rem;overflow-y:auto}
 .banner-card-input{width:100%;border:1px solid var(--border-strong);border-radius:6px;padding:5px 8px;font-size:12px;font-family:"DM Sans",sans-serif;color:var(--text);background:var(--surface)}
 .banner-card-input:focus{outline:none;border-color:var(--accent)}
 .banner-card-save{height:26px;font-size:11px;width:100%;margin-top:2px}
+.banner-card-tools{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.banner-card-tools .btn{height:26px;font-size:11px;justify-content:center;padding:0 7px}
 .banner-add-card{width:120px;height:110px;flex-shrink:0;border-radius:10px;border:1.5px dashed var(--border-strong);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--hint);font-size:11px;transition:all .15s;background:transparent;font-family:"DM Sans",sans-serif;align-self:center}
 .banner-add-card:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 .banner-add-card i{font-size:20px}
@@ -147,8 +157,9 @@ input[type="file"]{display:none}
 .modal h3{font-family:"DM Serif Display",serif;font-size:18px;font-weight:400;margin-bottom:16px}
 .modal-fields{display:flex;flex-direction:column;gap:11px}
 .modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
-.crop-modal{width:430px}
+.crop-modal{width:520px}
 .crop-stage{width:min(100%,340px);aspect-ratio:1;margin:0 auto 14px;border-radius:12px;overflow:hidden;background:#eee;border:1px solid var(--border-strong)}
+.crop-stage.horizontal{width:min(100%,420px);aspect-ratio:3/2}
 .crop-stage canvas{display:block;width:100%;height:100%}
 .crop-controls{display:grid;grid-template-columns:76px 1fr;gap:10px 12px;align-items:center}
 .crop-controls label{font-size:12px;font-weight:600;color:var(--muted)}
@@ -208,7 +219,11 @@ input[type="file"]{display:none}
     <div class="banner-section">
       <div class="banner-head">
         <h3><i class="ti ti-photo" style="color:var(--accent)"></i> Banner de promociones</h3>
-        <span style="font-size:12px;color:var(--muted)">1080×720px recomendado</span>
+        <div class="banner-actions" id="banner-actions">
+          <label class="autoslide-control"><input type="checkbox" id="banner-autoslide" onchange="saveAutoslide(this.checked)" /> Autoslide</label>
+          <button class="btn btn-sm" onclick="startBannerOrder()"><i class="ti ti-arrows-sort"></i> Ordenar</button>
+          <span style="font-size:12px;color:var(--muted)">1080×720px recomendado</span>
+        </div>
       </div>
       <div class="banner-slides-row" id="banner-slides-row">
         <button class="banner-add-card" onclick="document.getElementById('banner-fi').click()">
@@ -281,8 +296,8 @@ input[type="file"]{display:none}
 <!-- Modal recorte de imagen -->
 <div class="modal-bg" id="modal-crop" onclick="closeModal('modal-crop',event)">
   <div class="modal crop-modal">
-    <h3>Recortar imagen cuadrada</h3>
-    <div class="crop-stage"><canvas id="crop-canvas" width="720" height="720"></canvas></div>
+    <h3 id="crop-title">Recortar imagen cuadrada</h3>
+    <div class="crop-stage" id="crop-stage"><canvas id="crop-canvas" width="720" height="720"></canvas></div>
     <div class="crop-controls">
       <label for="crop-zoom">Zoom</label>
       <input type="range" id="crop-zoom" min="1" max="3" step="0.01" value="1" oninput="drawCrop()" />
@@ -291,7 +306,7 @@ input[type="file"]{display:none}
       <label for="crop-y">Vertical</label>
       <input type="range" id="crop-y" min="0" max="100" step="1" value="50" oninput="drawCrop()" />
     </div>
-    <div class="hint-text" style="margin-top:12px">Ajusta la imagen dentro del cuadrado. La original seguirá guardada en Storage.</div>
+    <div class="hint-text" id="crop-hint" style="margin-top:12px">Ajusta la imagen dentro del cuadrado. La original seguirá guardada en Storage.</div>
     <div class="modal-foot">
       <button class="btn" onclick="closeModal('modal-crop')">Cancelar</button>
       <button class="btn btn-accent" id="btn-save-crop" onclick="saveCrop()"><i class="ti ti-crop"></i> Guardar recorte</button>
@@ -312,7 +327,8 @@ let mpStockOn=true, mpVegOn=false;
 let editingProductId=null;
 let categoryOrderMode=false,productOrderMode=false;
 let categoryOrderBackup=[],productOrderBackup=[],productOrderIds=[];
-let cropState={id:null,img:null};
+let bannerOrderMode=false,bannerOrderBackup=[];
+let cropState={id:null,type:null,img:null};
 
 async function sbFetch(path,opts={}){
   const res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
@@ -602,14 +618,28 @@ async function handleImg(e,id){
 /* Square image crop */
 async function openCropEditor(id){
   const p=products.find(x=>x.id===id);if(!p?.img_url)return;
+  openImageCrop({type:"product",id,imgUrl:p.img_url,title:"Recortar imagen cuadrada",hint:"Ajusta la imagen dentro del cuadrado. La original seguirá guardada en Storage.",width:720,height:720});
+}
+
+function openBannerCropEditor(id){
+  const b=banners.find(x=>x.id===id);if(!b?.img_url)return;
+  openImageCrop({type:"banner",id,imgUrl:b.img_url,title:"Editar banner horizontal",hint:"Ajusta la promoción al formato horizontal recomendado 1080×720. La original seguirá guardada en Storage.",width:1080,height:720});
+}
+
+async function openImageCrop(config){
   showLoading(true);
   try{
-    const response=await fetch(p.img_url);
+    const response=await fetch(config.imgUrl);
     if(!response.ok)throw new Error("No se pudo cargar la imagen");
     const objectUrl=URL.createObjectURL(await response.blob());
     const img=new Image();
     img.onload=()=>{
-      cropState={id,img,objectUrl};
+      cropState={...config,img,objectUrl};
+      const canvas=document.getElementById("crop-canvas");
+      canvas.width=config.width;canvas.height=config.height;
+      document.getElementById("crop-title").textContent=config.title;
+      document.getElementById("crop-hint").textContent=config.hint;
+      document.getElementById("crop-stage").classList.toggle("horizontal",config.type==="banner");
       document.getElementById("crop-zoom").value="1";
       document.getElementById("crop-x").value="50";
       document.getElementById("crop-y").value="50";
@@ -625,14 +655,14 @@ function drawCrop(){
   if(!cropState.img)return;
   const canvas=document.getElementById("crop-canvas");
   const ctx=canvas.getContext("2d");
-  const img=cropState.img,size=canvas.width;
+  const img=cropState.img,targetW=canvas.width,targetH=canvas.height;
   const zoom=Number(document.getElementById("crop-zoom").value);
   const posX=Number(document.getElementById("crop-x").value)/100;
   const posY=Number(document.getElementById("crop-y").value)/100;
-  const scale=Math.max(size/img.naturalWidth,size/img.naturalHeight)*zoom;
+  const scale=Math.max(targetW/img.naturalWidth,targetH/img.naturalHeight)*zoom;
   const width=img.naturalWidth*scale,height=img.naturalHeight*scale;
-  const x=-(width-size)*posX,y=-(height-size)*posY;
-  ctx.clearRect(0,0,size,size);
+  const x=-(width-targetW)*posX,y=-(height-targetH)*posY;
+  ctx.clearRect(0,0,targetW,targetH);
   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
   ctx.drawImage(img,x,y,width,height);
 }
@@ -645,22 +675,82 @@ async function saveCrop(){
     const canvas=document.getElementById("crop-canvas");
     const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Crop failed")),"image/jpeg",.9));
     const file=new File([blob],`crop_${cropState.id}.jpg`,{type:"image/jpeg"});
-    const path=`products/${cropState.id}_crop_${Date.now()}.jpg`;
+    const folder=cropState.type==="banner"?"banners":"products";
+    const path=`${folder}/${cropState.id}_crop_${Date.now()}.jpg`;
     const url=await uploadFile(file,path);
-    await sbFetch(`products?id=eq.${cropState.id}`,{method:"PATCH",body:JSON.stringify({img_url:url})});
-    const p=products.find(x=>x.id===cropState.id);if(p)p.img_url=url;
-    closeCropModal();renderGrid();toast("Recorte cuadrado guardado ✓");
+    if(cropState.type==="banner"){
+      await sbFetch(`banners?id=eq.${cropState.id}`,{method:"PATCH",body:JSON.stringify({img_url:url})});
+      const b=banners.find(x=>x.id===cropState.id);if(b)b.img_url=url;
+      closeCropModal();renderBanners();toast("Banner horizontal guardado ✓");
+    }else{
+      await sbFetch(`products?id=eq.${cropState.id}`,{method:"PATCH",body:JSON.stringify({img_url:url})});
+      const p=products.find(x=>x.id===cropState.id);if(p)p.img_url=url;
+      closeCropModal();renderGrid();toast("Recorte cuadrado guardado ✓");
+    }
   }catch(e){toast("Error al guardar el recorte");}
   btn.disabled=false;btn.innerHTML='<i class="ti ti-crop"></i> Guardar recorte';
 }
 
 function closeCropModal(){
   document.getElementById("modal-crop").classList.remove("open");
+  document.getElementById("crop-stage").classList.remove("horizontal");
   if(cropState.objectUrl)URL.revokeObjectURL(cropState.objectUrl);
-  cropState={id:null,img:null};
+  cropState={id:null,type:null,img:null};
 }
 
 /* Banner */
+function bannerAutoslideOn(){return banners.some(b=>b.autoplay===true);}
+
+function renderBannerActions(){
+  const el=document.getElementById("banner-actions");if(!el)return;
+  el.innerHTML=bannerOrderMode
+    ?`<button class="btn btn-sm btn-accent" onclick="saveBannerOrder()"><i class="ti ti-check"></i> Guardar orden</button>
+      <button class="btn btn-sm" onclick="cancelBannerOrder()">Cancelar</button>
+      <span style="font-size:12px;color:var(--muted)">Ordena con las flechas</span>`
+    :`<label class="autoslide-control"><input type="checkbox" id="banner-autoslide" ${bannerAutoslideOn()?"checked":""} onchange="saveAutoslide(this.checked)" /> Autoslide</label>
+      <button class="btn btn-sm" onclick="startBannerOrder()"><i class="ti ti-arrows-sort"></i> Ordenar</button>
+      <span style="font-size:12px;color:var(--muted)">1080×720px recomendado</span>`;
+}
+
+async function saveAutoslide(value){
+  showLoading(true);
+  try{
+    await Promise.all(banners.map(b=>sbFetch(`banners?id=eq.${b.id}`,{method:"PATCH",body:JSON.stringify({autoplay:value})})));
+    banners.forEach(b=>b.autoplay=value);
+    renderBannerActions();
+    toast(value?"Autoslide activado ✓":"Autoslide desactivado");
+  }catch(e){toast("Error al guardar Autoslide");}
+  showLoading(false);
+}
+
+function startBannerOrder(){
+  bannerOrderBackup=banners.map(b=>({...b}));
+  bannerOrderMode=true;renderBanners();
+}
+
+function moveBanner(index,direction){
+  const target=index+direction;
+  if(target<0||target>=banners.length)return;
+  [banners[index],banners[target]]=[banners[target],banners[index]];
+  renderBanners();
+}
+
+async function saveBannerOrder(){
+  showLoading(true);
+  try{
+    await Promise.all(banners.map((b,i)=>sbFetch(`banners?id=eq.${b.id}`,{method:"PATCH",body:JSON.stringify({position:i})})));
+    banners.forEach((b,i)=>b.position=i);
+    bannerOrderMode=false;bannerOrderBackup=[];renderBanners();
+    toast("Orden de promociones guardado ✓");
+  }catch(e){toast("Error al guardar el orden");}
+  showLoading(false);
+}
+
+function cancelBannerOrder(){
+  banners=bannerOrderBackup.map(b=>({...b}));
+  bannerOrderMode=false;bannerOrderBackup=[];renderBanners();
+}
+
 async function uploadBannerImages(e){
   const files=Array.from(e.target.files);if(!files.length)return;
   for(const file of files){
@@ -690,22 +780,31 @@ async function delBanner(id){
 }
 
 function renderBanners(){
+  renderBannerActions();
   const el=document.getElementById("banner-slides-row");
-  const cards=banners.map(b=>`<div class="banner-card">
-    <div class="banner-card-img" onclick="document.getElementById('bfi-${b.id}').click()">
+  const cards=banners.map((b,i)=>`<div class="banner-card${bannerOrderMode?" ordering":""}">
+    ${bannerOrderMode?`<div class="banner-order-bar"><span>Promoción ${i+1}</span>
+      <span class="banner-order-buttons">
+        <button onclick="moveBanner(${i},-1)" ${i===0?"disabled":""} title="Mover izquierda"><i class="ti ti-arrow-left"></i></button>
+        <button onclick="moveBanner(${i},1)" ${i===banners.length-1?"disabled":""} title="Mover derecha"><i class="ti ti-arrow-right"></i></button>
+      </span></div>`:""}
+    <div class="banner-card-img" ${bannerOrderMode?"":`onclick="document.getElementById('bfi-${b.id}').click()"`}>
       ${b.img_url?`<img src="${b.img_url}" />`:`<div class="banner-card-img-ph"><i class="ti ti-photo"></i><span>Sin imagen</span></div>`}
-      <button class="banner-card-del" onclick="event.stopPropagation();delBanner(${b.id})"><i class="ti ti-x"></i></button>
+      ${bannerOrderMode?"":`<button class="banner-card-del" onclick="event.stopPropagation();delBanner(${b.id})"><i class="ti ti-x"></i></button>`}
       <input type="file" id="bfi-${b.id}" accept="image/*" onchange="replaceBannerImg(event,${b.id})" style="display:none" />
     </div>
     <div class="banner-card-body">
       <label>Título (opcional)</label>
-      <input class="banner-card-input" id="bt-${b.id}" value="${esc(b.title||"")}" placeholder="Ej: Novedad de temporada" />
+      <input class="banner-card-input" id="bt-${b.id}" value="${esc(b.title||"")}" placeholder="Ej: Novedad de temporada" ${bannerOrderMode?"disabled":""} />
       <label>Descripción (opcional)</label>
-      <input class="banner-card-input" id="bs-${b.id}" value="${esc(b.subtitle||"")}" placeholder="Texto breve..." />
-      <button class="btn btn-sm btn-accent banner-card-save" onclick="saveBannerText(${b.id})">Guardar texto</button>
+      <input class="banner-card-input" id="bs-${b.id}" value="${esc(b.subtitle||"")}" placeholder="Texto breve..." ${bannerOrderMode?"disabled":""} />
+      ${bannerOrderMode?"":`<div class="banner-card-tools">
+        <button class="btn btn-sm btn-accent" onclick="saveBannerText(${b.id})">Guardar</button>
+        ${b.img_url?`<button class="btn btn-sm" onclick="openBannerCropEditor(${b.id})"><i class="ti ti-crop"></i> Editar</button>`:""}
+      </div>`}
     </div>
   </div>`).join("");
-  el.innerHTML=cards+`<button class="banner-add-card" onclick="document.getElementById('banner-fi').click()"><i class="ti ti-plus"></i><span>Agregar</span></button>`;
+  el.innerHTML=cards+(bannerOrderMode?"":`<button class="banner-add-card" onclick="document.getElementById('banner-fi').click()"><i class="ti ti-plus"></i><span>Agregar</span></button>`);
 }
 
 async function replaceBannerImg(e,id){

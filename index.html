@@ -1932,6 +1932,7 @@
     let banners = [];
     let activeTab = "__all__";
     let bannerIdx = 0;
+    let bannerTimer = null;
 </script>
 <script data-purpose="data-fetching">
     async function sbFetch(path) {
@@ -1973,6 +1974,7 @@
     function initBanners() {
       const track = document.getElementById('banner-track');
       if (!banners.length) return;
+      clearInterval(bannerTimer);
 
       track.innerHTML = banners.map(b => `
         <div class="min-w-full h-full relative">
@@ -1982,6 +1984,9 @@
 
       renderBannerTabs();
       updateBannerSlide(0);
+      if (banners.some(b => b.autoplay === true) && banners.length > 1) {
+        bannerTimer = setInterval(() => updateBannerSlide((bannerIdx + 1) % banners.length), 5000);
+      }
     }
 
     function renderBannerTabs() {
