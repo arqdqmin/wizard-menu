@@ -255,6 +255,7 @@ input[type="file"]{display:none}
   </div>
   <div class="header-actions">
     <a href="index.html" target="_blank" class="btn"><i class="ti ti-eye"></i> Ver vitrina</a>
+    <button class="btn" id="btn-refresh-cache" onclick="refreshImageCache()" title="Aplicar caché larga a las imágenes actuales"><i class="ti ti-refresh"></i> Actualizar caché</button>
     <button class="btn btn-accent" onclick="openAddProduct()"><i class="ti ti-plus"></i> Producto</button>
   </div>
 </header>
@@ -384,6 +385,7 @@ input[type="file"]{display:none}
 const SUPABASE_URL = "https://cwatxpuxttgeceahbciw.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw";
 const BUCKET = "images";
+const IMAGE_SIZE_WARNING = 1024 * 1024;
 
 let categories=[], products=[], banners=[];
 let activeCat="__all__";
@@ -406,11 +408,40 @@ async function sbFetch(path,opts={}){
 async function uploadFile(file,path){
   const res=await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,{
     method:"POST",
-    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type,"cache-control":"max-age=31536000, immutable","x-upsert":"true"},
+    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type,"cache-control":"max-age=31536000","x-upsert":"true"},
     body:file
   });
   if(!res.ok)throw new Error("Upload failed");
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+function confirmImageSize(file){
+  if(file.size<=IMAGE_SIZE_WARNING)return true;
+  const size=(file.size/1024/1024).toFixed(2);
+  return confirm(`Esta imagen pesa ${size} MB. Se recomienda reducirla a menos de 1 MB para no aumentar el consumo de Supabase.\n\n¿Subirla de todas formas?`);
+}
+
+async function refreshImageCache(){
+  const prefix=`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+  const urls=[...new Set([...products,...banners].map(item=>item.img_url).filter(url=>url&&url.startsWith(prefix)))];
+  if(!urls.length){toast("No hay imágenes para actualizar");return;}
+  if(!confirm(`Se actualizará la caché de ${urls.length} imágenes. Esto puede tardar unos minutos.\n\n¿Continuar?`))return;
+
+  const btn=document.getElementById("btn-refresh-cache");
+  btn.disabled=true;showLoading(true);
+  let updated=0,failed=0;
+  for(const url of urls){
+    btn.innerHTML=`<i class="ti ti-refresh"></i> ${updated+failed+1}/${urls.length}`;
+    try{
+      const response=await fetch(url,{cache:"no-store"});
+      if(!response.ok)throw new Error("Download failed");
+      const blob=await response.blob();
+      const path=decodeURIComponent(url.slice(prefix.length).split("?")[0]);
+      await uploadFile(blob,path);updated++;
+    }catch(error){failed++;console.error("No se pudo actualizar la caché de",url,error);}
+  }
+  showLoading(false);btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Actualizar caché';
+  toast(failed?`Caché actualizada en ${updated}; ${failed} fallaron`:`Caché actualizada en ${updated} imágenes ✓`);
 }
 
 async function loadAll(){
@@ -667,6 +698,7 @@ async function delProduct(id){
 /* Image upload */
 async function handleImg(e,id){
   const file=e.target.files[0];if(!file)return;
+  if(!confirmImageSize(file)){e.target.value="";return;}
   const wrap=document.querySelector(`#card-${id} .card-img`);
   if(wrap)wrap.innerHTML+='<div class="img-uploading"><div class="spinner"></div> Subiendo...</div>';
   try{
@@ -818,6 +850,7 @@ function cancelBannerOrder(){
 async function uploadBannerImages(e){
   const files=Array.from(e.target.files);if(!files.length)return;
   for(const file of files){
+    if(!confirmImageSize(file))continue;
     try{
       const path=`banners/banner_${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split(".").pop()}`;
       const url=await uploadFile(file,path);
@@ -873,6 +906,7 @@ function renderBanners(){
 
 async function replaceBannerImg(e,id){
   const file=e.target.files[0];if(!file)return;
+  if(!confirmImageSize(file)){e.target.value="";return;}
   try{
     const path=`banners/banner_${id}_${Date.now()}.${file.name.split(".").pop()}`;
     const url=await uploadFile(file,path);
