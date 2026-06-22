@@ -135,17 +135,7 @@
 <!-- BEGIN: HeroBanner -->
 <section class="hero relative w-full h-[75vw] max-h-[400px] overflow-hidden bg-[#080706]" id="hero-container">
 <div class="banner-track h-full" id="banner-track" style="transform: translateX(0%);">
-        <div class="min-w-full h-full relative">
-          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_1_1781595398264.png" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
-        </div>
-      
-        <div class="min-w-full h-full relative">
-          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_5_1781474591459.jpeg" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
-        </div>
-      
-        <div class="min-w-full h-full relative">
-          <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/banners/banner_4_1781595349706.jpeg" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="">
-        </div>
+        <div class="min-w-full h-full relative bg-[#080706]"></div>
       </div>
 <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/80 pointer-events-none" id="banner-overlay"></div>
 <div class="absolute left-0 right-0 p-6 text-center bottom-0" id="banner-content">
@@ -178,7 +168,7 @@
 </nav>
 <!-- END: CategoryNavigation -->
 <!-- BEGIN: MainContent -->
-<main class="min-h-screen pb-20" id="main-content"><div class="alchemist-grid">
+<main class="min-h-screen pb-20" id="main-content"><div class="py-20 text-center text-[#8a6b47] px-10" id="menu-loading"><p class="text-sm">Cargando la magia...</p></div><template id="static-menu-fallback"><div class="alchemist-grid">
             <article class="item-card rounded-xl shadow-sm overflow-hidden ">
               <div class="w-full aspect-square relative overflow-hidden bg-black/5">
                 <img src="https://cwatxpuxttgeceahbciw.supabase.co/storage/v1/object/public/images/products/38_crop_1781596697237.jpg" class="w-full h-full object-cover" alt="Happee Birthdae" loading="lazy">
@@ -1908,7 +1898,7 @@
                 </div>
               </div>
             </article>
-          </div></main>
+          </div></template></main>
 <!-- END: MainContent -->
 <!-- BEGIN: Footer -->
 <footer class="parchment-bg text-center py-10 px-4 border-t border-[#9a7443] text-[#6d4b2a] text-[11px] leading-relaxed">
@@ -1933,37 +1923,58 @@
     let activeTab = "__all__";
     let bannerIdx = 0;
     let bannerTimer = null;
+    let categoriesSignature = "";
+    let productsSignature = "";
+    let bannersSignature = "";
+    let initialDataLoaded = false;
 </script>
 <script data-purpose="data-fetching">
     async function sbFetch(path) {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`
-          }
-        });
-        return await res.json();
-      } catch (err) {
-        console.error("Fetch error:", err);
-        return [];
-      }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      if (!res.ok) throw new Error(`Supabase respondió ${res.status}`);
+      return await res.json();
     }
 
     async function loadData() {
-      const [cats, prods, bans] = await Promise.all([
-        sbFetch("categories?select=*&order=position"),
-        sbFetch("products?select=*&order=position"),
-        sbFetch("banners?select=*&order=position")
-      ]);
-      
-      categories = cats || [];
-      products = prods || [];
-      banners = bans || [];
-      
-      initBanners();
-      renderNav();
-      renderMenu();
+      try {
+        const [cats, prods, bans] = await Promise.all([
+          sbFetch("categories?select=*&order=position"),
+          sbFetch("products?select=*&order=position"),
+          sbFetch("banners?select=*&order=position")
+        ]);
+
+        const nextCategories = cats || [];
+        const nextProducts = prods || [];
+        const nextBanners = bans || [];
+        const nextCategoriesSignature = JSON.stringify(nextCategories);
+        const nextProductsSignature = JSON.stringify(nextProducts);
+        const nextBannersSignature = JSON.stringify(nextBanners);
+        const menuChanged = nextCategoriesSignature !== categoriesSignature || nextProductsSignature !== productsSignature;
+        const bannersChanged = nextBannersSignature !== bannersSignature;
+
+        categories = nextCategories;
+        products = nextProducts;
+        banners = nextBanners;
+
+        if (bannersChanged) initBanners();
+        if (menuChanged) {
+          renderNav();
+          renderMenu();
+        }
+
+        categoriesSignature = nextCategoriesSignature;
+        productsSignature = nextProductsSignature;
+        bannersSignature = nextBannersSignature;
+        initialDataLoaded = true;
+      } catch (err) {
+        console.error("No se pudo actualizar el menú:", err);
+        if (!initialDataLoaded) showStaticFallback();
+      }
     }
 </script>
 <script data-purpose="ui-rendering">
@@ -1971,14 +1982,26 @@
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
+    function showStaticFallback() {
+      const main = document.getElementById('main-content');
+      const fallback = document.getElementById('static-menu-fallback');
+      if (main && fallback) main.innerHTML = fallback.innerHTML;
+    }
+
     function initBanners() {
       const track = document.getElementById('banner-track');
-      if (!banners.length) return;
       clearInterval(bannerTimer);
+      if (!banners.length) {
+        track.innerHTML = `<div class="min-w-full h-full relative bg-[#080706]"></div>`;
+        document.getElementById('banner-tabs').innerHTML = "";
+        return;
+      }
 
-      track.innerHTML = banners.map(b => `
+      bannerIdx = 0;
+
+      track.innerHTML = banners.map((b, i) => `
         <div class="min-w-full h-full relative">
-          <img src="${b.img_url}" class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="" />
+          ${b.img_url ? `<img ${i === 0 ? `src="${esc(b.img_url)}" fetchpriority="high"` : `data-src="${esc(b.img_url)}"`} class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="${esc(b.title || `Promoción ${i + 1}`)}" decoding="async" />` : ''}
         </div>
       `).join('');
 
@@ -1987,6 +2010,14 @@
       if (banners.some(b => b.autoplay === true) && banners.length > 1) {
         bannerTimer = setInterval(() => updateBannerSlide((bannerIdx + 1) % banners.length), 5000);
       }
+    }
+
+    function ensureBannerImage(idx) {
+      const slide = document.getElementById('banner-track')?.children[idx];
+      const img = slide?.querySelector('img[data-src]');
+      if (!img) return;
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
     }
 
     function renderBannerTabs() {
@@ -1999,8 +2030,11 @@
     }
 
     function updateBannerSlide(idx) {
+      if (!banners.length) return;
+      idx = Math.max(0, Math.min(idx, banners.length - 1));
       bannerIdx = idx;
       const track = document.getElementById('banner-track');
+      ensureBannerImage(idx);
       track.style.transform = `translateX(-${idx * 100}%)`;
       
       const b = banners[idx];
@@ -2058,7 +2092,7 @@
             <article class="item-card rounded-xl shadow-sm overflow-hidden ${p.stock ? '' : 'agotado'}">
               <div class="w-full aspect-square relative overflow-hidden bg-black/5">
                 ${p.img_url 
-                  ? `<img src="${p.img_url}" class="w-full h-full object-cover" alt="${esc(p.name)}" loading="lazy" />`
+                  ? `<img src="${esc(p.img_url)}" class="w-full h-full object-cover" alt="${esc(p.name)}" loading="lazy" decoding="async" fetchpriority="low" />`
                   : `<div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`
                 }
                 ${p.recommendation ? `
@@ -2095,7 +2129,7 @@
     }
 
     loadData();
-    setInterval(loadData, 60000);
+    setInterval(loadData, 300000);
 </script>
 <!-- END: Scripts -->
 

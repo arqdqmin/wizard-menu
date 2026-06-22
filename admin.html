@@ -406,7 +406,7 @@ async function sbFetch(path,opts={}){
 async function uploadFile(file,path){
   const res=await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,{
     method:"POST",
-    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type,"x-upsert":"true"},
+    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type,"cache-control":"max-age=31536000, immutable","x-upsert":"true"},
     body:file
   });
   if(!res.ok)throw new Error("Upload failed");
@@ -516,7 +516,7 @@ function cardHTML(p,index,total){
       <button onclick="moveProduct(${p.id},1)" ${index===total-1?"disabled":""} title="Mover abajo"><i class="ti ti-arrow-down"></i></button>
     </span></div>`:""}
   <div class="card-img" ${productOrderMode?"":`onclick="document.getElementById('fi-${p.id}').click()"`}>
-    ${p.img_url?`<img src="${p.img_url}" alt="${esc(p.name)}" />`:`<div class="img-placeholder"><i class="ti ti-camera"></i><span>Subir foto</span></div>`}
+    ${p.img_url?`<img src="${p.img_url}" alt="${esc(p.name)}" loading="lazy" decoding="async" />`:`<div class="img-placeholder"><i class="ti ti-camera"></i><span>Subir foto</span></div>`}
     ${productOrderMode?"":`<div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img_url?"Cambiar":"Subir"} foto</span></div>`}
     ${p.img_url&&!productOrderMode?`<button class="crop-img-btn" onclick="event.stopPropagation();openCropEditor(${p.id})"><i class="ti ti-crop"></i> Recortar</button>`:""}
     <span class="stock-pill ${p.stock?"in":"out"}">${p.stock?"En stock":"Agotado"}</span>
@@ -853,7 +853,7 @@ function renderBanners(){
         <button onclick="moveBanner(${i},1)" ${i===banners.length-1?"disabled":""} title="Mover derecha"><i class="ti ti-arrow-right"></i></button>
       </span></div>`:""}
     <div class="banner-card-img" ${bannerOrderMode?"":`onclick="document.getElementById('bfi-${b.id}').click()"`}>
-      ${b.img_url?`<img src="${b.img_url}" />`:`<div class="banner-card-img-ph"><i class="ti ti-photo"></i><span>Sin imagen</span></div>`}
+      ${b.img_url?`<img src="${b.img_url}" alt="${esc(b.title||`Promoción ${i+1}`)}" loading="lazy" decoding="async" />`:`<div class="banner-card-img-ph"><i class="ti ti-photo"></i><span>Sin imagen</span></div>`}
       ${bannerOrderMode?"":`<button class="banner-card-del" onclick="event.stopPropagation();delBanner(${b.id})"><i class="ti ti-x"></i></button>`}
       <input type="file" id="bfi-${b.id}" accept="image/*" onchange="replaceBannerImg(event,${b.id})" style="display:none" />
     </div>
