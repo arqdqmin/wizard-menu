@@ -1927,6 +1927,7 @@
     let productsSignature = "";
     let bannersSignature = "";
     let initialDataLoaded = false;
+    const localMediaFiles = new Set();
 </script>
 <script data-purpose="data-fetching">
     async function sbFetch(path) {
@@ -1973,7 +1974,7 @@
         initialDataLoaded = true;
       } catch (err) {
         console.error("No se pudo actualizar el menú:", err);
-        if (!initialDataLoaded) showStaticFallback();
+        if (!initialDataLoaded) await showStaticFallback();
       }
     }
 </script>
@@ -1982,10 +1983,36 @@
       return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
-    function showStaticFallback() {
-      const main = document.getElementById('main-content');
-      const fallback = document.getElementById('static-menu-fallback');
-      if (main && fallback) main.innerHTML = fallback.innerHTML;
+    function localMediaUrl(url) {
+      if (!url) return "";
+      if (url.startsWith("assets/menu-media/")) return url;
+      const match = url.match(/\/storage\/v1\/object\/public\/images\/(products|banners)\/([^?#]+)/);
+      if (!match) return url;
+      const localUrl = `assets/menu-media/${match[1]}/${decodeURIComponent(match[2])}`;
+      return localMediaFiles.has(localUrl) ? localUrl : url;
+    }
+
+    async function showStaticFallback() {
+      try {
+        const response = await fetch("assets/menu-data.json", {cache:"no-cache"});
+        if (!response.ok) throw new Error(`Respaldo local ${response.status}`);
+        const snapshot = await response.json();
+        categories = snapshot.categories || [];
+        products = snapshot.products || [];
+        banners = snapshot.banners || [];
+        [...products, ...banners].forEach(item => {
+          if (item.img_url?.startsWith("assets/menu-media/")) localMediaFiles.add(item.img_url);
+        });
+        categoriesSignature = JSON.stringify(categories);
+        productsSignature = JSON.stringify(products);
+        bannersSignature = JSON.stringify(banners);
+        initialDataLoaded = true;
+        initBanners();
+        renderNav();
+        renderMenu();
+      } catch (err) {
+        console.error("No se pudo cargar el respaldo local:", err);
+      }
     }
 
     function initBanners() {
@@ -2001,7 +2028,7 @@
 
       track.innerHTML = banners.map((b, i) => `
         <div class="min-w-full h-full relative">
-          ${b.img_url ? `<img ${i === 0 ? `src="${esc(b.img_url)}" fetchpriority="high"` : `data-src="${esc(b.img_url)}"`} class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="${esc(b.title || `Promoción ${i + 1}`)}" decoding="async" />` : ''}
+          ${b.img_url ? `<img ${i === 0 ? `src="${esc(localMediaUrl(b.img_url))}" fetchpriority="high"` : `data-src="${esc(localMediaUrl(b.img_url))}"`} class="w-full h-full object-cover saturate-[0.85] contrast-[1.05]" alt="${esc(b.title || `Promoción ${i + 1}`)}" decoding="async" />` : ''}
         </div>
       `).join('');
 
@@ -2092,7 +2119,7 @@
             <article class="item-card rounded-xl shadow-sm overflow-hidden ${p.stock ? '' : 'agotado'}">
               <div class="w-full aspect-square relative overflow-hidden bg-black/5">
                 ${p.img_url 
-                  ? `<img src="${esc(p.img_url)}" class="w-full h-full object-cover" alt="${esc(p.name)}" loading="lazy" decoding="async" fetchpriority="low" />`
+                  ? `<img src="${esc(localMediaUrl(p.img_url))}" class="w-full h-full object-cover" alt="${esc(p.name)}" loading="lazy" decoding="async" fetchpriority="low" />`
                   : `<div class="w-full h-full flex items-center justify-center opacity-20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>`
                 }
                 ${p.recommendation ? `
@@ -2128,8 +2155,13 @@
       main.innerHTML = html;
     }
 
-    loadData();
-    setInterval(loadData, 300000);
+    async function bootstrapMenu() {
+      await showStaticFallback();
+      loadData();
+    }
+
+    bootstrapMenu();
+    setInterval(loadData, 900000);
 </script>
 <!-- END: Scripts -->
 
