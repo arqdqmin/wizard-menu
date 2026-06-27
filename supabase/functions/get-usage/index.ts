@@ -27,7 +27,7 @@ serve(async (req) => {
     if (authErr || !user) return json({ error: 'Unauthorized' }, 401);
 
     // ── Intentar Management API si existe el PAT ──────────────────────────
-    const pat = Deno.env.get('SUPABASE_PAT');
+    const pat = Deno.env.get('MGMT_PAT');
     if (!pat) {
       return json({ status: 'no_pat', ref: PROJECT_REF });
     }
