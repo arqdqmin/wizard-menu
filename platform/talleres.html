@@ -224,7 +224,10 @@ function renderTalleres() {
         <div class="taller-card-desc">${esc((t.descripcion??'').replace(/<[^>]*>/g,''))}</div>
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span class="taller-card-precio">${precio}</span>
-          ${t.cupos?`<span style="font-size:11px;color:var(--muted)">${t.cupos} cupos</span>`:''}
+          <span style="font-size:11px;color:var(--muted)">
+            ${t.cupos?t.cupos+' cupos':''}
+            ${t.edad_min?(t.cupos?' · ':'')+(t.edad_max?t.edad_min+'–'+t.edad_max+' años':'Desde '+t.edad_min+' años'):''}
+          </span>
         </div>
         <div class="taller-card-actions">
           <button class="btn btn-sm" onclick="openEdit(${t.id})"><i class="ti ti-pencil"></i> Editar</button>
@@ -257,6 +260,8 @@ window.openEdit = function(id) {
   document.getElementById('t-hora').value     = t.hora?.slice(0,5) ?? '';
   document.getElementById('t-precio').value   = t.precio ?? '';
   document.getElementById('t-cupos').value    = t.cupos ?? '';
+  document.getElementById('t-edad-min').value = t.edad_min ?? '';
+  document.getElementById('t-edad-max').value = t.edad_max ?? '';
   document.getElementById('t-link').value     = t.link_pago ?? '';
   document.getElementById('t-banco').value    = t.banco ?? '';
   document.getElementById('t-tipo').value     = t.tipo_cuenta ?? '';
@@ -276,7 +281,7 @@ window.openEdit = function(id) {
 };
 
 function resetTallerForm() {
-  ['t-nombre','t-fecha','t-hora','t-precio','t-cupos',
+  ['t-nombre','t-fecha','t-hora','t-precio','t-cupos','t-edad-min','t-edad-max',
    't-link','t-banco','t-tipo','t-cuenta','t-titular','t-rut','t-email'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -333,6 +338,8 @@ async function saveTaller() {
     hora:          document.getElementById('t-hora').value || null,
     precio:        parseInt(document.getElementById('t-precio').value) || null,
     cupos:         parseInt(document.getElementById('t-cupos').value) || null,
+    edad_min:      parseInt(document.getElementById('t-edad-min').value) || null,
+    edad_max:      parseInt(document.getElementById('t-edad-max').value) || null,
     link_pago:     document.getElementById('t-link').value.trim() || null,
     banco:         document.getElementById('t-banco').value.trim() || null,
     tipo_cuenta:   document.getElementById('t-tipo').value.trim() || null,
@@ -666,6 +673,16 @@ content.innerHTML = `
         <div class="form-group">
           <label class="form-label">Cupos disponibles</label>
           <input class="form-input" type="number" id="t-cupos" placeholder="Sin límite" />
+        </div>
+      </div>
+      <div class="form-row2" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">Edad mínima</label>
+          <input class="form-input" type="number" id="t-edad-min" placeholder="Ej: 6" min="1" max="99" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Edad máxima <span style="color:var(--hint)">(opcional)</span></label>
+          <input class="form-input" type="number" id="t-edad-max" placeholder="Ej: 14" min="1" max="99" />
         </div>
       </div>
 
