@@ -460,7 +460,7 @@ async function loadTalleres(){
       +'<div class="taller-card-desc">'+esc(stripHtml(t.descripcion||''))+'</div>'
       +'<div class="taller-card-footer">'
       +'<span class="taller-precio">'+precio+'</span>'
-      +(t.cupos||t.edad_min?'<span class="taller-cupos">'+(t.cupos?t.cupos+' cupos':'')+(t.cupos&&t.edad_min?' · ':'')+(t.edad_min?(t.edad_max?t.edad_min+'–'+t.edad_max+' anos':'Desde '+t.edad_min+' anos'):'')+'</span>':'')
+      +(t.cupos||t.edad_min?'<span class="taller-cupos">'+(t.cupos?t.cupos+' cupos':'')+(t.cupos&&t.edad_min?' · ':'')+(t.edad_min?(t.edad_max?t.edad_min+'&ndash;'+t.edad_max+' a&ntilde;os':'Desde '+t.edad_min+' a&ntilde;os'):'')+'</span>':'')
       +'<span class="btn-ver"><i class="ti ti-arrow-right"></i> Ver mas</span>'
       +'</div></div></div>';
   }).join('');
@@ -492,7 +492,7 @@ function openTaller(id){
   if(t.precio)metas.push('<div class="meta-item"><i class="ti ti-currency-dollar"></i><span class="meta-value">$'+t.precio.toLocaleString('es-CL')+'</span></div>');
   if(t.cupos) metas.push('<div class="meta-item"><i class="ti ti-users"></i><span class="meta-value">'+t.cupos+' cupos</span></div>');
   if(t.edad_min){
-    var edadLabel=t.edad_max?t.edad_min+' a '+t.edad_max+' anos':'Desde '+t.edad_min+' anos';
+    var edadLabel=t.edad_max?t.edad_min+' a '+t.edad_max+' años':'Desde '+t.edad_min+' años';
     metas.push('<div class="meta-item"><i class="ti ti-calendar-user"></i><span class="meta-value">'+edadLabel+'</span></div>');
   }
   document.getElementById('modal-meta').innerHTML=metas.join('');
