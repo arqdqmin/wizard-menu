@@ -367,19 +367,33 @@ async function loadSupabaseUsage() {
 
     const m = data.metrics ?? {};
     el.innerHTML = `<div class="usage-grid">
-      ${metricCard('Egress mensual',  formatBytes(m.egress_bytes),  egressBar(m.egress_bytes),  'ti-wifi', 'Transferencia de datos este mes')}
-      ${metricCard('Storage',         formatBytes(m.storage_bytes), storageBar(m.storage_bytes),'ti-file', 'Archivos en Supabase Storage')}
-      ${metricCard('Base de datos',   formatBytes(m.db_bytes),      dbBar(m.db_bytes),           'ti-database', 'Tamaño de la base de datos')}
-      ${metricCard('Usuarios activos',m.mau != null ? String(m.mau) : null, null, 'ti-users', 'Monthly active users')}
+      ${egressCard(m.egress_bytes)}
+      ${metricCard('Storage',         formatBytes(m.storage_bytes), storageBar(m.storage_bytes),'ti-file',     'Archivos en Supabase Storage')}
+      ${metricCard('Base de datos',   formatBytes(m.db_bytes),      dbBar(m.db_bytes),           'ti-database', 'Tama&ntilde;o de la base de datos')}
+      ${metricCard('Usuarios activos (30d)', m.mau != null ? String(m.mau) : null, null, 'ti-users', 'Usuarios con sesi&oacute;n en los &uacute;ltimos 30 d&iacute;as')}
     </div>
     <div style="font-size:11px;color:var(--hint);margin-top:12px;text-align:right">
-      Plan Pro &nbsp;·&nbsp; Actualizado ahora
+      Plan Pro &nbsp;&middot;&nbsp; Actualizado ahora
     </div>`;
 
   } catch (e) {
     // Edge function no desplegada o error de red → mostrar fallback
     el.innerHTML = renderNoPat(String(e).includes('no_pat') ? '' : e.message);
   }
+}
+
+function egressCard(bytes) {
+  if (bytes != null) return metricCard('Egress mensual', formatBytes(bytes), egressBar(bytes), 'ti-wifi', 'Transferencia de datos este mes');
+  return `<div class="usage-metric no-data">
+    <div class="usage-metric-label"><i class="ti ti-wifi"></i>Egress mensual</div>
+    <div class="usage-metric-value" style="font-size:12px;margin-top:6px;line-height:1.5;color:var(--muted)">
+      No disponible v&iacute;a API
+    </div>
+    <a href="https://supabase.com/dashboard/project/cwatxpuxttgeceahbciw/reports/storage" target="_blank"
+       style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;color:var(--accent);font-weight:500;text-decoration:none">
+      <i class="ti ti-external-link" style="font-size:11px"></i> Ver en Supabase
+    </a>
+  </div>`;
 }
 
 function metricCard(label, value, barHtml, icon, sub) {
