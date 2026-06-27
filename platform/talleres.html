@@ -8,7 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Lora:wght@400;600&family=Pirata+One&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
 <link rel="stylesheet" href="/css/platform.css" />
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 <style>
 /* ── Tabs ──────────────────────────────────────────────────── */
 .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px}
@@ -106,6 +108,36 @@
 .empty-state i{font-size:32px;display:block;margin-bottom:10px;color:var(--border-strong)}
 
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Quill overrides ───────────────────────────────────────── */
+.ql-toolbar.ql-snow{
+  border:1px solid var(--border-strong);
+  border-bottom:none;
+  border-radius:var(--radius) var(--radius) 0 0;
+  background:var(--surface2);
+  padding:6px 8px;
+}
+.ql-container.ql-snow{
+  border:1px solid var(--border-strong);
+  border-radius:0 0 var(--radius) var(--radius);
+  background:var(--surface2);
+  font-family:"DM Sans",sans-serif;
+  font-size:13px;
+  min-height:100px;
+}
+.ql-container.ql-snow:focus-within{border-color:var(--accent)}
+.ql-editor{color:var(--text);min-height:100px;line-height:1.6}
+.ql-editor.ql-blank::before{color:var(--hint);font-style:normal}
+.ql-snow .ql-stroke{stroke:var(--muted)}
+.ql-snow .ql-fill{fill:var(--muted)}
+.ql-snow .ql-picker{color:var(--muted)}
+.ql-snow .ql-picker-options{background:var(--surface2);border-color:var(--border)}
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke{stroke:var(--accent)}
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill{fill:var(--accent)}
+.ql-snow.ql-toolbar button:hover,
+.ql-snow.ql-toolbar button.ql-active{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -189,7 +221,7 @@ function renderTalleres() {
       <div class="taller-card-body">
         <div class="taller-card-name">${esc(t.nombre)}</div>
         <div class="taller-card-fecha"><i class="ti ti-calendar-event" style="margin-right:3px"></i>${fecha}${t.hora?' · '+t.hora.slice(0,5)+'h':''}</div>
-        <div class="taller-card-desc">${esc(t.descripcion??'')}</div>
+        <div class="taller-card-desc">${esc((t.descripcion??'').replace(/<[^>]*>/g,''))}</div>
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span class="taller-card-precio">${precio}</span>
           ${t.cupos?`<span style="font-size:11px;color:var(--muted)">${t.cupos} cupos</span>`:''}
@@ -213,46 +245,43 @@ window.openCreate = function() {
   document.getElementById('modal-t-title').textContent = 'Nuevo taller';
   fillPresetSelects();
   openModal('modal-taller');
+  setTimeout(() => initQuill(), 50);
 };
 
 window.openEdit = function(id) {
   editingId = id;
   const t = talleres.find(x => x.id === id);
   if (!t) return;
-  document.getElementById('t-nombre').value  = t.nombre ?? '';
-  document.getElementById('t-desc').value    = t.descripcion ?? '';
-  document.getElementById('t-fecha').value   = t.fecha ?? '';
-  document.getElementById('t-hora').value    = t.hora?.slice(0,5) ?? '';
-  document.getElementById('t-precio').value  = t.precio ?? '';
-  document.getElementById('t-cupos').value   = t.cupos ?? '';
-  // Presets
-  fillPresetSelects();
-  // Link pago
-  document.getElementById('t-link').value = t.link_pago ?? '';
-  // Transferencia manual
+  document.getElementById('t-nombre').value   = t.nombre ?? '';
+  document.getElementById('t-fecha').value    = t.fecha ?? '';
+  document.getElementById('t-hora').value     = t.hora?.slice(0,5) ?? '';
+  document.getElementById('t-precio').value   = t.precio ?? '';
+  document.getElementById('t-cupos').value    = t.cupos ?? '';
+  document.getElementById('t-link').value     = t.link_pago ?? '';
   document.getElementById('t-banco').value    = t.banco ?? '';
   document.getElementById('t-tipo').value     = t.tipo_cuenta ?? '';
   document.getElementById('t-cuenta').value   = t.num_cuenta ?? '';
   document.getElementById('t-titular').value  = t.titular ?? '';
   document.getElementById('t-rut').value      = t.rut_titular ?? '';
   document.getElementById('t-email').value    = t.email_titular ?? '';
-  // Mostrar fields si hay datos
   if (t.banco || t.num_cuenta) showTransferFields(true);
   if (t.link_pago) showLinkFields(true);
-  // Imagen
   const prev = document.getElementById('img-preview');
   if (t.imagen_url) { prev.src = t.imagen_url; prev.style.display = 'block'; }
   else               { prev.style.display = 'none'; }
+  fillPresetSelects();
   document.getElementById('modal-t-title').textContent = 'Editar taller';
   openModal('modal-taller');
+  setTimeout(() => { initQuill(); quillDesc.root.innerHTML = t.descripcion ?? ''; }, 50);
 };
 
 function resetTallerForm() {
-  ['t-nombre','t-desc','t-fecha','t-hora','t-precio','t-cupos',
+  ['t-nombre','t-fecha','t-hora','t-precio','t-cupos',
    't-link','t-banco','t-tipo','t-cuenta','t-titular','t-rut','t-email'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  if (quillDesc) quillDesc.root.innerHTML = '';
   document.getElementById('img-preview').style.display = 'none';
   document.getElementById('t-img-input').value = '';
   window._pendingImg = null;
@@ -299,7 +328,7 @@ async function saveTaller() {
 
   const body = {
     nombre,
-    descripcion:   document.getElementById('t-desc').value.trim() || null,
+    descripcion:   quillDesc ? quillDesc.root.innerHTML.replace(/<p><br><\/p>/g,'').trim() || null : null,
     fecha:         document.getElementById('t-fecha').value || null,
     hora:          document.getElementById('t-hora').value || null,
     precio:        parseInt(document.getElementById('t-precio').value) || null,
@@ -606,7 +635,7 @@ content.innerHTML = `
       </div>
       <div class="form-group" style="margin-top:10px">
         <label class="form-label">Descripción</label>
-        <textarea class="form-input form-textarea" id="t-desc" placeholder="Qué incluye, para quién es…"></textarea>
+        <div id="t-desc-editor"></div>
       </div>
       <div class="form-row2" style="margin-top:10px">
         <div class="form-group">
@@ -806,6 +835,24 @@ window.applyLinkPreset = function() {
   showLinkFields(true);
   toast(`Link "${p.nombre}" aplicado`);
 };
+
+// ── Inicializar Quill ─────────────────────────────────────────
+let quillDesc;
+function initQuill() {
+  if (quillDesc) return;
+  quillDesc = new Quill('#t-desc-editor', {
+    theme: 'snow',
+    placeholder: 'Qué incluye el taller, para quién es, qué deben traer…',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ size: ['small', false, 'large'] }],
+        ['clean'],
+      ],
+    },
+  });
+}
 
 // ── Eventos ───────────────────────────────────────────────────
 content.querySelectorAll('.tab-btn').forEach(btn => {
