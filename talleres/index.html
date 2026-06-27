@@ -292,6 +292,17 @@ header,main,section,.hero,footer{position:relative;z-index:1}
   .transfer-grid{grid-template-columns:1fr}
 }
 
+/* Selector de fecha */
+.fecha-picker{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.fecha-opcion{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border:1px solid var(--border);border-radius:9px;cursor:pointer;
+  transition:border-color .15s,background .15s}
+.fecha-opcion:hover{border-color:rgba(201,152,58,.4);background:rgba(201,152,58,.04)}
+.fecha-opcion input[type=radio]{accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.fecha-opcion.selected{border-color:var(--gold);background:rgba(201,152,58,.07)}
+.fecha-opcion-label{font-size:13px;color:var(--text);line-height:1.4}
+.fecha-opcion-sub{font-size:11px;color:var(--muted);margin-top:1px}
+
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -353,6 +364,12 @@ header,main,section,.hero,footer{position:relative;z-index:1}
       <div class="form-section">
         <div class="form-section-title"><i class="ti ti-wand"></i> Inscribirse en este taller</div>
         <div id="form-error" class="form-error"></div>
+
+        <!-- Selector de fecha (solo aparece en talleres multi-fecha) -->
+        <div id="fecha-picker-block" style="display:none;margin-bottom:14px">
+          <div class="form-label" style="margin-bottom:8px;font-weight:600;color:var(--text)">Selecciona fecha y horario *</div>
+          <div id="fecha-opciones" class="fecha-picker"></div>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Nombre completo *</label>
@@ -436,7 +453,7 @@ function formatFecha(fecha,hora){
 }
 
 async function loadTalleres(){
-  const data=await sb('talleres?select=*&activo=eq.true&order=fecha.asc');
+  const data=await sb('talleres?select=*,taller_fechas(id,nombre,fecha,hora,orden)&activo=eq.true&order=orden.asc,fecha.asc');
   const grid=document.getElementById('talleres-grid');
   if(!data||!data.length){
     grid.innerHTML='<div class="empty" style="grid-column:1/-1">'
@@ -446,7 +463,10 @@ async function loadTalleres(){
     return;
   }
   grid.innerHTML=data.map(function(t){
-    const fecha=formatFecha(t.fecha,t.hora);
+    t.taller_fechas=(t.taller_fechas||[]).sort(function(a,b){return a.orden-b.orden});
+    var fecha=t.multi_fecha&&t.taller_fechas.length
+      ?t.taller_fechas.length+' fechas disponibles'
+      :formatFecha(t.fecha,t.hora);
     const precio=t.precio?'$'+t.precio.toLocaleString('es-CL'):'Sin costo';
     return '<div class="taller-card" onclick="openTaller('+t.id+')">'
       +'<div class="taller-card-img-wrap">'
@@ -477,8 +497,10 @@ function openTaller(id){
     ?'<img src="'+esc(t.imagen_url)+'" alt="'+esc(t.nombre)+'" style="width:100%;height:100%;object-fit:contain;display:block" />'
     :'<div class="modal-img-ph-lg"><i class="ti ti-school"></i></div>';
 
-  var fecha=formatFecha(t.fecha,t.hora);
-  document.getElementById('modal-tag').innerHTML=fecha?'<i class="ti ti-calendar-event"></i>'+esc(fecha):'';
+  var fechaTag=t.multi_fecha&&t.taller_fechas&&t.taller_fechas.length
+    ?t.taller_fechas.length+' fechas disponibles'
+    :formatFecha(t.fecha,t.hora);
+  document.getElementById('modal-tag').innerHTML=fechaTag?'<i class="ti ti-calendar-event"></i>'+esc(fechaTag):'';
   document.getElementById('modal-title').textContent=t.nombre;
   // Renderizar HTML de Quill si existe, o texto plano
   var desc=document.getElementById('modal-desc');
@@ -518,6 +540,26 @@ function openTaller(id){
     }else{tb.style.display='none';}
   }else{pagoBlock.style.display='none';}
 
+  // Selector de fecha para talleres multi-fecha
+  var pickerBlock=document.getElementById('fecha-picker-block');
+  var pickerOpciones=document.getElementById('fecha-opciones');
+  if(t.multi_fecha&&t.taller_fechas&&t.taller_fechas.length){
+    pickerBlock.style.display='block';
+    pickerOpciones.innerHTML=t.taller_fechas.map(function(f,i){
+      var label=formatFecha(f.fecha,f.hora);
+      var sub=f.nombre||'';
+      return '<label class="fecha-opcion" onclick="this.classList.toggle(\'selected\',true);document.querySelectorAll(\'.fecha-opcion\').forEach(function(x){if(x!==arguments[0].currentTarget)x.classList.remove(\'selected\')}.bind({},event))">'
+        +'<input type="radio" name="fecha-elegida" value="'+f.id+'" data-label="'+esc(label)+'" '+(i===0?'checked':'')+'/>'
+        +'<div><div class="fecha-opcion-label">'+esc(label)+'</div>'+(sub?'<div class="fecha-opcion-sub">'+esc(sub)+'</div>':'')+'</div>'
+        +'</label>';
+    }).join('');
+    // Marcar el primero como seleccionado visualmente
+    var firstOp=pickerOpciones.querySelector('.fecha-opcion');
+    if(firstOp)firstOp.classList.add('selected');
+  }else{
+    pickerBlock.style.display='none';
+  }
+
   ['f-nombre','f-edad','f-apoderado','f-telefono'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('form-success').style.display='none';
   document.getElementById('form-error').style.display='none';
@@ -551,15 +593,27 @@ document.getElementById('btn-inscribir').addEventListener('click',async function
   if(!edad)    {errEl.textContent='Ingresa la edad del participante.';    errEl.style.display='block';return;}
   if(!telefono){errEl.textContent='El numero de contacto es obligatorio.';errEl.style.display='block';return;}
 
+  // Fecha elegida (multi-fecha)
+  var radioElegido=document.querySelector('input[name="fecha-elegida"]:checked');
+  var tallerFechaId=radioElegido?parseInt(radioElegido.value):null;
+  var fechaElegidaLabel=radioElegido?radioElegido.dataset.label:null;
+  // Validar que eligió fecha si es multi-fecha
+  if(document.getElementById('fecha-picker-block').style.display!=='none'&&!tallerFechaId){
+    errEl.textContent='Por favor selecciona una fecha.';errEl.style.display='block';return;
+  }
+
   var btn=document.getElementById('btn-inscribir');
   btn.disabled=true;
   btn.innerHTML='<span style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block"></span>';
+
+  var payload={taller_id:activeTallerId,nombre:nombre,edad:edad,nombre_apoderado:apoderado,telefono:telefono};
+  if(tallerFechaId){payload.taller_fecha_id=tallerFechaId;payload.fecha_elegida=fechaElegidaLabel;}
 
   var res=await fetch(SUPABASE_URL+'/rest/v1/taller_inscripciones',{
     method:'POST',
     headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,
              'Content-Type':'application/json',Prefer:'return=minimal'},
-    body:JSON.stringify({taller_id:activeTallerId,nombre:nombre,edad:edad,nombre_apoderado:apoderado,telefono:telefono}),
+    body:JSON.stringify(payload),
   });
 
   if(res.ok||res.status===201){

@@ -103,6 +103,42 @@
 .preset-card-detail{font-size:12px;color:var(--muted);line-height:1.6}
 .preset-card-actions{display:flex;gap:6px;flex-shrink:0}
 
+/* ── Drag & drop ───────────────────────────────────────────── */
+.drag-handle{
+  position:absolute;top:8px;left:8px;z-index:2;
+  width:24px;height:24px;border-radius:6px;
+  background:rgba(0,0,0,.45);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:grab;opacity:0;transition:opacity .15s;
+}
+.taller-card:hover .drag-handle{opacity:1}
+.taller-card.dragging{opacity:.4;border-style:dashed}
+.taller-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.taller-card{position:relative}
+
+/* ── Multi fecha ───────────────────────────────────────────── */
+.multi-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:600;letter-spacing:.04em;
+  background:rgba(167,139,250,.15);color:#a78bfa;
+  border-radius:8px;padding:2px 7px;margin-left:6px;vertical-align:middle;
+}
+.toggle-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:13px;color:var(--text);cursor:pointer}
+.toggle-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
+
+/* ── Fechas list editor ────────────────────────────────────── */
+.fechas-list{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.fecha-row{
+  display:grid;grid-template-columns:1fr auto auto auto;
+  gap:8px;align-items:center;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 12px;
+}
+.fecha-row input{background:transparent;border:none;border-bottom:1px solid var(--border);
+  padding:4px 6px;font-family:inherit;font-size:13px;color:var(--text);outline:none;width:100%}
+.fecha-row input:focus{border-bottom-color:var(--accent)}
+.fecha-row-fields{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;flex:1}
+
 /* ── Empty state ───────────────────────────────────────────── */
 .empty-state{text-align:center;padding:40px;color:var(--hint);font-size:13px}
 .empty-state i{font-size:32px;display:block;margin-bottom:10px;color:var(--border-strong)}
@@ -191,9 +227,16 @@ async function uploadImagen(file) {
 
 // ── Cargar datos ──────────────────────────────────────────────
 async function loadTalleres() {
-  const { data, error } = await supabase.from('talleres').select('*').order('fecha', { ascending: true });
+  const { data, error } = await supabase
+    .from('talleres')
+    .select('*, taller_fechas(id,nombre,fecha,hora,orden)')
+    .order('orden', { ascending: true })
+    .order('fecha', { ascending: true });
   if (error) { toast('Error al cargar talleres'); return; }
-  talleres = data ?? [];
+  talleres = (data ?? []).map(t => ({
+    ...t,
+    taller_fechas: (t.taller_fechas ?? []).sort((a,b) => a.orden - b.orden),
+  }));
 }
 
 async function loadPresets() {
@@ -210,17 +253,25 @@ function renderTalleres() {
     return;
   }
   grid.innerHTML = talleres.map(t => {
-    const fecha = t.fecha
-      ? new Date(t.fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
-      : 'Sin fecha';
     const precio = t.precio ? `$${t.precio.toLocaleString('es-CL')}` : 'Sin costo';
-    return `<div class="taller-card${t.activo?'':' taller-inactive'}">
+    let fechaLabel;
+    if (t.multi_fecha && t.taller_fechas?.length) {
+      fechaLabel = `${t.taller_fechas.length} fechas disponibles`;
+    } else if (t.fecha) {
+      fechaLabel = new Date(t.fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
+        + (t.hora ? ' · '+t.hora.slice(0,5)+'h' : '');
+    } else { fechaLabel = 'Sin fecha'; }
+    return `<div class="taller-card${t.activo?'':' taller-inactive'}" draggable="true" data-id="${t.id}">
+      <div class="drag-handle" title="Arrastrar para reordenar"><i class="ti ti-grip-vertical"></i></div>
       <div class="taller-card-img">
         ${t.imagen_url?`<img src="${esc(t.imagen_url)}" alt="${esc(t.nombre)}" loading="lazy"/>`:`<i class="ti ti-school"></i>`}
       </div>
       <div class="taller-card-body">
-        <div class="taller-card-name">${esc(t.nombre)}</div>
-        <div class="taller-card-fecha"><i class="ti ti-calendar-event" style="margin-right:3px"></i>${fecha}${t.hora?' · '+t.hora.slice(0,5)+'h':''}</div>
+        <div class="taller-card-name">
+          ${esc(t.nombre)}
+          ${t.multi_fecha?`<span class="multi-badge"><i class="ti ti-calendar-repeat"></i> Multi-fecha</span>`:''}
+        </div>
+        <div class="taller-card-fecha"><i class="ti ti-calendar-event" style="margin-right:3px"></i>${fechaLabel}</div>
         <div class="taller-card-desc">${esc((t.descripcion??'').replace(/<[^>]*>/g,''))}</div>
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span class="taller-card-precio">${precio}</span>
@@ -231,14 +282,39 @@ function renderTalleres() {
         </div>
         <div class="taller-card-actions">
           <button class="btn btn-sm" onclick="openEdit(${t.id})"><i class="ti ti-pencil"></i> Editar</button>
-          <button class="btn btn-sm" onclick="toggleActivo(${t.id})" title="${t.activo?'Ocultar':'Mostrar'}">
+          <button class="btn btn-sm" onclick="toggleActivo(${t.id})">
             <i class="ti ti-${t.activo?'eye-off':'eye'}"></i> ${t.activo?'Ocultar':'Mostrar'}
           </button>
-          <button class="btn btn-sm btn-icon danger" onclick="deleteTaller(${t.id})" title="Eliminar"><i class="ti ti-trash"></i></button>
+          <button class="btn btn-sm btn-icon danger" onclick="deleteTaller(${t.id})"><i class="ti ti-trash"></i></button>
         </div>
       </div>
     </div>`;
   }).join('');
+
+  // Drag & drop
+  let dragSrcId = null;
+  grid.querySelectorAll('.taller-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', () => { dragSrcId = parseInt(card.dataset.id); card.classList.add('dragging'); });
+    card.addEventListener('dragend',   () => card.classList.remove('dragging'));
+    card.addEventListener('dragover',  e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', async e => {
+      e.preventDefault(); card.classList.remove('drag-over');
+      const targetId = parseInt(card.dataset.id);
+      if (dragSrcId === targetId) return;
+      const si = talleres.findIndex(t => t.id === dragSrcId);
+      const ti = talleres.findIndex(t => t.id === targetId);
+      talleres.splice(ti, 0, talleres.splice(si, 1)[0]);
+      renderTalleres();
+      await saveOrden();
+    });
+  });
+}
+
+async function saveOrden() {
+  await Promise.all(talleres.map((t, i) =>
+    supabase.from('talleres').update({ orden: i }).eq('id', t.id)
+  ));
 }
 
 // ── Modal taller — abrir ──────────────────────────────────────
@@ -262,6 +338,16 @@ window.openEdit = function(id) {
   document.getElementById('t-cupos').value    = t.cupos ?? '';
   document.getElementById('t-edad-min').value = t.edad_min ?? '';
   document.getElementById('t-edad-max').value = t.edad_max ?? '';
+  // Multi-fecha
+  const isMulti = !!t.multi_fecha;
+  document.getElementById('t-multi-fecha').checked = isMulti;
+  toggleMultiFecha(isMulti);
+  if (isMulti) {
+    renderFechasEditor(t.taller_fechas ?? []);
+  } else {
+    document.getElementById('t-fecha').value = t.fecha ?? '';
+    document.getElementById('t-hora').value  = t.hora?.slice(0,5) ?? '';
+  }
   document.getElementById('t-link').value     = t.link_pago ?? '';
   document.getElementById('t-banco').value    = t.banco ?? '';
   document.getElementById('t-tipo').value     = t.tipo_cuenta ?? '';
@@ -287,6 +373,9 @@ function resetTallerForm() {
     if (el) el.value = '';
   });
   if (quillDesc) quillDesc.root.innerHTML = '';
+  document.getElementById('t-multi-fecha').checked = false;
+  toggleMultiFecha(false);
+  renderFechasEditor([]);
   document.getElementById('img-preview').style.display = 'none';
   document.getElementById('t-img-input').value = '';
   window._pendingImg = null;
@@ -334,12 +423,13 @@ async function saveTaller() {
   const body = {
     nombre,
     descripcion:   quillDesc ? quillDesc.root.innerHTML.replace(/<p><br><\/p>/g,'').trim() || null : null,
-    fecha:         document.getElementById('t-fecha').value || null,
-    hora:          document.getElementById('t-hora').value || null,
     precio:        parseInt(document.getElementById('t-precio').value) || null,
     cupos:         parseInt(document.getElementById('t-cupos').value) || null,
     edad_min:      parseInt(document.getElementById('t-edad-min').value) || null,
     edad_max:      parseInt(document.getElementById('t-edad-max').value) || null,
+    multi_fecha:   document.getElementById('t-multi-fecha').checked,
+    fecha:         document.getElementById('t-multi-fecha').checked ? null : (document.getElementById('t-fecha').value || null),
+    hora:          document.getElementById('t-multi-fecha').checked ? null : (document.getElementById('t-hora').value || null),
     link_pago:     document.getElementById('t-link').value.trim() || null,
     banco:         document.getElementById('t-banco').value.trim() || null,
     tipo_cuenta:   document.getElementById('t-tipo').value.trim() || null,
@@ -357,16 +447,66 @@ async function saveTaller() {
     ({ error } = await supabase.from('talleres').insert({ ...body, activo: true }));
   }
 
-  if (error) { toast('Error: ' + error.message); }
-  else {
-    toast(editingId ? 'Taller actualizado ✓' : 'Taller creado ✓');
-    closeModal('modal-taller');
-    window._pendingImg = null;
-    await loadTalleres();
-    renderTalleres();
-    renderInscripcionesFilter();
+  if (error) { toast('Error: ' + error.message); btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Guardar'; return; }
+
+  // Guardar fechas si es multi-fecha
+  const tallerId = editingId || (await supabase.from('talleres').select('id').order('created_at',{ascending:false}).limit(1).single()).data?.id;
+  if (document.getElementById('t-multi-fecha').checked) {
+    await supabase.from('taller_fechas').delete().eq('taller_id', tallerId);
+    const rows = getFechasEditorRows();
+    if (rows.length) {
+      await supabase.from('taller_fechas').insert(rows.map((r,i) => ({
+        taller_id: tallerId, nombre: r.nombre||null, fecha: r.fecha||null, hora: r.hora||null, orden: i,
+      })));
+    }
+  } else {
+    await supabase.from('taller_fechas').delete().eq('taller_id', tallerId);
   }
+
+  toast(editingId ? 'Taller actualizado ✓' : 'Taller creado ✓');
+  closeModal('modal-taller');
+  window._pendingImg = null;
+  await loadTalleres();
+  renderTalleres();
+  renderInscripcionesFilter();
   btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar';
+}
+
+// ── Multi-fecha helpers ───────────────────────────────────────
+function toggleMultiFecha(on) {
+  document.getElementById('single-fecha-block').style.display = on ? 'none' : 'block';
+  document.getElementById('multi-fecha-block').style.display  = on ? 'block' : 'none';
+}
+window.toggleMultiFecha = toggleMultiFecha;
+
+function renderFechasEditor(fechas) {
+  const list = document.getElementById('fechas-list');
+  if (!list) return;
+  if (!fechas.length) { list.innerHTML = ''; addFechaRow(); return; }
+  list.innerHTML = '';
+  fechas.forEach(f => addFechaRow(f));
+}
+
+window.addFechaRow = function(data) {
+  const list = document.getElementById('fechas-list');
+  if (!list) return;
+  const idx = list.children.length;
+  const div = document.createElement('div');
+  div.className = 'fecha-row';
+  div.innerHTML = `
+    <input type="text"  class="fr-nombre" placeholder="Etiqueta opcional (ej: Turno tarde)" value="${esc(data?.nombre??'')}" />
+    <input type="date"  class="fr-fecha"  value="${data?.fecha??''}" />
+    <input type="time"  class="fr-hora"   value="${data?.hora?.slice(0,5)??''}" />
+    <button class="btn btn-sm btn-icon danger" onclick="this.closest('.fecha-row').remove()" title="Eliminar"><i class="ti ti-trash"></i></button>`;
+  list.appendChild(div);
+};
+
+function getFechasEditorRows() {
+  return Array.from(document.querySelectorAll('#fechas-list .fecha-row')).map(row => ({
+    nombre: row.querySelector('.fr-nombre').value.trim(),
+    fecha:  row.querySelector('.fr-fecha').value,
+    hora:   row.querySelector('.fr-hora').value,
+  })).filter(r => r.fecha);
 }
 
 window.toggleActivo = async function(id) {
@@ -414,7 +554,7 @@ async function renderInscripciones() {
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
   const tbody = document.getElementById('inscripciones-tbody');
   if (!inscripciones.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="ti ti-users"></i>Sin inscripciones.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="ti ti-users"></i>Sin inscripciones.</div></td></tr>`;
     return;
   }
   tbody.innerHTML = inscripciones.map(ins => {
@@ -422,6 +562,7 @@ async function renderInscripciones() {
     return `<tr>
       <td style="font-size:12px;color:var(--muted)">${dt}</td>
       <td style="font-weight:500">${esc(ins.talleres?.nombre??'—')}</td>
+      <td style="font-size:12px;color:var(--muted)">${esc(ins.fecha_elegida??'—')}</td>
       <td>${esc(ins.nombre)}</td>
       <td>${ins.edad??'—'}</td>
       <td>${esc(ins.nombre_apoderado??'—')}</td>
@@ -616,7 +757,7 @@ content.innerHTML = `
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Fecha</th><th>Taller</th><th>Nombre</th><th>Edad</th><th>Apoderado</th><th>Teléfono</th><th></th></tr>
+            <tr><th>Fecha</th><th>Taller</th><th>Fecha elegida</th><th>Nombre</th><th>Edad</th><th>Apoderado</th><th>Teléfono</th><th></th></tr>
           </thead>
           <tbody id="inscripciones-tbody">
             <tr><td colspan="6"><div class="empty-state"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>Cargando…</div></td></tr>
@@ -655,15 +796,34 @@ content.innerHTML = `
         <label class="form-label">Descripción</label>
         <div id="t-desc-editor"></div>
       </div>
-      <div class="form-row2" style="margin-top:10px">
-        <div class="form-group">
-          <label class="form-label">Fecha</label>
-          <input class="form-input" type="date" id="t-fecha" />
+      <label class="toggle-row" style="margin-top:12px">
+        <input type="checkbox" id="t-multi-fecha" onchange="toggleMultiFecha(this.checked)" />
+        <span>Este taller tiene <strong>múltiples fechas/horarios</strong></span>
+      </label>
+
+      <!-- Fecha única -->
+      <div id="single-fecha-block">
+        <div class="form-row2" style="margin-top:8px">
+          <div class="form-group">
+            <label class="form-label">Fecha</label>
+            <input class="form-input" type="date" id="t-fecha" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora</label>
+            <input class="form-input" type="time" id="t-hora" />
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Hora</label>
-          <input class="form-input" type="time" id="t-hora" />
+      </div>
+
+      <!-- Múltiples fechas -->
+      <div id="multi-fecha-block" style="display:none;margin-top:8px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+          Agrega cada fecha y horario disponible. El cliente elegirá una al inscribirse.
         </div>
+        <div id="fechas-list" class="fechas-list"></div>
+        <button class="btn btn-sm" style="margin-top:4px" onclick="addFechaRow()">
+          <i class="ti ti-plus"></i> Agregar fecha
+        </button>
       </div>
       <div class="form-row2" style="margin-top:10px">
         <div class="form-group">
