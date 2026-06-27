@@ -533,12 +533,22 @@ window.deleteTaller = async function(id) {
 let inscripciones = [];
 let filterTallerId = 'all';
 
+async function getAuthToken() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token ?? '';
+}
+
+const INSC_FN = 'https://cwatxpuxttgeceahbciw.supabase.co/functions/v1/inscripciones';
+
 async function loadInscripciones() {
-  let q = supabase.from('taller_inscripciones').select('*, talleres(nombre)').order('created_at',{ascending:false});
-  if (filterTallerId !== 'all') q = q.eq('taller_id', filterTallerId);
-  const { data, error } = await q;
-  if (error) { toast('Error al cargar inscripciones'); return; }
-  inscripciones = data ?? [];
+  const token = await getAuthToken();
+  const params = new URLSearchParams();
+  if (filterTallerId !== 'all') params.set('taller_id', filterTallerId);
+  const res = await fetch(`${INSC_FN}?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) { toast('Error al cargar inscripciones'); return; }
+  inscripciones = await res.json();
 }
 
 function renderInscripcionesFilter() {
@@ -574,8 +584,12 @@ async function renderInscripciones() {
 
 window.deleteInscripcion = async function(id, nombre) {
   if (!confirm(`¿Eliminar la inscripción de "${nombre}"?`)) return;
-  const { error } = await supabase.from('taller_inscripciones').delete().eq('id', id);
-  if (error) { toast('Error al eliminar'); return; }
+  const token = await getAuthToken();
+  const res = await fetch(`${INSC_FN}?id=${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) { toast('Error al eliminar'); return; }
   inscripciones = inscripciones.filter(x => x.id !== id);
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
   await renderInscripciones();
