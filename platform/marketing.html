@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marketing — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link rel="stylesheet" href="/css/platform.css" />
+<style>
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab-btn{padding:10px 18px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .14s,border-color .14s}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-btn:hover:not(.active){color:var(--text)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+
+/* Screens grid */
+.screens-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:8px}
+.screen-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  transition:border-color .2s,box-shadow .2s;
+  position:relative;
+}
+.screen-card:hover{border-color:var(--accent);box-shadow:0 4px 20px rgba(0,0,0,.25)}
+.screen-card.dragging{opacity:.4;border-style:dashed}
+.screen-card.drag-over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.screen-card.inactive{opacity:.5}
+
+/* Preview 9:16 */
+.screen-preview{
+  width:100%;
+  aspect-ratio:9/16;
+  background:#000;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;cursor:grab;
+}
+.screen-preview img{
+  width:100%;height:100%;
+  object-fit:cover;display:block;
+  transform-origin:center center;
+}
+.screen-preview.rot-90  img{transform:rotate(90deg)  scale(1.778)}
+.screen-preview.rot-180 img{transform:rotate(180deg)}
+.screen-preview.rot-270 img{transform:rotate(270deg) scale(1.778)}
+.drag-handle-screen{
+  position:absolute;top:6px;left:6px;z-index:2;
+  background:rgba(0,0,0,.55);color:#fff;
+  width:22px;height:22px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;opacity:0;transition:opacity .15s;cursor:grab;
+}
+.screen-card:hover .drag-handle-screen{opacity:1}
+
+.screen-card-body{padding:10px 12px}
+.screen-card-name{font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.screen-card-dur{font-size:11px;color:var(--muted)}
+.screen-card-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+/* Upload zone */
+.upload-zone{
+  border:2px dashed var(--border-strong);border-radius:var(--radius);
+  padding:32px;text-align:center;cursor:pointer;
+  color:var(--hint);font-size:13px;
+  transition:border-color .15s,background .15s;
+}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(0,0,0,.04)}
+.upload-zone i{font-size:32px;display:block;margin-bottom:8px;color:var(--muted)}
+
+/* Modal preview pantalla completa */
+.fullscreen-preview{
+  position:fixed;inset:0;background:#000;z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.fullscreen-preview.open{opacity:1;pointer-events:all}
+.fullscreen-preview img{max-width:100%;max-height:100%;object-fit:contain}
+.fullscreen-preview .fp-close{
+  position:fixed;top:16px;right:16px;
+  background:rgba(255,255,255,.15);border:none;color:#fff;
+  width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Dur input */
+.dur-input{width:60px;height:28px;border:1px solid var(--border);border-radius:6px;
+  padding:0 6px;font-size:12px;text-align:center;background:var(--surface2);
+  color:var(--text);outline:none}
+.dur-input:focus{border-color:var(--accent)}
+
+.link-box{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.link-box a{color:var(--accent);font-size:13px;font-weight:500;text-decoration:none}
+.link-box a:hover{text-decoration:underline}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px;color:var(--hint);font-size:13px}
+.empty-state i{font-size:36px;display:block;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div id="platform-shell"></div>
+<div id="toast" class="toast"></div>
+<div class="fullscreen-preview" id="fp-modal">
+  <button class="fp-close" onclick="closeFP()"><i class="ti ti-x"></i></button>
+  <img id="fp-img" src="" alt="" />
+</div>
+
+<script type="module">
+import { requireAuth }  from '/js/core/auth.js';
+import { initShell }    from '/js/ui/sidebar.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '/js/core/supabase.js';
+import { getAccessToken } from '/js/core/auth.js';
+
+const user = await requireAuth('/platform/login.html');
+if (!user) throw new Error('No auth');
+await initShell('marketing', 'Marketing');
+
+const content   = document.getElementById('platform-content');
+const BUCKET    = 'images';
+let screens     = [];
+let authToken   = await getAccessToken();
+let toastTimer;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function uploadScreen(file) {
+  const ext  = file.name.split('.').pop();
+  const path = `screens/screen_${Date.now()}.${ext}`;
+  const res  = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${authToken}`,
+               'Content-Type': file.type, 'cache-control': 'max-age=31536000', 'x-upsert': 'true' },
+    body: file,
+  });
+  if (!res.ok) throw new Error('Error al subir imagen');
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+async function loadScreens() {
+  const { data, error } = await supabase.from('screens').select('*').order('orden');
+  if (error) { toast('Error al cargar screens'); return; }
+  screens = data ?? [];
+}
+
+function rotClass(r) {
+  return r === 90 ? 'rot-90' : r === 180 ? 'rot-180' : r === 270 ? 'rot-270' : '';
+}
+
+function renderScreens() {
+  const grid = document.getElementById('screens-grid');
+  if (!screens.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <i class="ti ti-device-tv"></i>
+      No hay imágenes. Sube la primera.
+    </div>`;
+    return;
+  }
+  grid.innerHTML = screens.map(s => `
+    <div class="screen-card${s.activo?'':' inactive'}" draggable="true" data-id="${s.id}">
+      <div class="drag-handle-screen" title="Arrastrar para ordenar"><i class="ti ti-grip-vertical"></i></div>
+      <div class="screen-preview ${rotClass(s.rotacion)}" onclick="openFP('${esc(s.imagen_url)}',${s.rotacion})">
+        <img src="${esc(s.imagen_url)}" alt="${esc(s.nombre??'')}" loading="lazy" />
+      </div>
+      <div class="screen-card-body">
+        <div class="screen-card-name">${esc(s.nombre||'Sin nombre')}</div>
+        <div class="screen-card-dur" style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <i class="ti ti-clock" style="font-size:12px"></i>
+          <input class="dur-input" type="number" value="${s.duracion??5}" min="1" max="120"
+            onchange="updateDuracion(${s.id},this.value)" title="Segundos en pantalla" />
+          <span>seg</span>
+        </div>
+        <div class="screen-card-actions">
+          <button class="btn btn-sm" onclick="rotateScreen(${s.id})" title="Girar 90° horario">
+            <i class="ti ti-rotate-clockwise"></i>
+          </button>
+          <button class="btn btn-sm" onclick="toggleActivo(${s.id})">
+            <i class="ti ti-${s.activo?'eye-off':'eye'}"></i>
+          </button>
+          <button class="btn btn-sm btn-icon danger" onclick="deleteScreen(${s.id})">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Drag & drop
+  let dragSrcId = null;
+  grid.querySelectorAll('.screen-card[draggable]').forEach(card => {
+    card.addEventListener('dragstart', () => { dragSrcId = parseInt(card.dataset.id); card.classList.add('dragging'); });
+    card.addEventListener('dragend',   () => card.classList.remove('dragging'));
+    card.addEventListener('dragover',  e => { e.preventDefault(); card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+    card.addEventListener('drop', async e => {
+      e.preventDefault(); card.classList.remove('drag-over');
+      const targetId = parseInt(card.dataset.id);
+      if (dragSrcId === targetId) return;
+      const si = screens.findIndex(s => s.id === dragSrcId);
+      const ti = screens.findIndex(s => s.id === targetId);
+      screens.splice(ti, 0, screens.splice(si, 1)[0]);
+      renderScreens();
+      await Promise.all(screens.map((s, i) => supabase.from('screens').update({ orden: i }).eq('id', s.id)));
+    });
+  });
+}
+
+// Full-screen preview
+window.openFP = function(url, rot) {
+  const img = document.getElementById('fp-img');
+  img.src = url;
+  img.style.transform = rot ? `rotate(${rot}deg)` : '';
+  document.getElementById('fp-modal').classList.add('open');
+};
+window.closeFP = function() { document.getElementById('fp-modal').classList.remove('open'); };
+document.getElementById('fp-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('fp-modal')) window.closeFP();
+});
+
+// Acciones
+window.rotateScreen = async function(id) {
+  const s = screens.find(x => x.id === id);
+  if (!s) return;
+  const newRot = ((s.rotacion ?? 0) + 90) % 360;
+  const { error } = await supabase.from('screens').update({ rotacion: newRot }).eq('id', id);
+  if (error) { toast('Error'); return; }
+  s.rotacion = newRot;
+  renderScreens();
+};
+
+window.toggleActivo = async function(id) {
+  const s = screens.find(x => x.id === id);
+  if (!s) return;
+  const { error } = await supabase.from('screens').update({ activo: !s.activo }).eq('id', id);
+  if (error) { toast('Error'); return; }
+  s.activo = !s.activo;
+  renderScreens();
+  toast(s.activo ? 'Visible en pantalla ✓' : 'Oculto ✓');
+};
+
+window.updateDuracion = async function(id, val) {
+  const dur = Math.max(1, parseInt(val) || 5);
+  await supabase.from('screens').update({ duracion: dur }).eq('id', id);
+};
+
+window.deleteScreen = async function(id) {
+  if (!confirm('¿Eliminar esta imagen de la pantalla?')) return;
+  const { error } = await supabase.from('screens').delete().eq('id', id);
+  if (error) { toast('Error'); return; }
+  screens = screens.filter(s => s.id !== id);
+  renderScreens();
+  toast('Imagen eliminada');
+};
+
+// Subir múltiples imágenes
+async function handleFiles(files) {
+  const arr = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!arr.length) return;
+  toast('Subiendo ' + arr.length + ' imagen(es)…');
+  for (const file of arr) {
+    try {
+      const url = await uploadScreen(file);
+      const orden = screens.length;
+      const { error } = await supabase.from('screens').insert({
+        nombre: file.name.replace(/\.[^.]+$/, ''),
+        imagen_url: url, rotacion: 0, duracion: 5, orden, activo: true,
+      });
+      if (error) toast('Error al guardar: ' + error.message);
+    } catch (e) { toast('Error al subir imagen'); }
+  }
+  await loadScreens();
+  renderScreens();
+  toast('Imágenes subidas ✓');
+}
+
+// Render HTML
+content.innerHTML = `
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="screens">
+      <i class="ti ti-device-tv" style="margin-right:5px"></i>Screens
+    </button>
+  </div>
+
+  <div class="tab-panel active" id="tab-screens">
+    <div class="page-header">
+      <div>
+        <div style="font-size:14px;font-weight:600">Pantallas digitales</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">
+          Imágenes verticales para pantallas conectadas. Arrastra para ordenar.
+        </div>
+      </div>
+      <a href="/screens/" target="_blank" class="btn">
+        <i class="ti ti-external-link"></i> Ver pantalla
+      </a>
+    </div>
+
+    <div class="link-box">
+      <i class="ti ti-link" style="color:var(--muted);font-size:16px;flex-shrink:0"></i>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">URL de la pantalla pública</div>
+        <a href="/screens/" target="_blank">www.twcoffee.cl/screens/</a>
+      </div>
+      <button class="btn btn-sm" style="margin-left:auto" onclick="navigator.clipboard.writeText(location.origin+'/screens/').then(()=>toast('URL copiada ✓'))">
+        <i class="ti ti-copy"></i>
+      </button>
+    </div>
+
+    <!-- Zona de subida -->
+    <div class="upload-zone" id="upload-zone">
+      <i class="ti ti-cloud-upload"></i>
+      <div style="font-weight:600;margin-bottom:4px">Arrastra imágenes aquí</div>
+      <div style="color:var(--hint)">o haz clic para seleccionar — PNG, JPG, WebP</div>
+      <input type="file" id="screen-file-input" accept="image/*" multiple style="display:none" />
+    </div>
+
+    <div id="screens-grid" class="screens-grid" style="margin-top:20px"></div>
+  </div>
+`;
+
+// Eventos de subida
+const zone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('screen-file-input');
+zone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+// Init
+await loadScreens();
+renderScreens();
+</script>
+</body>
+</html>

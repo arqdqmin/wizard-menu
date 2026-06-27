@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wizard Screens</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+#stage{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:#000;
+}
+.slide{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:#000;
+  opacity:0;transition:opacity .8s ease;
+  pointer-events:none;
+}
+.slide.active{opacity:1;pointer-events:all}
+.slide.fade-out{opacity:0}
+.slide img{
+  display:block;
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+}
+.slide.rot-90  img{transform:rotate(90deg)}
+.slide.rot-180 img{transform:rotate(180deg)}
+.slide.rot-270 img{transform:rotate(270deg)}
+
+/* Para imágenes con rotación 90/270 escalar para llenar pantalla vertical */
+.slide.rot-90  img,
+.slide.rot-270 img {
+  max-width:100vh;
+  max-height:100vw;
+}
+
+#loader{
+  position:fixed;inset:0;background:#000;
+  display:flex;align-items:center;justify-content:center;
+  z-index:10;
+  transition:opacity .5s;
+}
+#loader svg{animation:spin 1s linear infinite;width:36px;height:36px;color:#fff;opacity:.4}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#error{
+  position:fixed;inset:0;background:#000;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;color:#555;font-family:sans-serif;font-size:14px;
+  display:none;
+}
+#progress{
+  position:fixed;bottom:0;left:0;height:2px;background:rgba(255,255,255,.2);
+  width:0;transition:width linear;z-index:5;
+}
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+  </svg>
+</div>
+
+<div id="error">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><dot cx="12" cy="16"/>
+  </svg>
+  <span id="error-msg">No hay imágenes activas configuradas.</span>
+</div>
+
+<div id="stage"></div>
+<div id="progress"></div>
+
+<script>
+const SUPABASE_URL  = 'https://ppbwkoyszaqsllnhpcpp.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBwYndrb3lzemFxc2xsbmhwY3BwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM2MTM4MDUsImV4cCI6MjA1OTE4OTgwNX0.4AvDkKlFGGzI8vNOxQaUX3_cMl2u4DQbmPBLqLSHEZ4';
+
+let slides   = [];
+let current  = 0;
+let timer    = null;
+let progTimer = null;
+
+function rotClass(r) {
+  if (r === 90)  return 'rot-90';
+  if (r === 180) return 'rot-180';
+  if (r === 270) return 'rot-270';
+  return '';
+}
+
+async function loadSlides() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/screens?activo=eq.true&order=orden.asc`,
+    { headers: { apikey: SUPABASE_ANON, Accept: 'application/json' } }
+  );
+  if (!res.ok) throw new Error('API error ' + res.status);
+  return await res.json();
+}
+
+function buildStage(data) {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '';
+  data.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'slide' + (rotClass(s.rotacion) ? ' ' + rotClass(s.rotacion) : '') + (i === 0 ? ' active' : '');
+    div.dataset.dur = String(Math.max(1, s.duracion || 5) * 1000);
+    const img = document.createElement('img');
+    img.src = s.imagen_url;
+    img.alt = s.nombre || '';
+    img.draggable = false;
+    div.appendChild(img);
+    stage.appendChild(div);
+  });
+  slides = stage.querySelectorAll('.slide');
+}
+
+function showSlide(idx) {
+  slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+  current = idx;
+
+  // Barra de progreso
+  const dur = parseInt(slides[idx].dataset.dur);
+  const prog = document.getElementById('progress');
+  prog.style.transition = 'none';
+  prog.style.width = '0%';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      prog.style.transition = `width ${dur}ms linear`;
+      prog.style.width = '100%';
+    });
+  });
+
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    showSlide((current + 1) % slides.length);
+  }, dur);
+}
+
+async function init() {
+  try {
+    const data = await loadSlides();
+    document.getElementById('loader').style.opacity = '0';
+    setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 500);
+
+    if (!data.length) {
+      document.getElementById('error').style.display = 'flex';
+      return;
+    }
+
+    buildStage(data);
+    showSlide(0);
+
+    // Reload silencioso cada 5 minutos para captar cambios del admin
+    setInterval(async () => {
+      try {
+        const fresh = await loadSlides();
+        if (!fresh.length) return;
+        const next = (current + 1) % slides.length;
+        buildStage(fresh);
+        showSlide(Math.min(next, fresh.length - 1));
+      } catch (_) {}
+    }, 5 * 60 * 1000);
+
+  } catch (e) {
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('error-msg').textContent = 'Error al cargar pantalla: ' + e.message;
+    document.getElementById('error').style.display = 'flex';
+  }
+}
+
+// Pantalla completa al hacer clic (opcional, útil en kioscos)
+document.addEventListener('click', () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(()=>{});
+});
+
+init();
+</script>
+</body>
+</html>

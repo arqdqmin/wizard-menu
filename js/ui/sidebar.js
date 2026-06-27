@@ -8,6 +8,7 @@ const MODULE_URLS = {
   menu:         '/admin.html',
   usuarios:     '/platform/users.html',
   talleres:     '/platform/talleres.html',
+  marketing:    '/platform/marketing.html',
   configuracion:'/platform/settings.html',
 };
 
