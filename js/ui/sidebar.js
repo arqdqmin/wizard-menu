@@ -7,6 +7,7 @@ const MODULE_URLS = {
   dashboard:    '/platform/dashboard.html',
   menu:         '/admin.html',
   usuarios:     '/platform/users.html',
+  talleres:     '/platform/talleres.html',
   configuracion:'/platform/settings.html',
 };
 

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Talleres — The Wizard Coffee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&family=Pirata+One&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9983a; --gold-light:#f5e6c8; --gold-dark:#8a6520;
+  --bg:#0f0d0a; --surface:#1a1714; --surface2:#221f1a;
+  --border:#2e2a24; --text:#f0ead8; --muted:#9a8f7e; --hint:#5a5248;
+  --accent:#2d4a3e; --accent-light:#3d6352;
+  --radius:12px; --radius-lg:18px;
+}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Header */
+.site-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.header-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.header-logo-img{width:36px;height:36px;background:#0f0e0c;border-radius:9px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.header-logo-img img{width:28px;height:28px;object-fit:contain}
+.header-logo-text{font-size:14px;font-weight:600;color:var(--text);line-height:1.2}
+.header-logo-sub{font-size:11px;color:var(--muted)}
+.header-nav{display:flex;gap:4px}
+.header-nav a{font-size:13px;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:8px;transition:color .12s,background .12s}
+.header-nav a:hover{color:var(--text);background:var(--surface2)}
+.header-nav a.active{color:var(--gold);font-weight:500}
+
+/* Hero */
+.hero{padding:60px 20px 48px;text-align:center;max-width:640px;margin:0 auto}
+.hero-tag{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.hero-title{font-family:"Pirata One",cursive;font-size:clamp(2.2rem,6vw,3.4rem);color:var(--text);line-height:1.15;margin-bottom:16px}
+.hero-title span{color:var(--gold)}
+.hero-desc{font-family:"Lora",serif;font-size:15px;color:var(--muted);line-height:1.7}
+
+/* Grid */
+.talleres-section{max-width:1100px;margin:0 auto;padding:0 20px 80px}
+.talleres-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+
+/* Card */
+.taller-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s}
+.taller-card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.taller-card-img{width:100%;height:200px;object-fit:cover;background:var(--surface2);display:block}
+.taller-card-img-ph{width:100%;height:200px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--hint)}
+.taller-card-body{padding:18px}
+.taller-card-fecha{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.taller-card-nombre{font-family:"Lora",serif;font-size:17px;font-weight:600;margin-bottom:8px;line-height:1.3}
+.taller-card-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.taller-card-footer{display:flex;align-items:center;justify-content:space-between}
+.taller-precio{font-size:16px;font-weight:700;color:var(--gold)}
+.taller-cupos{font-size:11px;color:var(--hint)}
+.btn-ver{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--gold);border:1px solid var(--gold-dark);border-radius:20px;padding:5px 14px;text-decoration:none;transition:background .12s;background:transparent}
+.btn-ver:hover{background:rgba(201,152,58,.12)}
+
+/* Empty */
+.empty{text-align:center;padding:80px 20px;color:var(--hint)}
+.empty i{font-size:48px;display:block;margin-bottom:16px;color:var(--border)}
+.empty p{font-size:15px;font-family:"Lora",serif;font-style:italic}
+
+/* Modal backdrop */
+.modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-bd.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:600px;box-shadow:0 24px 80px rgba(0,0,0,.6);transform:translateY(16px);transition:transform .25s;margin:auto}
+.modal-bd.open .modal-box{transform:translateY(0)}
+.modal-img{width:100%;height:240px;object-fit:cover;border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:block}
+.modal-img-ph{width:100%;height:180px;background:var(--surface2);border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:flex;align-items:center;justify-content:center;font-size:48px;color:var(--hint)}
+.modal-body{padding:24px}
+.modal-tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.modal-title{font-family:"Lora",serif;font-size:22px;font-weight:600;margin-bottom:10px;line-height:1.3}
+.modal-desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+.modal-meta{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.meta-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.meta-item i{color:var(--gold);font-size:15px}
+.meta-value{color:var(--text);font-weight:500}
+
+/* Sección pago */
+.pago-section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px}
+.pago-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gold);margin-bottom:12px}
+.btn-pago{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:var(--gold);color:#0f0d0a;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s,transform .1s;margin-bottom:12px}
+.btn-pago:hover{background:#e0aa44;transform:scale(1.01)}
+.transfer-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.transfer-item label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);display:block;margin-bottom:2px}
+.transfer-item span{font-size:13px;color:var(--text)}
+
+/* Formulario */
+.form-section{margin-bottom:8px}
+.form-section-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.form-label{font-size:12px;font-weight:500;color:var(--muted)}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-family:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color .12s}
+.form-input:focus{border-color:var(--gold)}
+.form-input::placeholder{color:var(--hint)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.form-row{grid-template-columns:1fr}.transfer-grid{grid-template-columns:1fr}}
+.btn-inscribir{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.btn-inscribir:hover{background:var(--accent-light);transform:scale(1.01)}
+.btn-inscribir:disabled{opacity:.6;transform:none;cursor:not-allowed}
+.form-success{background:#1a3d2a;border:1px solid #2d6b45;border-radius:10px;padding:16px;text-align:center;font-size:14px;color:#6fcf97;display:none;margin-top:8px}
+.form-success i{font-size:28px;display:block;margin-bottom:8px}
+.form-error{background:#3d1a1a;border:1px solid #6b2d2d;border-radius:10px;padding:12px;font-size:13px;color:#f97373;display:none;margin-bottom:10px}
+.btn-close{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.5);border:none;color:var(--text);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.btn-close:hover{background:rgba(0,0,0,.8)}
+.modal-img-wrap{position:relative}
+
+.divider{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:var(--hint);text-transform:uppercase;letter-spacing:.06em}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="header-logo">
+    <div class="header-logo-img"><img src="/W LOGO.png" alt="Wizard" /></div>
+    <div>
+      <div class="header-logo-text">The Wizard Coffee</div>
+      <div class="header-logo-sub">Cafetería temática</div>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a href="/">Menú</a>
+    <a href="/talleres/" class="active">Talleres</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">✦ Experiencias mágicas ✦</div>
+  <h1 class="hero-title">Nuestros <span>Talleres</span></h1>
+  <p class="hero-desc">Aprende, crea y comparte en el mundo de The Wizard Coffee. Talleres para todas las edades, con cupos limitados.</p>
+</div>
+
+<section class="talleres-section">
+  <div id="talleres-grid" class="talleres-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--hint)">
+      <i class="ti ti-loader" style="font-size:32px;display:block;margin-bottom:12px;animation:spin 1s linear infinite"></i>
+      Cargando talleres…
+    </div>
+  </div>
+</section>
+
+<!-- Modal detalle + inscripción -->
+<div class="modal-bd" id="modal-bd">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-img-wrap">
+      <div id="modal-img-slot"></div>
+      <button class="btn-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-tag" class="modal-tag"></div>
+      <div id="modal-title" class="modal-title"></div>
+      <div id="modal-desc" class="modal-desc"></div>
+      <div id="modal-meta" class="modal-meta"></div>
+
+      <!-- Pago -->
+      <div id="pago-block" class="pago-section" style="display:none">
+        <div class="pago-title"><i class="ti ti-credit-card"></i> Opciones de pago</div>
+        <div id="btn-pago-wrap"></div>
+        <div id="transfer-block" style="display:none">
+          <div class="divider">Transferencia bancaria</div>
+          <div id="transfer-data" class="transfer-grid"></div>
+        </div>
+      </div>
+
+      <!-- Formulario inscripción -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="ti ti-user-plus" style="margin-right:6px"></i>Inscribirse en este taller</div>
+        <div id="form-error" class="form-error"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre completo *</label>
+            <input class="form-input" id="f-nombre" placeholder="Nombre del participante" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Edad *</label>
+            <input class="form-input" type="number" id="f-edad" placeholder="Años" min="1" max="99" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre del apoderado <span style="color:var(--hint)">(si el participante es menor de edad)</span></label>
+          <input class="form-input" id="f-apoderado" placeholder="Opcional" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número de contacto *</label>
+          <input class="form-input" type="tel" id="f-telefono" placeholder="+56 9 1234 5678" />
+        </div>
+        <div id="form-success" class="form-success">
+          <i class="ti ti-check-circle"></i>
+          <strong>¡Inscripción recibida!</strong><br>
+          Nos pondremos en contacto contigo para confirmar tu cupo.
+        </div>
+        <button class="btn-inscribir" id="btn-inscribir"><i class="ti ti-wand"></i> Confirmar inscripción</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://cwatxpuxttgeceahbciw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw';
+
+let activeTallerId = null;
+
+async function sb(path, opts = {}) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY,
+               'Content-Type': 'application/json', Prefer: 'return=representation', ...(opts.headers||{}) },
+    ...opts
+  });
+  const t = await res.text();
+  return t ? JSON.parse(t) : null;
+}
+
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function formatFecha(fecha, hora) {
+  if (!fecha) return null;
+  const d = new Date(fecha + 'T12:00:00');
+  const f = d.toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  return hora ? f + ' · ' + hora.slice(0,5) + 'h' : f;
+}
+
+async function loadTalleres() {
+  const data = await sb('talleres?select=*&activo=eq.true&order=fecha.asc');
+  const grid = document.getElementById('talleres-grid');
+
+  if (!data || !data.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <i class="ti ti-wand"></i>
+      <p>Pronto anunciaremos nuevos talleres.<br>¡Mantente atento!</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = data.map(t => {
+    const fecha = formatFecha(t.fecha, t.hora);
+    const precio = t.precio ? '$' + t.precio.toLocaleString('es-CL') : 'Sin costo';
+    return `<div class="taller-card" onclick="openTaller(${t.id})">
+      ${t.imagen_url
+        ? `<img class="taller-card-img" src="${esc(t.imagen_url)}" alt="${esc(t.nombre)}" loading="lazy" />`
+        : `<div class="taller-card-img-ph"><i class="ti ti-school"></i></div>`}
+      <div class="taller-card-body">
+        ${fecha ? `<div class="taller-card-fecha"><i class="ti ti-calendar-event"></i>${esc(fecha)}</div>` : ''}
+        <div class="taller-card-nombre">${esc(t.nombre)}</div>
+        <div class="taller-card-desc">${esc(t.descripcion ?? '')}</div>
+        <div class="taller-card-footer">
+          <span class="taller-precio">${precio}</span>
+          ${t.cupos ? `<span class="taller-cupos">${t.cupos} cupos</span>` : ''}
+          <span class="btn-ver"><i class="ti ti-arrow-right"></i> Ver más</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Guardar data para el modal
+  window._talleres = data;
+}
+
+function openTaller(id) {
+  const t = (window._talleres || []).find(x => x.id === id);
+  if (!t) return;
+  activeTallerId = id;
+
+  // Imagen
+  document.getElementById('modal-img-slot').innerHTML = t.imagen_url
+    ? `<img class="modal-img" src="${esc(t.imagen_url)}" alt="${esc(t.nombre)}" />`
+    : `<div class="modal-img-ph"><i class="ti ti-school"></i></div>`;
+
+  // Fecha/tag
+  const fecha = formatFecha(t.fecha, t.hora);
+  document.getElementById('modal-tag').innerHTML = fecha
+    ? `<i class="ti ti-calendar-event"></i>${esc(fecha)}` : '';
+
+  document.getElementById('modal-title').textContent = t.nombre;
+  document.getElementById('modal-desc').textContent  = t.descripcion ?? '';
+
+  // Meta
+  const metas = [];
+  if (t.precio) metas.push(`<div class="meta-item"><i class="ti ti-currency-dollar"></i><span class="meta-value">$${t.precio.toLocaleString('es-CL')}</span></div>`);
+  if (t.cupos)  metas.push(`<div class="meta-item"><i class="ti ti-users"></i><span class="meta-value">${t.cupos} cupos disponibles</span></div>`);
+  document.getElementById('modal-meta').innerHTML = metas.join('');
+
+  // Pago
+  const hayPago = t.link_pago || t.banco || t.num_cuenta;
+  const pagoBlock = document.getElementById('pago-block');
+  if (hayPago) {
+    pagoBlock.style.display = 'block';
+    document.getElementById('btn-pago-wrap').innerHTML = t.link_pago
+      ? `<a class="btn-pago" href="${esc(t.link_pago)}" target="_blank" rel="noopener"><i class="ti ti-credit-card"></i> Pagar con tarjeta</a>`
+      : '';
+    const transferBlock = document.getElementById('transfer-block');
+    const hayTransfer = t.banco || t.num_cuenta || t.titular;
+    if (hayTransfer) {
+      transferBlock.style.display = 'block';
+      const items = [
+        t.banco        && `<div class="transfer-item"><label>Banco</label><span>${esc(t.banco)}</span></div>`,
+        t.tipo_cuenta  && `<div class="transfer-item"><label>Tipo cuenta</label><span>${esc(t.tipo_cuenta)}</span></div>`,
+        t.num_cuenta   && `<div class="transfer-item"><label>Número de cuenta</label><span>${esc(t.num_cuenta)}</span></div>`,
+        t.titular      && `<div class="transfer-item"><label>Titular</label><span>${esc(t.titular)}</span></div>`,
+        t.rut_titular  && `<div class="transfer-item"><label>RUT</label><span>${esc(t.rut_titular)}</span></div>`,
+        t.email_titular&& `<div class="transfer-item"><label>Email</label><span>${esc(t.email_titular)}</span></div>`,
+      ].filter(Boolean);
+      document.getElementById('transfer-data').innerHTML = items.join('');
+    } else {
+      transferBlock.style.display = 'none';
+    }
+  } else {
+    pagoBlock.style.display = 'none';
+  }
+
+  // Reset formulario
+  ['f-nombre','f-edad','f-apoderado','f-telefono'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('form-success').style.display = 'none';
+  document.getElementById('form-error').style.display   = 'none';
+  document.getElementById('btn-inscribir').style.display = 'flex';
+  document.getElementById('btn-inscribir').disabled = false;
+  document.getElementById('btn-inscribir').innerHTML = '<i class="ti ti-wand"></i> Confirmar inscripción';
+
+  document.getElementById('modal-bd').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-bd').classList.remove('open');
+  document.body.style.overflow = '';
+  activeTallerId = null;
+}
+
+document.getElementById('modal-bd').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-bd')) closeModal();
+});
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+document.getElementById('btn-inscribir').addEventListener('click', async () => {
+  const nombre   = document.getElementById('f-nombre').value.trim();
+  const edad     = parseInt(document.getElementById('f-edad').value) || null;
+  const apoderado= document.getElementById('f-apoderado').value.trim() || null;
+  const telefono = document.getElementById('f-telefono').value.trim();
+  const errEl    = document.getElementById('form-error');
+
+  errEl.style.display = 'none';
+  if (!nombre)   { errEl.textContent = 'El nombre es obligatorio.';           errEl.style.display='block'; return; }
+  if (!edad)     { errEl.textContent = 'Ingresa la edad del participante.';    errEl.style.display='block'; return; }
+  if (!telefono) { errEl.textContent = 'El número de contacto es obligatorio.';errEl.style.display='block'; return; }
+
+  const btn = document.getElementById('btn-inscribir');
+  btn.disabled = true;
+  btn.innerHTML = '<span style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block"></span>';
+
+  const body = JSON.stringify({ taller_id: activeTallerId, nombre, edad, nombre_apoderado: apoderado, telefono });
+  const res  = await fetch(SUPABASE_URL + '/rest/v1/taller_inscripciones', {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY,
+               'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body,
+  });
+
+  if (res.ok || res.status === 201) {
+    btn.style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+  } else {
+    errEl.textContent = 'Ocurrió un error. Por favor intenta nuevamente.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-wand"></i> Confirmar inscripción';
+  }
+});
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+loadTalleres();
+</script>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Talleres — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link rel="stylesheet" href="/css/platform.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+.tabs { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:24px; }
+.tab-btn { padding:9px 16px; font-size:13px; font-weight:500; color:var(--muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .12s,border-color .12s; }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-btn:hover:not(.active) { color:var(--text); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+.taller-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-top:16px; }
+.taller-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+.taller-card-img { width:100%; height:160px; object-fit:cover; background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--hint); font-size:32px; }
+.taller-card-img img { width:100%; height:160px; object-fit:cover; display:block; }
+.taller-card-body { padding:14px; }
+.taller-card-name { font-size:14px; font-weight:600; margin-bottom:4px; }
+.taller-card-fecha { font-size:12px; color:var(--muted); margin-bottom:8px; }
+.taller-card-desc { font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:10px; }
+.taller-card-precio { font-size:13px; font-weight:600; color:var(--accent); }
+.taller-card-actions { display:flex; gap:6px; margin-top:12px; }
+.taller-inactive { opacity:.55; }
+
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:10px; }
+
+.inscripcion-filter { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+.filter-select { height:36px; border:1px solid var(--border-strong); border-radius:var(--radius); padding:0 10px; font-family:inherit; font-size:13px; color:var(--text); background:var(--surface); outline:none; }
+.filter-select:focus { border-color:var(--accent); }
+
+.stat-mini { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+.stat-mini-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; font-size:13px; }
+.stat-mini-value { font-size:22px; font-weight:700; color:var(--accent); }
+.stat-mini-label { font-size:11px; color:var(--muted); }
+
+.img-upload-area { position:relative; width:100%; height:140px; border:2px dashed var(--border-strong); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; gap:6px; color:var(--hint); font-size:13px; overflow:hidden; transition:border-color .15s; }
+.img-upload-area:hover { border-color:var(--accent); }
+.img-upload-area img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.img-upload-area .img-overlay-label { position:relative; z-index:1; background:rgba(0,0,0,.45); color:#fff; padding:6px 14px; border-radius:20px; font-size:12px; opacity:0; transition:opacity .15s; }
+.img-upload-area:hover .img-overlay-label { opacity:1; }
+.img-upload-input { display:none; }
+
+.form-section-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); margin:16px 0 8px; }
+.form-row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media(max-width:500px) { .form-row2 { grid-template-columns:1fr; } }
+
+.empty-state { text-align:center; padding:40px; color:var(--hint); font-size:13px; }
+.empty-state i { font-size:32px; display:block; margin-bottom:10px; color:var(--border-strong); }
+</style>
+</head>
+<body>
+<div id="platform-shell"></div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { requireAuth }  from '/js/core/auth.js';
+import { initShell }    from '/js/ui/sidebar.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '/js/core/supabase.js';
+import { getAccessToken } from '/js/core/auth.js';
+import { auditConfig }  from '/js/core/audit.js';
+
+const user = await requireAuth('/platform/login.html');
+if (!user) throw new Error('No auth');
+await initShell('talleres', 'Talleres');
+
+const content = document.getElementById('platform-content');
+const BUCKET  = 'images';
+let talleres  = [];
+let editingId = null;
+let authToken = await getAccessToken();
+let toastTimer;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Upload imagen ─────────────────────────────────────────────
+async function uploadImagen(file) {
+  const ext  = file.name.split('.').pop();
+  const path = `talleres/taller_${Date.now()}.${ext}`;
+  const res  = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${authToken}`,
+               'Content-Type': file.type, 'cache-control': 'max-age=31536000', 'x-upsert': 'true' },
+    body: file,
+  });
+  if (!res.ok) throw new Error('Error al subir imagen');
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+// ── Cargar talleres ───────────────────────────────────────────
+async function loadTalleres() {
+  const { data, error } = await supabase.from('talleres').select('*').order('fecha', { ascending: true });
+  if (error) { toast('Error al cargar talleres'); return; }
+  talleres = data ?? [];
+}
+
+// ── Render principal ──────────────────────────────────────────
+function renderTalleres() {
+  const grid = document.getElementById('taller-grid');
+  if (!talleres.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-school"></i>Aún no hay talleres. Crea el primero.</div>`;
+    return;
+  }
+  grid.innerHTML = talleres.map(t => {
+    const fecha = t.fecha
+      ? new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+      : 'Sin fecha';
+    const precio = t.precio ? `$${t.precio.toLocaleString('es-CL')}` : 'Sin costo';
+    return `<div class="taller-card${t.activo ? '' : ' taller-inactive'}">
+      <div class="taller-card-img">
+        ${t.imagen_url ? `<img src="${t.imagen_url}" alt="${esc(t.nombre)}" loading="lazy" />` : `<i class="ti ti-school"></i>`}
+      </div>
+      <div class="taller-card-body">
+        <div class="taller-card-name">${esc(t.nombre)}</div>
+        <div class="taller-card-fecha"><i class="ti ti-calendar-event" style="margin-right:4px"></i>${fecha}${t.hora ? ' · ' + t.hora.slice(0,5) + 'h' : ''}</div>
+        <div class="taller-card-desc">${esc(t.descripcion ?? '')}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="taller-card-precio">${precio}</span>
+          ${t.cupos ? `<span style="font-size:11px;color:var(--muted)">${t.cupos} cupos</span>` : ''}
+        </div>
+        <div class="taller-card-actions">
+          <button class="btn btn-sm" onclick="openEdit(${t.id})"><i class="ti ti-pencil"></i> Editar</button>
+          <button class="btn btn-sm" onclick="toggleActivo(${t.id})" title="${t.activo ? 'Desactivar' : 'Activar'}">
+            <i class="ti ti-${t.activo ? 'eye-off' : 'eye'}"></i> ${t.activo ? 'Ocultar' : 'Mostrar'}
+          </button>
+          <button class="btn btn-sm btn-icon danger" onclick="deleteTaller(${t.id})" title="Eliminar"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Modal crear/editar ────────────────────────────────────────
+window.openCreate = function() {
+  editingId = null;
+  resetForm();
+  document.getElementById('modal-title').textContent = 'Nuevo taller';
+  openModal('modal-taller');
+};
+
+window.openEdit = function(id) {
+  editingId = id;
+  const t = talleres.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('t-nombre').value      = t.nombre ?? '';
+  document.getElementById('t-desc').value        = t.descripcion ?? '';
+  document.getElementById('t-fecha').value       = t.fecha ?? '';
+  document.getElementById('t-hora').value        = t.hora?.slice(0,5) ?? '';
+  document.getElementById('t-precio').value      = t.precio ?? '';
+  document.getElementById('t-cupos').value       = t.cupos ?? '';
+  document.getElementById('t-link').value        = t.link_pago ?? '';
+  document.getElementById('t-banco').value       = t.banco ?? '';
+  document.getElementById('t-tipo').value        = t.tipo_cuenta ?? '';
+  document.getElementById('t-cuenta').value      = t.num_cuenta ?? '';
+  document.getElementById('t-titular').value     = t.titular ?? '';
+  document.getElementById('t-rut').value         = t.rut_titular ?? '';
+  document.getElementById('t-email').value       = t.email_titular ?? '';
+  const prev = document.getElementById('img-preview');
+  if (t.imagen_url) { prev.src = t.imagen_url; prev.style.display = 'block'; }
+  else               { prev.style.display = 'none'; }
+  document.getElementById('modal-title').textContent = 'Editar taller';
+  openModal('modal-taller');
+};
+
+function resetForm() {
+  ['t-nombre','t-desc','t-fecha','t-hora','t-precio','t-cupos',
+   't-link','t-banco','t-tipo','t-cuenta','t-titular','t-rut','t-email'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('t-img-input').value = '';
+  window._pendingImg = null;
+}
+
+async function saveTaller() {
+  const nombre = document.getElementById('t-nombre').value.trim();
+  if (!nombre) { toast('El nombre es obligatorio.'); return; }
+
+  const btn = document.getElementById('btn-save-taller');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  let imagen_url = editingId ? talleres.find(t => t.id === editingId)?.imagen_url : null;
+  if (window._pendingImg) {
+    try { imagen_url = await uploadImagen(window._pendingImg); }
+    catch (e) { toast('Error al subir imagen'); btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar'; return; }
+  }
+
+  const body = {
+    nombre,
+    descripcion:   document.getElementById('t-desc').value.trim() || null,
+    fecha:         document.getElementById('t-fecha').value || null,
+    hora:          document.getElementById('t-hora').value || null,
+    precio:        parseInt(document.getElementById('t-precio').value) || null,
+    cupos:         parseInt(document.getElementById('t-cupos').value) || null,
+    link_pago:     document.getElementById('t-link').value.trim() || null,
+    banco:         document.getElementById('t-banco').value.trim() || null,
+    tipo_cuenta:   document.getElementById('t-tipo').value.trim() || null,
+    num_cuenta:    document.getElementById('t-cuenta').value.trim() || null,
+    titular:       document.getElementById('t-titular').value.trim() || null,
+    rut_titular:   document.getElementById('t-rut').value.trim() || null,
+    email_titular: document.getElementById('t-email').value.trim() || null,
+    imagen_url,
+  };
+
+  let error;
+  if (editingId) {
+    ({ error } = await supabase.from('talleres').update(body).eq('id', editingId));
+  } else {
+    ({ error } = await supabase.from('talleres').insert({ ...body, activo: true }));
+  }
+
+  if (error) { toast('Error: ' + error.message); }
+  else {
+    toast(editingId ? 'Taller actualizado ✓' : 'Taller creado ✓');
+    closeModal('modal-taller');
+    window._pendingImg = null;
+    await loadTalleres();
+    renderTalleres();
+    renderInscripcionesFilter();
+  }
+
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar';
+}
+
+window.toggleActivo = async function(id) {
+  const t = talleres.find(x => x.id === id);
+  if (!t) return;
+  const { error } = await supabase.from('talleres').update({ activo: !t.activo }).eq('id', id);
+  if (error) { toast('Error'); return; }
+  t.activo = !t.activo;
+  renderTalleres();
+  toast(t.activo ? 'Taller visible en el sitio ✓' : 'Taller ocultado ✓');
+};
+
+window.deleteTaller = async function(id) {
+  const t = talleres.find(x => x.id === id);
+  if (!confirm(`¿Eliminar el taller "${t?.nombre}"? También se eliminarán todas las inscripciones.`)) return;
+  const { error } = await supabase.from('talleres').delete().eq('id', id);
+  if (error) { toast('Error al eliminar'); return; }
+  talleres = talleres.filter(x => x.id !== id);
+  renderTalleres();
+  renderInscripcionesFilter();
+  toast('Taller eliminado');
+};
+
+// ── Inscripciones ─────────────────────────────────────────────
+let inscripciones = [];
+let filterTallerId = 'all';
+
+async function loadInscripciones() {
+  let q = supabase.from('taller_inscripciones').select('*, talleres(nombre)').order('created_at', { ascending: false });
+  if (filterTallerId !== 'all') q = q.eq('taller_id', filterTallerId);
+  const { data, error } = await q;
+  if (error) { toast('Error al cargar inscripciones'); return; }
+  inscripciones = data ?? [];
+}
+
+function renderInscripcionesFilter() {
+  const sel = document.getElementById('filter-taller');
+  if (!sel) return;
+  const val = sel.value;
+  sel.innerHTML = `<option value="all">Todos los talleres</option>` +
+    talleres.map(t => `<option value="${t.id}" ${String(t.id) === String(val) ? 'selected' : ''}>${esc(t.nombre)}</option>`).join('');
+}
+
+async function renderInscripciones() {
+  await loadInscripciones();
+  const total = inscripciones.length;
+  document.getElementById('stat-inscritos').textContent = total;
+
+  const tbody = document.getElementById('inscripciones-tbody');
+  if (!inscripciones.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="ti ti-users"></i>Sin inscripciones${filterTallerId !== 'all' ? ' para este taller' : ''}.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = inscripciones.map(ins => {
+    const dt = new Date(ins.created_at).toLocaleDateString('es-CL', { day:'2-digit', month:'short', year:'numeric' });
+    return `<tr>
+      <td style="font-size:12px;color:var(--muted)">${dt}</td>
+      <td style="font-weight:500">${esc(ins.talleres?.nombre ?? '—')}</td>
+      <td>${esc(ins.nombre)}</td>
+      <td>${ins.edad ?? '—'}</td>
+      <td>${esc(ins.nombre_apoderado ?? '—')}</td>
+      <td>${esc(ins.telefono ?? '—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportExcel() {
+  if (!inscripciones.length) { toast('No hay inscripciones para exportar.'); return; }
+  const rows = inscripciones.map(ins => ({
+    'Taller':       ins.talleres?.nombre ?? '',
+    'Nombre':       ins.nombre,
+    'Edad':         ins.edad ?? '',
+    'Apoderado':    ins.nombre_apoderado ?? '',
+    'Teléfono':     ins.telefono ?? '',
+    'Fecha inscripción': new Date(ins.created_at).toLocaleString('es-CL'),
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Inscripciones');
+  XLSX.writeFile(wb, `inscripciones_talleres_${Date.now()}.xlsx`);
+}
+
+// ── Modales ───────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+window.closeModal = closeModal;
+
+function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Render HTML ───────────────────────────────────────────────
+content.innerHTML = `
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="talleres">Talleres</button>
+    <button class="tab-btn"        data-tab="inscripciones">Inscripciones</button>
+  </div>
+
+  <!-- Tab: Talleres -->
+  <div class="tab-panel active" id="tab-talleres">
+    <div class="page-header">
+      <div style="font-size:14px;font-weight:600">Gestión de talleres</div>
+      <button class="btn btn-accent" onclick="openCreate()"><i class="ti ti-plus"></i> Nuevo taller</button>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:4px">
+      Los talleres marcados como <strong>Mostrar</strong> aparecen en la página pública
+      <a href="/talleres/" target="_blank" style="color:var(--accent)">/talleres/</a>.
+    </p>
+    <div id="taller-grid" class="taller-grid"></div>
+  </div>
+
+  <!-- Tab: Inscripciones -->
+  <div class="tab-panel" id="tab-inscripciones">
+    <div class="page-header">
+      <div style="font-size:14px;font-weight:600">Inscripciones</div>
+      <button class="btn" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i> Exportar Excel</button>
+    </div>
+
+    <div class="stat-mini">
+      <div class="stat-mini-card">
+        <div class="stat-mini-value" id="stat-inscritos">—</div>
+        <div class="stat-mini-label">Inscripciones</div>
+      </div>
+    </div>
+
+    <div class="inscripcion-filter">
+      <select class="filter-select" id="filter-taller">
+        <option value="all">Todos los talleres</option>
+      </select>
+      <button class="btn btn-sm" id="btn-filtrar"><i class="ti ti-filter"></i> Filtrar</button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Taller</th><th>Nombre</th>
+              <th>Edad</th><th>Apoderado</th><th>Teléfono</th>
+            </tr>
+          </thead>
+          <tbody id="inscripciones-tbody">
+            <tr><td colspan="6"><div class="empty-state"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>Cargando…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Crear / Editar taller -->
+  <div class="modal-backdrop" id="modal-taller">
+    <div class="modal-box" style="width:520px">
+      <div class="modal-title" id="modal-title">Nuevo taller</div>
+
+      <div class="form-section-title">Información general</div>
+      <div class="form-group">
+        <label class="form-label">Nombre del taller *</label>
+        <input class="form-input" id="t-nombre" placeholder="Ej: Taller de decoración de galletas" />
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-input form-textarea" id="t-desc" placeholder="Descripción del taller, qué incluye, para quién es…"></textarea>
+      </div>
+      <div class="form-row2" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">Fecha</label>
+          <input class="form-input" type="date" id="t-fecha" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hora</label>
+          <input class="form-input" type="time" id="t-hora" />
+        </div>
+      </div>
+      <div class="form-row2" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">Precio (CLP)</label>
+          <input class="form-input" type="number" id="t-precio" placeholder="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cupos disponibles</label>
+          <input class="form-input" type="number" id="t-cupos" placeholder="Sin límite" />
+        </div>
+      </div>
+
+      <div class="form-section-title">Imagen de portada</div>
+      <div class="img-upload-area" id="img-upload-area">
+        <img id="img-preview" style="display:none" alt="Preview" />
+        <i class="ti ti-photo" style="font-size:28px"></i>
+        <span style="font-size:12px">Haz clic para subir imagen</span>
+        <span class="img-overlay-label"><i class="ti ti-upload"></i> Cambiar imagen</span>
+        <input type="file" accept="image/*" id="t-img-input" class="img-upload-input" />
+      </div>
+
+      <div class="form-section-title">Pago con tarjeta</div>
+      <div class="form-group">
+        <label class="form-label">Link de pago (Webpay, Flow, Mercado Pago, etc.)</label>
+        <input class="form-input" id="t-link" placeholder="https://..." />
+      </div>
+
+      <div class="form-section-title">Datos de transferencia</div>
+      <div class="form-row2">
+        <div class="form-group">
+          <label class="form-label">Banco</label>
+          <input class="form-input" id="t-banco" placeholder="Ej: Banco Estado" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo de cuenta</label>
+          <input class="form-input" id="t-tipo" placeholder="Ej: Cuenta Rut" />
+        </div>
+      </div>
+      <div class="form-row2" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">Número de cuenta</label>
+          <input class="form-input" id="t-cuenta" placeholder="123456789" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Titular</label>
+          <input class="form-input" id="t-titular" placeholder="Nombre del titular" />
+        </div>
+      </div>
+      <div class="form-row2" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">RUT titular</label>
+          <input class="form-input" id="t-rut" placeholder="12.345.678-9" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email titular</label>
+          <input class="form-input" type="email" id="t-email" placeholder="correo@empresa.cl" />
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn" onclick="closeModal('modal-taller')">Cancelar</button>
+        <button class="btn btn-accent" id="btn-save-taller"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+`;
+
+// ── Eventos ───────────────────────────────────────────────────
+content.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    content.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    content.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const panel = document.getElementById(`tab-${btn.dataset.tab}`);
+    panel.classList.add('active');
+    if (btn.dataset.tab === 'inscripciones') {
+      renderInscripcionesFilter();
+      renderInscripciones();
+    }
+  });
+});
+
+document.getElementById('btn-save-taller').addEventListener('click', saveTaller);
+document.getElementById('btn-filtrar').addEventListener('click', async () => {
+  filterTallerId = document.getElementById('filter-taller').value;
+  await renderInscripciones();
+});
+
+// Imagen upload
+const imgInput = document.getElementById('t-img-input');
+document.getElementById('img-upload-area').addEventListener('click', () => imgInput.click());
+imgInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  window._pendingImg = file;
+  const preview = document.getElementById('img-preview');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+});
+
+document.querySelectorAll('.modal-backdrop').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); })
+);
+
+window.exportExcel = exportExcel;
+
+// ── Init ──────────────────────────────────────────────────────
+await loadTalleres();
+renderTalleres();
+</script>
+</body>
+</html>
