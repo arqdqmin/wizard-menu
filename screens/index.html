@@ -151,8 +151,6 @@ async function init() {
       const cfg = await cfgRes.json();
       if (cfg[0]?.valor === 'false') {
         document.getElementById('loader').style.display = 'none';
-        // Pantalla en negro — reintentar cada 30s por si la habilitan
-        setTimeout(init, 30000);
         return;
       }
     }
