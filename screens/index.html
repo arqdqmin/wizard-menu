@@ -142,6 +142,21 @@ function showSlide(idx) {
 
 async function init() {
   try {
+    // Verificar si la pantalla está habilitada
+    const cfgRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/configuracion?clave=eq.screens_enabled&select=valor`,
+      { headers: { apikey: SUPABASE_ANON, Accept: 'application/json' } }
+    );
+    if (cfgRes.ok) {
+      const cfg = await cfgRes.json();
+      if (cfg[0]?.valor === 'false') {
+        document.getElementById('loader').style.display = 'none';
+        // Pantalla en negro — reintentar cada 30s por si la habilitan
+        setTimeout(init, 30000);
+        return;
+      }
+    }
+
     const data = await loadSlides();
     document.getElementById('loader').style.opacity = '0';
     setTimeout(() => { document.getElementById('loader').style.display = 'none'; }, 500);

@@ -315,6 +315,19 @@ content.innerHTML = `
       </button>
     </div>
 
+    <!-- Toggle pantalla pública -->
+    <div id="screen-toggle-row" style="display:flex;align-items:center;justify-content:space-between;
+         background:var(--surface2,var(--bg));border:1px solid var(--border);border-radius:var(--radius);
+         padding:14px 16px;margin-bottom:20px">
+      <div>
+        <div style="font-size:13px;font-weight:500">Pantalla pública</div>
+        <div id="screen-toggle-label" style="font-size:11px;color:var(--muted);margin-top:2px">Cargando…</div>
+      </div>
+      <button id="screen-toggle-btn" class="btn" onclick="toggleScreenPublic()" style="min-width:110px">
+        <i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>
+      </button>
+    </div>
+
     <!-- Zona de subida -->
     <div class="upload-zone" id="upload-zone">
       <i class="ti ti-cloud-upload"></i>
@@ -339,9 +352,46 @@ zone.addEventListener('drop', e => {
   handleFiles(e.dataTransfer.files);
 });
 
+// ── Toggle pantalla pública ───────────────────────────────────
+let screensEnabled = true;
+
+async function loadScreenToggle() {
+  const { data } = await supabase.from('configuracion').select('valor').eq('clave', 'screens_enabled').single();
+  screensEnabled = data ? data.valor !== 'false' : true;
+  renderToggle();
+}
+
+function renderToggle() {
+  const btn   = document.getElementById('screen-toggle-btn');
+  const label = document.getElementById('screen-toggle-label');
+  if (!btn) return;
+  if (screensEnabled) {
+    btn.innerHTML   = '<i class="ti ti-eye-off"></i> Deshabilitar';
+    btn.className   = 'btn';
+    label.textContent = 'Activa — visible en www.twcoffee.cl/screens/';
+    label.style.color = 'var(--green, #2d7a4f)';
+  } else {
+    btn.innerHTML   = '<i class="ti ti-eye"></i> Habilitar';
+    btn.className   = 'btn btn-accent';
+    label.textContent = 'Deshabilitada — muestra pantalla en negro';
+    label.style.color = 'var(--hint)';
+  }
+}
+
+window.toggleScreenPublic = async function() {
+  screensEnabled = !screensEnabled;
+  renderToggle();
+  await supabase.from('configuracion').upsert(
+    { clave: 'screens_enabled', valor: String(screensEnabled) },
+    { onConflict: 'clave' }
+  );
+  toast(screensEnabled ? 'Pantalla habilitada ✓' : 'Pantalla deshabilitada ✓');
+};
+
 // Init
 await loadScreens();
 renderScreens();
+await loadScreenToggle();
 </script>
 </body>
 </html>

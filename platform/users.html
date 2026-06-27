@@ -253,7 +253,9 @@ window.closeModal = closeModal;
 content.innerHTML = `
   <div class="page-header">
     <div class="page-header-title">Gestión de usuarios</div>
-    <div style="display:flex;gap:8px"></div>
+    <div style="display:flex;gap:8px">
+      ${canWrite || isSA ? `<button class="btn btn-accent" onclick="openCreate()"><i class="ti ti-plus"></i> Nuevo usuario</button>` : ''}
+    </div>
   </div>
 
   <div class="search-row">
@@ -277,6 +279,44 @@ content.innerHTML = `
           <tr><td colspan="6"><div class="empty-state"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>Cargando…</div></td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Modal crear usuario -->
+  <div class="modal-backdrop" id="modal-create">
+    <div class="modal-box" style="width:480px">
+      <div class="modal-title">Nuevo usuario</div>
+      <div class="form-group">
+        <label class="form-label">Usuario (email interno)</label>
+        <input class="form-input" id="new-email" placeholder="ej: barra@wizard" autocomplete="off" />
+        <div style="font-size:11px;color:var(--hint);margin-top:4px">No tiene que ser un email real. Usa el formato usuario@wizard.</div>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Contrase&ntilde;a</label>
+        <input class="form-input" id="new-password" type="password" placeholder="M&iacute;nimo 6 caracteres" autocomplete="new-password" />
+      </div>
+      <div class="form-row" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input class="form-input" id="new-nombre" placeholder="Nombre" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellidos</label>
+          <input class="form-input" id="new-apellidos" placeholder="Apellidos" />
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Cargo</label>
+        <input class="form-input" id="new-cargo" placeholder="Ej: Barista, Encargado de barra" />
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Roles</label>
+        <div id="new-roles-checkboxes" style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="closeModal('modal-create')">Cancelar</button>
+        <button class="btn btn-accent" id="btn-save-create"><i class="ti ti-user-plus"></i> Crear usuario</button>
+      </div>
     </div>
   </div>
 
@@ -321,8 +361,61 @@ content.innerHTML = `
   </div>
 `;
 
+// ── Crear usuario ─────────────────────────────────────────────
+window.openCreate = function() {
+  ['new-email','new-password','new-nombre','new-apellidos','new-cargo'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  const wrap = document.getElementById('new-roles-checkboxes');
+  wrap.innerHTML = allRoles.map(r => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0">
+      <input type="checkbox" value="${r.id}" style="accent-color:var(--accent);width:15px;height:15px" />
+      ${roleLabel(r.nombre)}
+    </label>`).join('');
+  openModal('modal-create');
+};
+
+async function saveCreate() {
+  const email    = document.getElementById('new-email').value.trim();
+  const password = document.getElementById('new-password').value;
+  const nombre   = document.getElementById('new-nombre').value.trim();
+  const apellidos= document.getElementById('new-apellidos').value.trim();
+  const cargo    = document.getElementById('new-cargo').value.trim();
+  const role_ids = [...document.querySelectorAll('#new-roles-checkboxes input:checked')].map(el => parseInt(el.value));
+
+  if (!email || !password) { toast('Email y contraseña son obligatorios'); return; }
+
+  const btn = document.getElementById('btn-save-create');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader" style="animation:spin 1s linear infinite"></i> Creando…';
+
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch('https://cwatxpuxttgeceahbciw.supabase.co/functions/v1/create-user', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password, nombre, apellidos, cargo, role_ids }),
+  });
+
+  const data = await res.json();
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-user-plus"></i> Crear usuario';
+
+  if (!res.ok || data.error) {
+    toast('Error: ' + (data.error ?? 'desconocido'));
+    return;
+  }
+
+  toast('Usuario creado correctamente ✓');
+  closeModal('modal-create');
+  await loadData();
+}
+
 document.getElementById('search-input').addEventListener('input', render);
 document.getElementById('btn-save-edit').addEventListener('click', saveEdit);
+document.getElementById('btn-save-create').addEventListener('click', saveCreate);
 document.querySelectorAll('.modal-backdrop').forEach(m =>
   m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); })
 );
