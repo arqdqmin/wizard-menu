@@ -108,6 +108,9 @@ export async function initShell(activeSlug, pageTitle) {
         </button>
         <h1 class="platform-page-title">${pageTitle}</h1>
         <div class="header-spacer"></div>
+        <a href="/talleres/" target="_blank" class="header-view-menu" title="Ver vitrina de talleres" style="margin-right:4px">
+          <i class="ti ti-external-link"></i> Talleres
+        </a>
         <a href="/" target="_blank" class="header-view-menu" title="Ver menú público">
           <i class="ti ti-external-link"></i> Ver menú
         </a>
