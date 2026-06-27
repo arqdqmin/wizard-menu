@@ -168,6 +168,7 @@
 import { requireAuth }      from '/js/core/auth.js';
 import { initShell }        from '/js/ui/sidebar.js';
 import { supabase }         from '/js/core/supabase.js';
+import { isSuperAdmin }     from '/js/core/permissions.js';
 
 // ── Auth guard ───────────────────────────────────────────────
 const user = await requireAuth('/platform/login.html');
@@ -204,7 +205,7 @@ content.innerHTML = `
   </div>
 
   <!-- Widget Uso Supabase -->
-  <div class="usage-widget">
+  <div class="usage-widget" id="usage-widget-container">
     <div class="usage-widget-header">
       <div class="usage-widget-title">
         <i class="ti ti-database"></i> Uso Supabase
@@ -342,8 +343,19 @@ document.getElementById('activity-list').innerHTML = logs.length
       Aún no hay actividad registrada
     </div>`;
 
-// ── Widget Uso Supabase ───────────────────────────────────────
-loadSupabaseUsage();
+// ── Widget Uso Supabase (solo super_admin y administrador) ────
+const { data: userRoles } = await supabase
+  .from('user_roles')
+  .select('roles(nombre)')
+  .eq('user_id', user.id);
+const roleNames = (userRoles ?? []).map(r => r.roles?.nombre).filter(Boolean);
+const canSeeUsage = roleNames.some(r => ['super_admin', 'administrador'].includes(r));
+
+if (!canSeeUsage) {
+  document.getElementById('usage-widget-container').style.display = 'none';
+} else {
+  loadSupabaseUsage();
+}
 
 async function loadSupabaseUsage() {
   const el = document.getElementById('usage-content');
