@@ -407,7 +407,7 @@ async function renderInscripciones() {
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
   const tbody = document.getElementById('inscripciones-tbody');
   if (!inscripciones.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="ti ti-users"></i>Sin inscripciones.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="ti ti-users"></i>Sin inscripciones.</div></td></tr>`;
     return;
   }
   tbody.innerHTML = inscripciones.map(ins => {
@@ -419,9 +419,20 @@ async function renderInscripciones() {
       <td>${ins.edad??'—'}</td>
       <td>${esc(ins.nombre_apoderado??'—')}</td>
       <td>${esc(ins.telefono??'—')}</td>
+      <td><button class="btn btn-sm btn-icon danger" onclick="deleteInscripcion(${ins.id},'${esc(ins.nombre)}')" title="Eliminar"><i class="ti ti-trash"></i></button></td>
     </tr>`;
   }).join('');
 }
+
+window.deleteInscripcion = async function(id, nombre) {
+  if (!confirm(`¿Eliminar la inscripción de "${nombre}"?`)) return;
+  const { error } = await supabase.from('taller_inscripciones').delete().eq('id', id);
+  if (error) { toast('Error al eliminar'); return; }
+  inscripciones = inscripciones.filter(x => x.id !== id);
+  document.getElementById('stat-inscritos').textContent = inscripciones.length;
+  await renderInscripciones();
+  toast('Inscripción eliminada');
+};
 
 function exportExcel() {
   if (!inscripciones.length) { toast('No hay inscripciones para exportar.'); return; }
@@ -598,7 +609,7 @@ content.innerHTML = `
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Fecha</th><th>Taller</th><th>Nombre</th><th>Edad</th><th>Apoderado</th><th>Teléfono</th></tr>
+            <tr><th>Fecha</th><th>Taller</th><th>Nombre</th><th>Edad</th><th>Apoderado</th><th>Teléfono</th><th></th></tr>
           </thead>
           <tbody id="inscripciones-tbody">
             <tr><td colspan="6"><div class="empty-state"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>Cargando…</div></td></tr>
