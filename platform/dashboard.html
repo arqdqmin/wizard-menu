@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link rel="stylesheet" href="/css/platform.css" />
+<style>
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.stat-icon.green  { background: var(--green-light);  color: var(--green); }
+.stat-icon.accent { background: var(--accent-light); color: var(--accent); }
+.stat-icon.gold   { background: #fef9e7;             color: var(--gold); }
+.stat-icon.gray   { background: var(--bg);           color: var(--muted); }
+.stat-value { font-size: 26px; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+.section-title {
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 14px;
+}
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.module-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+  cursor: pointer;
+}
+.module-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(45,74,62,.1); }
+.module-card--soon { opacity: .5; cursor: default; pointer-events: none; }
+.module-card-icon {
+  width: 36px; height: 36px;
+  background: var(--accent-light);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--accent);
+}
+.module-card--soon .module-card-icon { background: var(--bg); color: var(--hint); }
+.module-card-name { font-size: 13px; font-weight: 500; }
+.module-card-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.module-card-badge {
+  align-self: flex-start;
+  font-size: 10px; font-weight: 500;
+  background: var(--border); color: var(--muted);
+  padding: 2px 8px; border-radius: 20px;
+}
+.activity-list { display: flex; flex-direction: column; gap: 0; }
+.activity-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent-light); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0; margin-top: 1px;
+}
+.activity-text { flex: 1; line-height: 1.5; }
+.activity-time { font-size: 11px; color: var(--hint); margin-top: 2px; }
+.empty-activity {
+  text-align: center; padding: 32px;
+  color: var(--hint); font-size: 13px;
+}
+.empty-activity i { font-size: 28px; display: block; margin-bottom: 8px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+
+<div id="platform-shell"></div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { requireAuth }      from '/js/core/auth.js';
+import { initShell }        from '/js/ui/sidebar.js';
+import { supabase }         from '/js/core/supabase.js';
+
+// ── Auth guard ───────────────────────────────────────────────
+const user = await requireAuth('/platform/login.html');
+if (!user) throw new Error('No auth');
+
+await initShell('dashboard', 'Dashboard');
+
+const content = document.getElementById('platform-content');
+
+content.innerHTML = `
+  <div id="stat-grid" class="stat-grid">
+    ${[1,2,3,4].map(() => `
+      <div class="stat-card">
+        <div class="stat-icon gray"><span class="skeleton" style="width:20px;height:20px;border-radius:4px"></span></div>
+        <div><div class="skeleton" style="width:48px;height:26px;margin-bottom:6px"></div><div class="skeleton" style="width:90px;height:12px"></div></div>
+      </div>`).join('')}
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="section-title">Módulos disponibles</div>
+      <div id="module-grid" class="module-grid">
+        ${[1,2,3].map(() => `<div class="module-card" style="min-height:100px"><div class="skeleton" style="width:36px;height:36px;border-radius:9px"></div><div class="skeleton" style="width:80px;height:14px"></div></div>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Actividad reciente</div>
+      <div class="card" style="padding:0">
+        <div id="activity-list" class="activity-list" style="padding:0 16px">
+          <div class="empty-activity"><span class="skeleton" style="width:100%;height:12px;display:block;margin-bottom:8px"></span><span class="skeleton" style="width:70%;height:12px;display:block"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+
+// ── Cargar datos ──────────────────────────────────────────────
+const [prodRes, catRes, auditRes, modulesRes] = await Promise.all([
+  supabase.from('products').select('id, stock', { count: 'exact' }),
+  supabase.from('categories').select('id', { count: 'exact' }),
+  supabase.from('audit_logs').select('*').order('timestamp', { ascending: false }).limit(8),
+  supabase.from('modules').select('*').eq('habilitado', true).order('orden'),
+]);
+
+const totalProd    = prodRes.count ?? 0;
+const totalCat     = catRes.count  ?? 0;
+const sinStock     = (prodRes.data ?? []).filter(p => !p.stock).length;
+const enStock      = totalProd - sinStock;
+
+// Stats
+document.getElementById('stat-grid').innerHTML = `
+  <div class="stat-card">
+    <div class="stat-icon accent"><i class="ti ti-tools-kitchen-2"></i></div>
+    <div><div class="stat-value">${totalProd}</div><div class="stat-label">Productos</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="ti ti-circle-check"></i></div>
+    <div><div class="stat-value">${enStock}</div><div class="stat-label">En stock</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon gray"><i class="ti ti-circle-x"></i></div>
+    <div><div class="stat-value">${sinStock}</div><div class="stat-label">Sin stock</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon gold"><i class="ti ti-category"></i></div>
+    <div><div class="stat-value">${totalCat}</div><div class="stat-label">Categorías</div></div>
+  </div>
+`;
+
+// Módulos
+const moduleUrls = {
+  dashboard:    '/platform/dashboard.html',
+  menu:         '/admin.html',
+  usuarios:     '/platform/users.html',
+  configuracion:'/platform/settings.html',
+};
+const moduleDescriptions = {
+  dashboard:    'Vista general de la plataforma',
+  menu:         'Productos, categorías y banners',
+  usuarios:     'Gestión de usuarios y roles',
+  configuracion:'Módulos, permisos y sistema',
+};
+const enabledMods = modulesRes.data ?? [];
+document.getElementById('module-grid').innerHTML = enabledMods
+  .filter(m => m.slug !== 'dashboard')
+  .map(m => {
+    const url  = moduleUrls[m.slug];
+    const desc = moduleDescriptions[m.slug] ?? m.descripcion ?? '';
+    return url
+      ? `<a href="${url}" class="module-card">
+          <div class="module-card-icon"><i class="ti ${m.icono ?? 'ti-circle'}"></i></div>
+          <div class="module-card-name">${m.nombre}</div>
+          <div class="module-card-desc">${desc}</div>
+        </a>`
+      : `<div class="module-card module-card--soon">
+          <div class="module-card-icon"><i class="ti ${m.icono ?? 'ti-circle'}"></i></div>
+          <div class="module-card-name">${m.nombre}</div>
+          <div class="module-card-desc">${desc}</div>
+          <span class="module-card-badge">Próximamente</span>
+        </div>`;
+  }).join('') || '<p style="font-size:13px;color:var(--muted)">No hay módulos disponibles.</p>';
+
+// Actividad reciente
+const logs = auditRes.data ?? [];
+const actionLabels = {
+  producto_creado:     'Producto creado',
+  producto_editado:    'Producto editado',
+  producto_eliminado:  'Producto eliminado',
+  stock_cambiado:      'Stock actualizado',
+  categoria_creada:    'Categoría creada',
+  categoria_eliminada: 'Categoría eliminada',
+  banner_creado:       'Banner creado',
+  banner_eliminado:    'Banner eliminado',
+  usuario_creado:      'Usuario creado',
+  usuario_editado:     'Usuario editado',
+  rol_asignado:        'Rol asignado',
+  modulo_habilitado:   'Módulo habilitado',
+};
+const actionIcons = {
+  producto_creado: 'ti-plus', producto_editado: 'ti-pencil',
+  producto_eliminado: 'ti-trash', stock_cambiado: 'ti-package',
+  categoria_creada: 'ti-folder-plus', usuario_creado: 'ti-user-plus',
+  rol_asignado: 'ti-shield-check', modulo_habilitado: 'ti-toggle-right',
+};
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'Hace un momento';
+  if (m < 60) return `Hace ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `Hace ${h}h`;
+  const d = Math.floor(h / 24);
+  return `Hace ${d}d`;
+}
+document.getElementById('activity-list').innerHTML = logs.length
+  ? logs.map(l => `
+    <div class="activity-item">
+      <div class="activity-dot"><i class="ti ${actionIcons[l.action] ?? 'ti-activity'}"></i></div>
+      <div class="activity-text">
+        <span style="font-weight:500">${l.user_name?.split('@')[0] ?? 'Sistema'}</span>
+        — ${actionLabels[l.action] ?? l.action}
+        ${l.record_label ? `<span style="color:var(--muted)"> · ${l.record_label}</span>` : ''}
+        <div class="activity-time">${timeAgo(l.timestamp)}</div>
+      </div>
+    </div>`).join('')
+  : `<div class="empty-activity">
+      <i class="ti ti-activity"></i>
+      Aún no hay actividad registrada
+    </div>`;
+</script>
+</body>
+</html>

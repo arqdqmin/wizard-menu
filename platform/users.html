@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Usuarios — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link rel="stylesheet" href="/css/platform.css" />
+<style>
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+}
+.page-header-title { font-size: 15px; font-weight: 600; }
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; flex-shrink: 0;
+}
+.role-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500;
+  padding: 2px 8px; border-radius: 20px;
+  background: var(--accent-light); color: var(--accent);
+  margin: 1px;
+}
+.role-chip-remove {
+  background: none; border: none; cursor: pointer;
+  color: var(--accent); font-size: 12px; padding: 0;
+  display: flex; align-items: center;
+  opacity: .7;
+}
+.role-chip-remove:hover { opacity: 1; }
+.empty-state {
+  text-align: center; padding: 48px 20px;
+  color: var(--hint); font-size: 13px;
+}
+.empty-state i { font-size: 36px; display: block; margin-bottom: 10px; color: var(--border-strong); }
+.search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.search-input {
+  flex: 1; height: 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  font-family: inherit; font-size: 13px;
+  outline: none; background: var(--surface); color: var(--text);
+}
+.search-input:focus { border-color: var(--accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:500px) { .form-row { grid-template-columns: 1fr; } }
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  display: inline-block; margin-right: 5px;
+}
+.status-dot.activo   { background: var(--green); }
+.status-dot.inactivo { background: var(--hint); }
+</style>
+</head>
+<body>
+
+<div id="platform-shell"></div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { requireAuth }             from '/js/core/auth.js';
+import { initShell }               from '/js/ui/sidebar.js';
+import { supabase }                from '/js/core/supabase.js';
+import { auditUsers }              from '/js/core/audit.js';
+import { hasPermission, isSuperAdmin } from '/js/core/permissions.js';
+
+const currentUser = await requireAuth('/platform/login.html');
+if (!currentUser) throw new Error('No auth');
+
+await initShell('usuarios', 'Usuarios');
+
+const canWrite = await hasPermission(currentUser.id, 'usuarios', 'write');
+const isSA    = await isSuperAdmin(currentUser.id);
+
+const content = document.getElementById('platform-content');
+
+// ── Estado ────────────────────────────────────────────────────
+let allUsers  = [];
+let allRoles  = [];
+let editingId = null;
+let toastTimer;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Render principal ──────────────────────────────────────────
+function render() {
+  const query = document.getElementById('search-input')?.value?.toLowerCase() ?? '';
+  const filtered = allUsers.filter(u =>
+    `${u.nombre} ${u.apellidos} ${u.email} ${u.cargo}`.toLowerCase().includes(query)
+  );
+
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="ti ti-users"></i>${query ? 'Sin resultados para "'+query+'"' : 'Aún no hay usuarios.'}</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(u => {
+    const chips = (u.roles ?? []).map(r =>
+      `<span class="role-chip">${roleLabel(r.nombre)}</span>`
+    ).join('');
+    const name  = [u.nombre, u.apellidos].filter(Boolean).join(' ') || '—';
+    const lastAccess = u.last_access
+      ? new Date(u.last_access).toLocaleDateString('es-CL', { day:'2-digit', month:'short', year:'numeric' })
+      : 'Nunca';
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="user-avatar">${(u.nombre || u.email || '?').charAt(0).toUpperCase()}</div>
+          <div>
+            <div style="font-weight:500;font-size:13px">${name}</div>
+            <div style="font-size:11px;color:var(--muted)">${u.email}</div>
+          </div>
+        </div>
+      </td>
+      <td>${u.cargo || '<span style="color:var(--hint)">—</span>'}</td>
+      <td>${chips || '<span style="color:var(--hint);font-size:12px">Sin rol</span>'}</td>
+      <td>
+        <span class="status-dot ${u.estado}"></span>
+        ${u.estado === 'activo' ? 'Activo' : 'Inactivo'}
+      </td>
+      <td style="font-size:12px;color:var(--muted)">${lastAccess}</td>
+      <td>
+        ${canWrite || isSA ? `
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm btn-icon" onclick="openEdit('${u.id}')" title="Editar"><i class="ti ti-pencil"></i></button>
+          </div>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function roleLabel(nombre) {
+  return { super_admin:'Super Admin', administrador:'Administrador', personal:'Personal',
+           marketing:'Marketing', talleres:'Talleres' }[nombre] ?? nombre;
+}
+
+// ── Cargar datos ──────────────────────────────────────────────
+async function loadData() {
+  const [profilesRes, rolesRes] = await Promise.all([
+    supabase.from('profiles').select(`
+      id, nombre, apellidos, cargo, estado, created_at, last_access,
+      user_roles ( roles ( id, nombre ) )
+    `).order('created_at', { ascending: false }),
+    supabase.from('roles').select('*').order('id'),
+  ]);
+
+  // Enriquecer con email desde auth — obtenemos nuestro propio email y el listado es manejado por admins
+  // Los emails no están en profiles, los obtenemos con función de administración de usuarios (solo super_admin)
+  const rawUsers = profilesRes.data ?? [];
+
+  // Para obtener emails necesitamos la función admin de Supabase
+  // Como alternativa segura, mostramos email solo si es el usuario actual
+  allUsers = rawUsers.map(u => ({
+    ...u,
+    email: u.id === currentUser.id ? currentUser.email : (u.email ?? '···'),
+    roles: (u.user_roles ?? []).map(ur => ur.roles).filter(Boolean),
+  }));
+
+  // Si es super_admin o admin intentar obtener lista de usuarios con admin API
+  if (isSA || canWrite) {
+    try {
+      const { data: authData } = await supabase.functions.invoke('list-users');
+      if (authData?.users) {
+        const emailMap = {};
+        authData.users.forEach(u => { emailMap[u.id] = u.email; });
+        allUsers = allUsers.map(u => ({ ...u, email: emailMap[u.id] ?? u.email }));
+      }
+    } catch (_) {
+      // Edge function no configurada — continuar sin emails completos
+    }
+  }
+
+  allRoles  = rolesRes.data  ?? [];
+  render();
+}
+
+// ── Modal editar ──────────────────────────────────────────────
+window.openEdit = function(userId) {
+  editingId  = userId;
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+
+  document.getElementById('edit-nombre').value    = user.nombre    ?? '';
+  document.getElementById('edit-apellidos').value = user.apellidos ?? '';
+  document.getElementById('edit-cargo').value     = user.cargo     ?? '';
+  document.getElementById('edit-estado').value    = user.estado    ?? 'activo';
+  document.getElementById('edit-obs').value       = user.observaciones ?? '';
+
+  // Roles actuales
+  const currentRoles = user.roles.map(r => r.id);
+  renderRoleCheckboxes(currentRoles);
+
+  openModal('modal-edit');
+};
+
+function renderRoleCheckboxes(selectedIds) {
+  const wrap = document.getElementById('roles-checkboxes');
+  wrap.innerHTML = allRoles.map(r => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0">
+      <input type="checkbox" value="${r.id}" ${selectedIds.includes(r.id) ? 'checked' : ''}
+        style="accent-color:var(--accent);width:15px;height:15px" />
+      ${roleLabel(r.nombre)}
+    </label>`).join('');
+}
+
+async function saveEdit() {
+  const user = allUsers.find(u => u.id === editingId);
+  const newData = {
+    nombre:       document.getElementById('edit-nombre').value.trim(),
+    apellidos:    document.getElementById('edit-apellidos').value.trim(),
+    cargo:        document.getElementById('edit-cargo').value.trim(),
+    estado:       document.getElementById('edit-estado').value,
+    observaciones:document.getElementById('edit-obs').value.trim(),
+  };
+
+  const { error } = await supabase.from('profiles').update(newData).eq('id', editingId);
+  if (error) { toast('Error al guardar: ' + error.message); return; }
+
+  // Actualizar roles
+  const checked = [...document.querySelectorAll('#roles-checkboxes input:checked')].map(el => parseInt(el.value));
+  await supabase.from('user_roles').delete().eq('user_id', editingId);
+  if (checked.length) {
+    await supabase.from('user_roles').insert(checked.map(rid => ({ user_id: editingId, role_id: rid })));
+  }
+
+  auditUsers.usuarioEditado(editingId, user?.email ?? editingId, user, newData);
+  toast('Usuario actualizado correctamente.');
+  closeModal('modal-edit');
+  await loadData();
+}
+
+// ── Modales ───────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+window.closeModal = closeModal;
+
+// ── HTML ──────────────────────────────────────────────────────
+content.innerHTML = `
+  <div class="page-header">
+    <div class="page-header-title">Gestión de usuarios</div>
+    <div style="display:flex;gap:8px"></div>
+  </div>
+
+  <div class="search-row">
+    <input class="search-input" id="search-input" placeholder="Buscar por nombre, cargo o correo…" />
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Cargo</th>
+            <th>Roles</th>
+            <th>Estado</th>
+            <th>Último acceso</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr><td colspan="6"><div class="empty-state"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>Cargando…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal editar usuario -->
+  <div class="modal-backdrop" id="modal-edit">
+    <div class="modal-box" style="width:480px">
+      <div class="modal-title">Editar usuario</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input class="form-input" id="edit-nombre" placeholder="Nombre" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellidos</label>
+          <input class="form-input" id="edit-apellidos" placeholder="Apellidos" />
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Cargo</label>
+        <input class="form-input" id="edit-cargo" placeholder="Ej: Barista, Encargado" />
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Estado</label>
+        <select class="form-select form-input" id="edit-estado">
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Roles asignados</label>
+        <div id="roles-checkboxes" style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Observaciones</label>
+        <textarea class="form-textarea form-input" id="edit-obs" placeholder="Notas internas…"></textarea>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="closeModal('modal-edit')">Cancelar</button>
+        <button class="btn btn-accent" id="btn-save-edit"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+`;
+
+document.getElementById('search-input').addEventListener('input', render);
+document.getElementById('btn-save-edit').addEventListener('click', saveEdit);
+document.querySelectorAll('.modal-backdrop').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); })
+);
+
+await loadData();
+</script>
+</body>
+</html>

@@ -254,9 +254,11 @@ input[type="file"]{display:none}
     </div>
   </div>
   <div class="header-actions">
+    <a href="/platform/dashboard.html" class="btn"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
     <a href="index.html" target="_blank" class="btn"><i class="ti ti-eye"></i> Ver vitrina</a>
     <button class="btn" id="btn-refresh-cache" onclick="refreshImageCache()" title="Aplicar caché larga a las imágenes actuales"><i class="ti ti-refresh"></i> Actualizar caché</button>
     <button class="btn btn-accent" onclick="openAddProduct()"><i class="ti ti-plus"></i> Producto</button>
+    <button class="btn" onclick="window.__logout?.()" title="Cerrar sesión" style="padding:0 10px"><i class="ti ti-logout"></i></button>
   </div>
 </header>
 
@@ -381,6 +383,21 @@ input[type="file"]{display:none}
 
 <div class="toast" id="toast"></div>
 
+<!-- Auth guard: verifica sesión antes de inicializar el panel -->
+<script type="module">
+import { requireAuth, getAccessToken, logout } from '/js/core/auth.js';
+import { auditMenu }                           from '/js/core/audit.js';
+
+const _user = await requireAuth('/platform/login.html');
+if (!_user) throw new Error('No auth');
+
+window.__authToken  = await getAccessToken();
+window.__auditMenu  = auditMenu;
+window.__logout     = logout;
+
+document.dispatchEvent(new CustomEvent('platform:ready'));
+</script>
+
 <script>
 const SUPABASE_URL = "https://cwatxpuxttgeceahbciw.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3YXR4cHV4dHRnZWNlYWhiY2l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MjkyMDYsImV4cCI6MjA5NjIwNTIwNn0.qDucNfJDg5MF2nv63w9HUcjYjFitxlJOQq9OL6NsoHw";
@@ -397,8 +414,9 @@ let bannerOrderMode=false,bannerOrderBackup=[];
 let cropState={id:null,type:null,img:null};
 
 async function sbFetch(path,opts={}){
+  const token=window.__authToken||SUPABASE_KEY;
   const res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
-    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json","Prefer":"return=representation",...(opts.headers||{})},
+    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+token,"Content-Type":"application/json","Prefer":"return=representation",...(opts.headers||{})},
     ...opts
   });
   if(!res.ok){const e=await res.text();throw new Error(e)}
@@ -406,9 +424,10 @@ async function sbFetch(path,opts={}){
 }
 
 async function uploadFile(file,path){
+  const token=window.__authToken||SUPABASE_KEY;
   const res=await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,{
     method:"POST",
-    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":file.type,"cache-control":"max-age=31536000","x-upsert":"true"},
+    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+token,"Content-Type":file.type,"cache-control":"max-age=31536000","x-upsert":"true"},
     body:file
   });
   if(!res.ok)throw new Error("Upload failed");
@@ -612,6 +631,7 @@ async function toggleStock(id){
   const ns=!p.stock;
   try{
     await sbFetch(`products?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({stock:ns})});
+    window.__auditMenu?.stockCambiado(id,p.name,ns);
     p.stock=ns;
     const card=document.getElementById("card-"+id);
     if(card){
@@ -677,11 +697,14 @@ async function saveProduct(){
   btn.disabled=true;btn.textContent="Guardando...";
   try{
     if(editingProductId!==null){
+      const oldP=products.find(x=>x.id===editingProductId);
       await sbFetch(`products?id=eq.${editingProductId}`,{method:"PATCH",body:JSON.stringify(body)});
+      window.__auditMenu?.productoEditado(editingProductId,body.name,oldP,body);
       Object.assign(products.find(x=>x.id===editingProductId),body);
       toast("Producto actualizado ✓");
     }else{
       const [np]=await sbFetch("products",{method:"POST",body:JSON.stringify({...body,position:products.length})});
+      window.__auditMenu?.productoCreado(np.id,np.name);
       products.push(np);toast("Producto agregado ✓");
     }
     closeModal("modal-product");renderGrid();renderSidebar();updateStats();
@@ -691,8 +714,12 @@ async function saveProduct(){
 
 async function delProduct(id){
   if(!confirm("¿Eliminar este producto?"))return;
-  try{await sbFetch(`products?id=eq.${id}`,{method:"DELETE"});products=products.filter(x=>x.id!==id);renderGrid();renderSidebar();updateStats();toast("Eliminado");}
-  catch(e){toast("Error al eliminar");}
+  try{
+    const p=products.find(x=>x.id===id);
+    await sbFetch(`products?id=eq.${id}`,{method:"DELETE"});
+    window.__auditMenu?.productoEliminado(id,p?.name??String(id));
+    products=products.filter(x=>x.id!==id);renderGrid();renderSidebar();updateStats();toast("Eliminado");
+  }catch(e){toast("Error al eliminar");}
 }
 
 /* Image upload */
@@ -855,6 +882,7 @@ async function uploadBannerImages(e){
       const path=`banners/banner_${Date.now()}_${Math.random().toString(36).slice(2)}.${file.name.split(".").pop()}`;
       const url=await uploadFile(file,path);
       const [row]=await sbFetch("banners",{method:"POST",body:JSON.stringify({img_url:url,position:banners.length,title:null,subtitle:null})});
+      window.__auditMenu?.bannerCreado(row.id);
       banners.push(row);
     }catch(err){toast("Error al subir banner");}
   }
@@ -872,8 +900,11 @@ async function saveBannerText(id){
 }
 
 async function delBanner(id){
-  try{await sbFetch(`banners?id=eq.${id}`,{method:"DELETE"});banners=banners.filter(b=>b.id!==id);renderBanners();toast("Imagen eliminada");}
-  catch(e){toast("Error al eliminar");}
+  try{
+    window.__auditMenu?.bannerEliminado(id);
+    await sbFetch(`banners?id=eq.${id}`,{method:"DELETE"});
+    banners=banners.filter(b=>b.id!==id);renderBanners();toast("Imagen eliminada");
+  }catch(e){toast("Error al eliminar");}
 }
 
 function renderBanners(){
@@ -921,8 +952,11 @@ function openAddCat(){document.getElementById("mc-name").value="";document.getEl
 async function addCategory(){
   const name=document.getElementById("mc-name").value.trim();
   if(!name){alert("Ingresa un nombre.");return;}
-  try{const [cat]=await sbFetch("categories",{method:"POST",body:JSON.stringify({name,position:categories.length})});categories.push(cat);closeModal("modal-cat");renderSidebar();updateStats();setActiveCat(cat.id);toast("Categoría creada ✓");}
-  catch(e){toast("Error al crear categoría");}
+  try{
+    const [cat]=await sbFetch("categories",{method:"POST",body:JSON.stringify({name,position:categories.length})});
+    window.__auditMenu?.categoriaCreada(cat.id,cat.name);
+    categories.push(cat);closeModal("modal-cat");renderSidebar();updateStats();setActiveCat(cat.id);toast("Categoría creada ✓");
+  }catch(e){toast("Error al crear categoría");}
 }
 async function renameCat(id){
   const cat=categories.find(c=>c.id===id);if(!cat)return;
@@ -953,8 +987,11 @@ async function deleteCat(id){
   const cat=categories.find(c=>c.id===id);if(!cat)return;
   const n=products.filter(p=>p.cat===cat.name).length;
   if(!confirm(n>0?`¿Eliminar "${cat.name}"? Los ${n} producto(s) quedarán sin categoría.`:`¿Eliminar "${cat.name}"?`))return;
-  try{await sbFetch(`categories?id=eq.${id}`,{method:"DELETE"});categories=categories.filter(c=>c.id!==id);activeCat="__all__";renderSidebar();setActiveCat("__all__");toast("Eliminada");}
-  catch(e){toast("Error al eliminar");}
+  try{
+    await sbFetch(`categories?id=eq.${id}`,{method:"DELETE"});
+    window.__auditMenu?.categoriaEliminada(id,cat.name);
+    categories=categories.filter(c=>c.id!==id);activeCat="__all__";renderSidebar();setActiveCat("__all__");toast("Eliminada");
+  }catch(e){toast("Error al eliminar");}
 }
 
 /* Stats & utils */
@@ -969,7 +1006,7 @@ function showLoading(v){document.getElementById("loading-overlay").style.display
 let toastTimer;
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2500);}
 
-loadAll();
+document.addEventListener('platform:ready', () => loadAll());
 </script>
 </body>
 </html>

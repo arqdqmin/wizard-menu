@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Configuración — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link rel="stylesheet" href="/css/platform.css" />
+<style>
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.tab-btn {
+  padding: 9px 16px; font-size: 13px; font-weight: 500;
+  color: var(--muted); border: none; background: none; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .12s, border-color .12s;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.module-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.module-row:last-child { border-bottom: none; }
+.module-icon-wrap {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.module-icon-wrap.on  { background: var(--accent-light); color: var(--accent); }
+.module-icon-wrap.off { background: var(--bg);           color: var(--hint); }
+.module-info { flex: 1; }
+.module-name { font-size: 13px; font-weight: 500; }
+.module-slug { font-size: 11px; color: var(--hint); font-family: monospace; }
+
+/* Toggle switch */
+.toggle {
+  position: relative; width: 42px; height: 24px; flex-shrink: 0;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; cursor: pointer;
+  background: var(--border-strong); border-radius: 24px;
+  transition: background .2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; border-radius: 50%;
+  left: 3px; top: 3px; background: #fff;
+  transition: transform .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--accent); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+.perm-table th { font-size: 11px; }
+.perm-table td { font-size: 13px; }
+.perm-table input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.perm-cell { text-align: center; }
+.role-name-col { font-weight: 500; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-desc { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div id="platform-shell"></div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { requireAuth }                     from '/js/core/auth.js';
+import { initShell }                       from '/js/ui/sidebar.js';
+import { supabase }                        from '/js/core/supabase.js';
+import { auditConfig }                     from '/js/core/audit.js';
+import { isSuperAdmin, clearPermissionsCache } from '/js/core/permissions.js';
+
+const user = await requireAuth('/platform/login.html');
+if (!user) throw new Error('No auth');
+
+await initShell('configuracion', 'Configuración');
+
+const isSA = await isSuperAdmin(user.id);
+const content = document.getElementById('platform-content');
+let toastTimer;
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Cargar datos ──────────────────────────────────────────────
+let modules = [], roles = [], rolePerms = [];
+
+async function loadData() {
+  const [modRes, rolesRes, rp] = await Promise.all([
+    supabase.from('modules').select('*').order('orden'),
+    supabase.from('roles').select('*').order('id'),
+    supabase.from('role_permissions').select('*'),
+  ]);
+  modules   = modRes.data   ?? [];
+  roles     = rolesRes.data ?? [];
+  rolePerms = rp.data       ?? [];
+}
+
+// ── HTML base ─────────────────────────────────────────────────
+content.innerHTML = `
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="modules">Módulos</button>
+    <button class="tab-btn"        data-tab="permisos">Permisos por rol</button>
+    <button class="tab-btn"        data-tab="auditoria">Auditoría</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-modules"></div>
+  <div class="tab-panel"        id="tab-permisos"></div>
+  <div class="tab-panel"        id="tab-auditoria"></div>
+`;
+
+// Tabs
+content.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    content.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    content.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+await loadData();
+renderModules();
+renderPermisos();
+renderAuditoria();
+
+// ── Tab: Módulos ──────────────────────────────────────────────
+function renderModules() {
+  const rows = modules.map(m => {
+    const isOn = m.habilitado;
+    const disabled = !isSA && m.slug === 'configuracion' ? 'disabled' : '';
+    return `<div class="module-row">
+      <div class="module-icon-wrap ${isOn ? 'on' : 'off'}">
+        <i class="ti ${m.icono ?? 'ti-circle'}"></i>
+      </div>
+      <div class="module-info">
+        <div class="module-name">${m.nombre}</div>
+        <div class="module-slug">${m.slug}</div>
+      </div>
+      <label class="toggle" title="${isOn ? 'Deshabilitar' : 'Habilitar'} módulo">
+        <input type="checkbox" data-module-id="${m.id}" data-slug="${m.slug}"
+          ${isOn ? 'checked' : ''} ${disabled} />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tab-modules').innerHTML = `
+    <div class="section-header">
+      <div>
+        <div style="font-size:14px;font-weight:600">Módulos de la plataforma</div>
+      </div>
+    </div>
+    <p class="section-desc">
+      Habilita o deshabilita módulos. Los módulos deshabilitados no aparecen en el sidebar
+      ni son accesibles para ningún usuario. No es necesario modificar código.
+    </p>
+    <div class="card" style="padding:0;overflow:hidden">${rows}</div>
+    ${!isSA ? '<p style="font-size:12px;color:var(--hint);margin-top:12px"><i class="ti ti-info-circle"></i> Solo el Super Admin puede modificar el módulo Configuración.</p>' : ''}
+  `;
+
+  document.querySelectorAll('[data-module-id]').forEach(toggle => {
+    toggle.addEventListener('change', async () => {
+      const id      = parseInt(toggle.dataset.moduleId);
+      const slug    = toggle.dataset.slug;
+      const enabled = toggle.checked;
+      const { error } = await supabase
+        .from('modules').update({ habilitado: enabled }).eq('id', id);
+      if (error) {
+        toast('Error: ' + error.message);
+        toggle.checked = !enabled;
+        return;
+      }
+      const mod = modules.find(m => m.id === id);
+      if (mod) {
+        mod.habilitado = enabled;
+        const wrap = toggle.closest('.module-row').querySelector('.module-icon-wrap');
+        wrap.className = `module-icon-wrap ${enabled ? 'on' : 'off'}`;
+      }
+      if (enabled) auditConfig.moduloHabilitado(slug);
+      else         auditConfig.moduloDeshabilitado(slug);
+      clearPermissionsCache();
+      toast(`Módulo "${slug}" ${enabled ? 'habilitado' : 'deshabilitado'}.`);
+    });
+  });
+}
+
+// ── Tab: Permisos ─────────────────────────────────────────────
+function renderPermisos() {
+  const enabledMods = modules.filter(m => m.habilitado && m.slug !== 'dashboard');
+
+  const permMap = {};
+  rolePerms.forEach(rp => {
+    if (!permMap[rp.role_id]) permMap[rp.role_id] = {};
+    permMap[rp.role_id][rp.module_id] = rp;
+  });
+
+  const roleLabels = {
+    super_admin:'Super Admin', administrador:'Administrador',
+    personal:'Personal', marketing:'Marketing', talleres:'Talleres'
+  };
+
+  const editableRoles = isSA ? roles : roles.filter(r => r.nombre !== 'super_admin');
+
+  const modHeaders = enabledMods.map(m =>
+    `<th class="perm-cell" colspan="3" style="border-left:1px solid var(--border)">${m.nombre}</th>`
+  ).join('');
+  const subHeaders = enabledMods.map(() =>
+    `<th class="perm-cell" title="Leer">L</th>
+     <th class="perm-cell" title="Escribir">E</th>
+     <th class="perm-cell" title="Eliminar">X</th>`
+  ).join('');
+
+  const rows = editableRoles.map(r => {
+    const cells = enabledMods.map(m => {
+      const perm = permMap[r.id]?.[m.id];
+      const isSuperAdminRole = r.nombre === 'super_admin';
+      const makeCheck = (field, val) =>
+        `<input type="checkbox" ${val ? 'checked' : ''} ${isSuperAdminRole ? 'disabled' : ''}
+          data-role="${r.id}" data-module="${m.id}" data-field="${field}" />`;
+      return `<td class="perm-cell" style="border-left:1px solid var(--border)">
+        ${makeCheck('can_read',   perm?.can_read   ?? false)}
+      </td>
+      <td class="perm-cell">${makeCheck('can_write',  perm?.can_write  ?? false)}</td>
+      <td class="perm-cell">${makeCheck('can_delete', perm?.can_delete ?? false)}</td>`;
+    }).join('');
+    return `<tr>
+      <td class="role-name-col">${roleLabels[r.nombre] ?? r.nombre}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tab-permisos').innerHTML = `
+    <div class="section-header">
+      <div style="font-size:14px;font-weight:600">Permisos por rol y módulo</div>
+      <button class="btn btn-accent btn-sm" id="btn-save-perms">
+        <i class="ti ti-device-floppy"></i> Guardar cambios
+      </button>
+    </div>
+    <p class="section-desc">
+      <strong>L</strong> = Leer · <strong>E</strong> = Escribir · <strong>X</strong> = Eliminar.
+      Super Admin tiene acceso total y no puede modificarse.
+    </p>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table class="perm-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:130px">Rol</th>
+              ${modHeaders}
+            </tr>
+            <tr>${subHeaders}</tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    ${!isSA ? '<p style="font-size:12px;color:var(--hint);margin-top:12px">Los permisos del Super Admin no son editables.</p>' : ''}
+  `;
+
+  document.getElementById('btn-save-perms').addEventListener('click', async () => {
+    const checkboxes = document.querySelectorAll('#tab-permisos input[type=checkbox]:not([disabled])');
+    const upserts = {};
+
+    checkboxes.forEach(cb => {
+      const key = `${cb.dataset.role}_${cb.dataset.module}`;
+      if (!upserts[key]) upserts[key] = {
+        role_id: parseInt(cb.dataset.role),
+        module_id: parseInt(cb.dataset.module),
+        can_read: false, can_write: false, can_delete: false,
+      };
+      upserts[key][cb.dataset.field] = cb.checked;
+    });
+
+    const rows = Object.values(upserts);
+    if (!rows.length) { toast('Sin cambios.'); return; }
+
+    const { error } = await supabase.from('role_permissions').upsert(rows, { onConflict: 'role_id,module_id' });
+    if (error) { toast('Error: ' + error.message); return; }
+
+    auditConfig.permisoActualizado('multiple', 'multiple', { count: rows.length });
+    clearPermissionsCache();
+    toast('Permisos actualizados correctamente.');
+    await loadData();
+    renderPermisos();
+  });
+}
+
+// ── Tab: Auditoría ────────────────────────────────────────────
+async function renderAuditoria() {
+  const container = document.getElementById('tab-auditoria');
+  container.innerHTML = `<div style="font-size:13px;color:var(--muted);padding:20px">Cargando registros…</div>`;
+
+  const { data: logs } = await supabase
+    .from('audit_logs')
+    .select('*')
+    .order('timestamp', { ascending: false })
+    .limit(100);
+
+  const actionLabels = {
+    producto_creado:'Producto creado', producto_editado:'Producto editado',
+    producto_eliminado:'Producto eliminado', stock_cambiado:'Stock actualizado',
+    categoria_creada:'Categoría creada', categoria_eliminada:'Categoría eliminada',
+    banner_creado:'Banner creado', banner_eliminado:'Banner eliminado',
+    usuario_creado:'Usuario creado', usuario_editado:'Usuario editado',
+    rol_asignado:'Rol asignado', rol_removido:'Rol removido',
+    modulo_habilitado:'Módulo habilitado', modulo_deshabilitado:'Módulo deshabilitado',
+    permiso_actualizado:'Permiso actualizado',
+  };
+
+  const moduleColors = {
+    menu:'accent', usuarios:'green', configuracion:'gold',
+  };
+
+  const rows = (logs ?? []).map(l => {
+    const dt = new Date(l.timestamp).toLocaleString('es-CL', {
+      day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+    const color = moduleColors[l.module] ?? 'gray';
+    return `<tr>
+      <td style="font-size:12px;color:var(--muted);white-space:nowrap">${dt}</td>
+      <td style="font-weight:500;font-size:13px">${l.user_name?.split('@')[0] ?? '—'}</td>
+      <td><span class="badge badge-${color}">${l.module}</span></td>
+      <td style="font-size:13px">${actionLabels[l.action] ?? l.action}</td>
+      <td style="font-size:12px;color:var(--muted)">${l.record_label ?? l.record_id ?? '—'}</td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="section-header" style="margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600">Registro de auditoría</div>
+      <span style="font-size:12px;color:var(--muted)">Últimas ${(logs??[]).length} acciones</span>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        ${rows.length ? `
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha y hora</th>
+                <th>Usuario</th>
+                <th>Módulo</th>
+                <th>Acción</th>
+                <th>Registro</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>` : `
+          <div class="empty-state" style="padding:48px">
+            <i class="ti ti-clipboard-list" style="font-size:32px;color:var(--border-strong);display:block;margin-bottom:10px"></i>
+            Aún no hay registros de auditoría.
+          </div>`}
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

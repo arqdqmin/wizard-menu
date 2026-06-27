@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ingresar — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --accent: #2d4a3e; --accent-hover: #243d33;
+  --bg: #faf9f6; --surface: #fff;
+  --border: #e8e4dd; --border-strong: #ccc7be;
+  --text: #1a1814; --muted: #7a746a; --hint: #b0a99f;
+  --danger: #c0392b; --danger-light: #fdf2f2;
+  --radius: 10px; --radius-lg: 14px;
+}
+body {
+  font-family: "DM Sans", system-ui, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.login-wrap {
+  width: 100%;
+  max-width: 380px;
+}
+.login-brand {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.login-logo {
+  width: 52px; height: 52px;
+  background: #0f0e0c;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.login-logo img { width: 40px; height: 40px; object-fit: contain; }
+.login-title {
+  font-size: 20px; font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+.login-subtitle {
+  font-size: 13px; color: var(--muted);
+  margin-top: 3px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.form-input {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-family: inherit; font-size: 14px; color: var(--text);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .12s;
+}
+.form-input:focus { border-color: var(--accent); }
+.btn {
+  width: 100%; height: 42px;
+  border-radius: var(--radius);
+  border: none; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background .12s, transform .1s;
+}
+.btn:active { transform: scale(.98); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover { background: var(--accent-hover); }
+.btn-accent:disabled { background: var(--hint); cursor: not-allowed; transform: none; }
+.error-msg {
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid #f5a9a9;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  display: none;
+}
+.error-msg.show { display: block; }
+.success-msg {
+  background: #eaf5ef;
+  color: #1a7a4a;
+  border: 1px solid #a8d5be;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
+  display: none;
+}
+.success-msg.show { display: block; }
+.link-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--accent); font-family: inherit; font-size: 13px;
+  text-decoration: underline; padding: 0;
+}
+.link-btn:hover { color: var(--accent-hover); }
+.form-footer {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.divider {
+  text-align: center;
+  margin: 16px 0 14px;
+  font-size: 12px;
+  color: var(--hint);
+  position: relative;
+}
+.divider::before, .divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 24px);
+  height: 1px;
+  background: var(--border);
+}
+.divider::before { left: 0; }
+.divider::after  { right: 0; }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-brand">
+    <div class="login-logo">
+      <img src="/W LOGO.png" alt="Wizard" />
+    </div>
+    <div class="login-title">Wizard Platform</div>
+    <div class="login-subtitle">The Wizard Coffee</div>
+  </div>
+
+  <!-- Vista: Login -->
+  <div id="view-login">
+    <div class="card">
+      <div class="error-msg"   id="login-error"></div>
+      <div class="success-msg" id="login-success"></div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Correo electrónico</label>
+        <input class="form-input" type="email" id="email" placeholder="correo@ejemplo.cl" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Contraseña</label>
+        <input class="form-input" type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <button class="btn btn-accent" id="btn-login">
+        <i class="ti ti-login"></i> Ingresar
+      </button>
+
+      <div class="divider">o</div>
+
+      <div class="form-footer">
+        ¿Olvidaste tu contraseña?
+        <button class="link-btn" id="show-reset">Recuperar acceso</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista: Recuperar contraseña -->
+  <div id="view-reset" style="display:none">
+    <div class="card">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
+        Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+      </p>
+      <div class="error-msg"   id="reset-error"></div>
+      <div class="success-msg" id="reset-success"></div>
+      <div class="form-group">
+        <label class="form-label" for="reset-email">Correo electrónico</label>
+        <input class="form-input" type="email" id="reset-email" placeholder="correo@ejemplo.cl" />
+      </div>
+      <button class="btn btn-accent" id="btn-reset">
+        <i class="ti ti-send"></i> Enviar enlace
+      </button>
+      <div class="form-footer" style="margin-top:14px">
+        <button class="link-btn" id="show-login">← Volver al inicio de sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista: Nueva contraseña (después del enlace de recovery) -->
+  <div id="view-new-password" style="display:none">
+    <div class="card">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+        Ingresa tu nueva contraseña.
+      </p>
+      <div class="error-msg"   id="np-error"></div>
+      <div class="success-msg" id="np-success"></div>
+      <div class="form-group">
+        <label class="form-label" for="new-password">Nueva contraseña</label>
+        <input class="form-input" type="password" id="new-password" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="confirm-password">Confirmar contraseña</label>
+        <input class="form-input" type="password" id="confirm-password" placeholder="Repite tu contraseña" />
+      </div>
+      <button class="btn btn-accent" id="btn-new-password">
+        <i class="ti ti-lock-check"></i> Guardar contraseña
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { supabase }                    from '/js/core/supabase.js';
+import { login, resetPassword,
+         updatePassword, getSession }  from '/js/core/auth.js';
+
+const params   = new URLSearchParams(window.location.search);
+const redirect = params.get('redirect') || '/platform/dashboard.html';
+const mode     = params.get('mode');
+
+// Detectar flujo de recovery (Supabase redirige con fragmento #access_token)
+supabase.auth.onAuthStateChange(async (event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    showView('new-password');
+  }
+  if (event === 'SIGNED_IN' && mode !== 'reset') {
+    window.location.href = redirect;
+  }
+});
+
+// Si ya hay sesión activa → redirigir
+(async () => {
+  const session = await getSession();
+  if (session && mode !== 'reset') window.location.href = redirect;
+})();
+
+// ── Helpers ──────────────────────────────────────────────────
+function showView(name) {
+  ['login','reset','new-password'].forEach(v =>
+    document.getElementById(`view-${v}`).style.display = 'none'
+  );
+  document.getElementById(`view-${name}`).style.display = 'block';
+}
+function setLoading(btn, loading) {
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? '<span class="spinner"></span>'
+    : btn.dataset.label;
+}
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('show');
+}
+function hideMsg(id)  { document.getElementById(id).classList.remove('show'); }
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('show');
+}
+
+// ── Login ─────────────────────────────────────────────────────
+const btnLogin = document.getElementById('btn-login');
+btnLogin.dataset.label = btnLogin.innerHTML;
+
+btnLogin.addEventListener('click', async () => {
+  hideMsg('login-error'); hideMsg('login-success');
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) return showError('login-error', 'Ingresa tu correo y contraseña.');
+  setLoading(btnLogin, true);
+  try {
+    await login(email, password);
+    window.location.href = redirect;
+  } catch (err) {
+    showError('login-error', err.message === 'Invalid login credentials'
+      ? 'Correo o contraseña incorrectos.'
+      : err.message);
+    setLoading(btnLogin, false);
+  }
+});
+
+document.getElementById('password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') btnLogin.click();
+});
+
+// ── Recuperar contraseña ──────────────────────────────────────
+document.getElementById('show-reset').addEventListener('click', () => {
+  showView('reset');
+  hideMsg('reset-error'); hideMsg('reset-success');
+});
+document.getElementById('show-login').addEventListener('click', () => showView('login'));
+
+const btnReset = document.getElementById('btn-reset');
+btnReset.dataset.label = btnReset.innerHTML;
+
+btnReset.addEventListener('click', async () => {
+  hideMsg('reset-error'); hideMsg('reset-success');
+  const email = document.getElementById('reset-email').value.trim();
+  if (!email) return showError('reset-error', 'Ingresa tu correo electrónico.');
+  setLoading(btnReset, true);
+  try {
+    await resetPassword(email);
+    showSuccess('reset-success', 'Revisa tu correo. Te enviamos un enlace de recuperación.');
+  } catch (err) {
+    showError('reset-error', err.message);
+  }
+  setLoading(btnReset, false);
+});
+
+// ── Nueva contraseña ──────────────────────────────────────────
+const btnNP = document.getElementById('btn-new-password');
+btnNP.dataset.label = btnNP.innerHTML;
+
+btnNP.addEventListener('click', async () => {
+  hideMsg('np-error'); hideMsg('np-success');
+  const pw1 = document.getElementById('new-password').value;
+  const pw2 = document.getElementById('confirm-password').value;
+  if (pw1.length < 6) return showError('np-error', 'La contraseña debe tener al menos 6 caracteres.');
+  if (pw1 !== pw2)    return showError('np-error', 'Las contraseñas no coinciden.');
+  setLoading(btnNP, true);
+  try {
+    await updatePassword(pw1);
+    showSuccess('np-success', '¡Contraseña actualizada! Redirigiendo…');
+    setTimeout(() => window.location.href = '/platform/dashboard.html', 1800);
+  } catch (err) {
+    showError('np-error', err.message);
+    setLoading(btnNP, false);
+  }
+});
+</script>
+</body>
+</html>
