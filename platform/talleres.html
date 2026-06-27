@@ -5,54 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Talleres — Wizard Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Lora:wght@400;600&family=Pirata+One&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
 <link rel="stylesheet" href="/css/platform.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-.tabs { display:flex; gap:2px; border-bottom:1px solid var(--border); margin-bottom:24px; }
-.tab-btn { padding:9px 16px; font-size:13px; font-weight:500; color:var(--muted); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .12s,border-color .12s; }
-.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
-.tab-btn:hover:not(.active) { color:var(--text); }
-.tab-panel { display:none; }
-.tab-panel.active { display:block; }
+/* ── Tabs ──────────────────────────────────────────────────── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab-btn{
+  padding:10px 18px;font-size:13px;font-weight:500;
+  color:var(--muted);border:none;background:none;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:color .14s,border-color .14s;
+}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-btn:hover:not(.active){color:var(--text)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 
-.taller-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-top:16px; }
-.taller-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
-.taller-card-img { width:100%; height:160px; object-fit:cover; background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--hint); font-size:32px; }
-.taller-card-img img { width:100%; height:160px; object-fit:cover; display:block; }
-.taller-card-body { padding:14px; }
-.taller-card-name { font-size:14px; font-weight:600; margin-bottom:4px; }
-.taller-card-fecha { font-size:12px; color:var(--muted); margin-bottom:8px; }
-.taller-card-desc { font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:10px; }
-.taller-card-precio { font-size:13px; font-weight:600; color:var(--accent); }
-.taller-card-actions { display:flex; gap:6px; margin-top:12px; }
-.taller-inactive { opacity:.55; }
+/* ── Grid de cards ─────────────────────────────────────────── */
+.taller-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-top:16px}
+.taller-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  transition:border-color .2s,box-shadow .2s;
+}
+.taller-card:hover{border-color:var(--accent);box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.taller-card-img{
+  width:100%;aspect-ratio:4/3;
+  background:var(--bg);display:flex;align-items:center;
+  justify-content:center;color:var(--hint);font-size:32px;overflow:hidden;
+}
+.taller-card-img img{width:100%;height:100%;object-fit:contain;display:block}
+.taller-card-body{padding:14px}
+.taller-card-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.taller-card-fecha{font-size:12px;color:var(--muted);margin-bottom:6px}
+.taller-card-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.taller-card-precio{font-size:13px;font-weight:600;color:var(--accent)}
+.taller-card-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.taller-inactive{opacity:.5}
 
-.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:10px; }
+/* ── Page header ───────────────────────────────────────────── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:10px}
 
-.inscripcion-filter { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
-.filter-select { height:36px; border:1px solid var(--border-strong); border-radius:var(--radius); padding:0 10px; font-family:inherit; font-size:13px; color:var(--text); background:var(--surface); outline:none; }
-.filter-select:focus { border-color:var(--accent); }
+/* ── Inscripciones ─────────────────────────────────────────── */
+.inscripcion-filter{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-select{height:36px;border:1px solid var(--border-strong);border-radius:var(--radius);padding:0 10px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none}
+.filter-select:focus{border-color:var(--accent)}
 
-.stat-mini { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
-.stat-mini-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px 16px; font-size:13px; }
-.stat-mini-value { font-size:22px; font-weight:700; color:var(--accent); }
-.stat-mini-label { font-size:11px; color:var(--muted); }
+.stat-mini{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.stat-mini-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px}
+.stat-mini-value{font-size:22px;font-weight:700;color:var(--accent)}
+.stat-mini-label{font-size:11px;color:var(--muted)}
 
-.img-upload-area { position:relative; width:100%; height:140px; border:2px dashed var(--border-strong); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; gap:6px; color:var(--hint); font-size:13px; overflow:hidden; transition:border-color .15s; }
-.img-upload-area:hover { border-color:var(--accent); }
-.img-upload-area img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-.img-upload-area .img-overlay-label { position:relative; z-index:1; background:rgba(0,0,0,.45); color:#fff; padding:6px 14px; border-radius:20px; font-size:12px; opacity:0; transition:opacity .15s; }
-.img-upload-area:hover .img-overlay-label { opacity:1; }
-.img-upload-input { display:none; }
+/* ── Imagen upload ─────────────────────────────────────────── */
+.img-upload-area{
+  position:relative;width:100%;height:140px;
+  border:2px dashed var(--border-strong);border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;gap:6px;
+  color:var(--hint);font-size:13px;overflow:hidden;
+  transition:border-color .15s;
+}
+.img-upload-area:hover{border-color:var(--accent)}
+.img-upload-area img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--bg)}
+.img-overlay-label{position:relative;z-index:1;background:rgba(0,0,0,.5);color:#fff;padding:5px 12px;border-radius:20px;font-size:11px;opacity:0;transition:opacity .15s}
+.img-upload-area:hover .img-overlay-label{opacity:1}
+.img-upload-input{display:none}
 
-.form-section-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); margin:16px 0 8px; }
-.form-row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-@media(max-width:500px) { .form-row2 { grid-template-columns:1fr; } }
+/* ── Form internals ────────────────────────────────────────── */
+.form-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--hint);margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.form-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.form-row2{grid-template-columns:1fr}}
 
-.empty-state { text-align:center; padding:40px; color:var(--hint); font-size:13px; }
-.empty-state i { font-size:32px; display:block; margin-bottom:10px; color:var(--border-strong); }
+/* ── Preset select row ─────────────────────────────────────── */
+.preset-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.preset-select{flex:1;height:36px;border:1px solid var(--border-strong);border-radius:var(--radius);padding:0 10px;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface2);outline:none}
+.preset-select:focus{border-color:var(--accent)}
+.preset-fields{border:1px solid var(--border);border-radius:var(--radius);padding:14px;background:var(--surface2);margin-bottom:4px}
+.preset-fields.hidden{display:none}
+
+/* ── Presets list (tab Datos Bancarios) ────────────────────── */
+.presets-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.preset-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.preset-card:hover{border-color:var(--accent)}
+.preset-card-info{flex:1;min-width:0}
+.preset-card-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.preset-card-tipo{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:10px;margin-bottom:6px}
+.preset-tipo-banco{background:rgba(59,130,246,.12);color:#60a5fa}
+.preset-tipo-link{background:rgba(167,139,250,.12);color:#a78bfa}
+.preset-card-detail{font-size:12px;color:var(--muted);line-height:1.6}
+.preset-card-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ── Empty state ───────────────────────────────────────────── */
+.empty-state{text-align:center;padding:40px;color:var(--hint);font-size:13px}
+.empty-state i{font-size:32px;display:block;margin-bottom:10px;color:var(--border-strong)}
+
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -60,29 +113,35 @@
 <div id="toast" class="toast"></div>
 
 <script type="module">
-import { requireAuth }  from '/js/core/auth.js';
-import { initShell }    from '/js/ui/sidebar.js';
+import { requireAuth }   from '/js/core/auth.js';
+import { initShell }     from '/js/ui/sidebar.js';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '/js/core/supabase.js';
 import { getAccessToken } from '/js/core/auth.js';
-import { auditConfig }  from '/js/core/audit.js';
 
 const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
 await initShell('talleres', 'Talleres');
 
-const content = document.getElementById('platform-content');
-const BUCKET  = 'images';
-let talleres  = [];
-let editingId = null;
-let authToken = await getAccessToken();
+const content   = document.getElementById('platform-content');
+const BUCKET    = 'images';
+let talleres    = [];
+let presets     = [];
+let editingId   = null;
+let editPresetId= null;
+let authToken   = await getAccessToken();
 let toastTimer;
 
+// ── Utilidades ────────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function openModal(id)  { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+window.closeModal = closeModal;
 
 // ── Upload imagen ─────────────────────────────────────────────
 async function uploadImagen(file) {
@@ -98,14 +157,20 @@ async function uploadImagen(file) {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
 }
 
-// ── Cargar talleres ───────────────────────────────────────────
+// ── Cargar datos ──────────────────────────────────────────────
 async function loadTalleres() {
   const { data, error } = await supabase.from('talleres').select('*').order('fecha', { ascending: true });
   if (error) { toast('Error al cargar talleres'); return; }
   talleres = data ?? [];
 }
 
-// ── Render principal ──────────────────────────────────────────
+async function loadPresets() {
+  const { data, error } = await supabase.from('pago_presets').select('*').order('nombre');
+  if (error) { toast('Error al cargar presets'); return; }
+  presets = data ?? [];
+}
+
+// ── Render Talleres ───────────────────────────────────────────
 function renderTalleres() {
   const grid = document.getElementById('taller-grid');
   if (!talleres.length) {
@@ -114,25 +179,25 @@ function renderTalleres() {
   }
   grid.innerHTML = talleres.map(t => {
     const fecha = t.fecha
-      ? new Date(t.fecha + 'T12:00:00').toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long', year:'numeric' })
+      ? new Date(t.fecha+'T12:00:00').toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short',year:'numeric'})
       : 'Sin fecha';
     const precio = t.precio ? `$${t.precio.toLocaleString('es-CL')}` : 'Sin costo';
-    return `<div class="taller-card${t.activo ? '' : ' taller-inactive'}">
+    return `<div class="taller-card${t.activo?'':' taller-inactive'}">
       <div class="taller-card-img">
-        ${t.imagen_url ? `<img src="${t.imagen_url}" alt="${esc(t.nombre)}" loading="lazy" />` : `<i class="ti ti-school"></i>`}
+        ${t.imagen_url?`<img src="${esc(t.imagen_url)}" alt="${esc(t.nombre)}" loading="lazy"/>`:`<i class="ti ti-school"></i>`}
       </div>
       <div class="taller-card-body">
         <div class="taller-card-name">${esc(t.nombre)}</div>
-        <div class="taller-card-fecha"><i class="ti ti-calendar-event" style="margin-right:4px"></i>${fecha}${t.hora ? ' · ' + t.hora.slice(0,5) + 'h' : ''}</div>
-        <div class="taller-card-desc">${esc(t.descripcion ?? '')}</div>
+        <div class="taller-card-fecha"><i class="ti ti-calendar-event" style="margin-right:3px"></i>${fecha}${t.hora?' · '+t.hora.slice(0,5)+'h':''}</div>
+        <div class="taller-card-desc">${esc(t.descripcion??'')}</div>
         <div style="display:flex;align-items:center;justify-content:space-between">
           <span class="taller-card-precio">${precio}</span>
-          ${t.cupos ? `<span style="font-size:11px;color:var(--muted)">${t.cupos} cupos</span>` : ''}
+          ${t.cupos?`<span style="font-size:11px;color:var(--muted)">${t.cupos} cupos</span>`:''}
         </div>
         <div class="taller-card-actions">
           <button class="btn btn-sm" onclick="openEdit(${t.id})"><i class="ti ti-pencil"></i> Editar</button>
-          <button class="btn btn-sm" onclick="toggleActivo(${t.id})" title="${t.activo ? 'Desactivar' : 'Activar'}">
-            <i class="ti ti-${t.activo ? 'eye-off' : 'eye'}"></i> ${t.activo ? 'Ocultar' : 'Mostrar'}
+          <button class="btn btn-sm" onclick="toggleActivo(${t.id})" title="${t.activo?'Ocultar':'Mostrar'}">
+            <i class="ti ti-${t.activo?'eye-off':'eye'}"></i> ${t.activo?'Ocultar':'Mostrar'}
           </button>
           <button class="btn btn-sm btn-icon danger" onclick="deleteTaller(${t.id})" title="Eliminar"><i class="ti ti-trash"></i></button>
         </div>
@@ -141,11 +206,12 @@ function renderTalleres() {
   }).join('');
 }
 
-// ── Modal crear/editar ────────────────────────────────────────
+// ── Modal taller — abrir ──────────────────────────────────────
 window.openCreate = function() {
   editingId = null;
-  resetForm();
-  document.getElementById('modal-title').textContent = 'Nuevo taller';
+  resetTallerForm();
+  document.getElementById('modal-t-title').textContent = 'Nuevo taller';
+  fillPresetSelects();
   openModal('modal-taller');
 };
 
@@ -153,47 +219,82 @@ window.openEdit = function(id) {
   editingId = id;
   const t = talleres.find(x => x.id === id);
   if (!t) return;
-  document.getElementById('t-nombre').value      = t.nombre ?? '';
-  document.getElementById('t-desc').value        = t.descripcion ?? '';
-  document.getElementById('t-fecha').value       = t.fecha ?? '';
-  document.getElementById('t-hora').value        = t.hora?.slice(0,5) ?? '';
-  document.getElementById('t-precio').value      = t.precio ?? '';
-  document.getElementById('t-cupos').value       = t.cupos ?? '';
-  document.getElementById('t-link').value        = t.link_pago ?? '';
-  document.getElementById('t-banco').value       = t.banco ?? '';
-  document.getElementById('t-tipo').value        = t.tipo_cuenta ?? '';
-  document.getElementById('t-cuenta').value      = t.num_cuenta ?? '';
-  document.getElementById('t-titular').value     = t.titular ?? '';
-  document.getElementById('t-rut').value         = t.rut_titular ?? '';
-  document.getElementById('t-email').value       = t.email_titular ?? '';
+  document.getElementById('t-nombre').value  = t.nombre ?? '';
+  document.getElementById('t-desc').value    = t.descripcion ?? '';
+  document.getElementById('t-fecha').value   = t.fecha ?? '';
+  document.getElementById('t-hora').value    = t.hora?.slice(0,5) ?? '';
+  document.getElementById('t-precio').value  = t.precio ?? '';
+  document.getElementById('t-cupos').value   = t.cupos ?? '';
+  // Presets
+  fillPresetSelects();
+  // Link pago
+  document.getElementById('t-link').value = t.link_pago ?? '';
+  // Transferencia manual
+  document.getElementById('t-banco').value    = t.banco ?? '';
+  document.getElementById('t-tipo').value     = t.tipo_cuenta ?? '';
+  document.getElementById('t-cuenta').value   = t.num_cuenta ?? '';
+  document.getElementById('t-titular').value  = t.titular ?? '';
+  document.getElementById('t-rut').value      = t.rut_titular ?? '';
+  document.getElementById('t-email').value    = t.email_titular ?? '';
+  // Mostrar fields si hay datos
+  if (t.banco || t.num_cuenta) showTransferFields(true);
+  if (t.link_pago) showLinkFields(true);
+  // Imagen
   const prev = document.getElementById('img-preview');
   if (t.imagen_url) { prev.src = t.imagen_url; prev.style.display = 'block'; }
   else               { prev.style.display = 'none'; }
-  document.getElementById('modal-title').textContent = 'Editar taller';
+  document.getElementById('modal-t-title').textContent = 'Editar taller';
   openModal('modal-taller');
 };
 
-function resetForm() {
+function resetTallerForm() {
   ['t-nombre','t-desc','t-fecha','t-hora','t-precio','t-cupos',
    't-link','t-banco','t-tipo','t-cuenta','t-titular','t-rut','t-email'].forEach(id => {
-    document.getElementById(id).value = '';
+    const el = document.getElementById(id);
+    if (el) el.value = '';
   });
   document.getElementById('img-preview').style.display = 'none';
   document.getElementById('t-img-input').value = '';
   window._pendingImg = null;
+  showTransferFields(false);
+  showLinkFields(false);
 }
 
+function fillPresetSelects() {
+  // Select de presets de transferencia
+  const selT = document.getElementById('sel-preset-transfer');
+  selT.innerHTML = `<option value="">— Seleccionar cuenta guardada —</option>` +
+    presets.filter(p => p.tipo === 'transferencia')
+      .map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('');
+
+  // Select de presets de link
+  const selL = document.getElementById('sel-preset-link');
+  selL.innerHTML = `<option value="">— Seleccionar link guardado —</option>` +
+    presets.filter(p => p.tipo === 'link')
+      .map(p => `<option value="${p.id}">${esc(p.nombre)}</option>`).join('');
+}
+
+function showTransferFields(show) {
+  document.getElementById('transfer-fields').classList.toggle('hidden', !show);
+}
+function showLinkFields(show) {
+  document.getElementById('link-fields').classList.toggle('hidden', !show);
+}
+window.showTransferFields = showTransferFields;
+window.showLinkFields = showLinkFields;
+
+// ── Guardar taller ────────────────────────────────────────────
 async function saveTaller() {
   const nombre = document.getElementById('t-nombre').value.trim();
   if (!nombre) { toast('El nombre es obligatorio.'); return; }
 
   const btn = document.getElementById('btn-save-taller');
-  btn.disabled = true; btn.textContent = 'Guardando…';
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite"></i> Guardando…';
 
   let imagen_url = editingId ? talleres.find(t => t.id === editingId)?.imagen_url : null;
   if (window._pendingImg) {
     try { imagen_url = await uploadImagen(window._pendingImg); }
-    catch (e) { toast('Error al subir imagen'); btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar'; return; }
+    catch { toast('Error al subir imagen'); btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Guardar'; return; }
   }
 
   const body = {
@@ -229,7 +330,6 @@ async function saveTaller() {
     renderTalleres();
     renderInscripcionesFilter();
   }
-
   btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar';
 }
 
@@ -240,17 +340,16 @@ window.toggleActivo = async function(id) {
   if (error) { toast('Error'); return; }
   t.activo = !t.activo;
   renderTalleres();
-  toast(t.activo ? 'Taller visible en el sitio ✓' : 'Taller ocultado ✓');
+  toast(t.activo ? 'Taller visible ✓' : 'Taller ocultado ✓');
 };
 
 window.deleteTaller = async function(id) {
   const t = talleres.find(x => x.id === id);
-  if (!confirm(`¿Eliminar el taller "${t?.nombre}"? También se eliminarán todas las inscripciones.`)) return;
+  if (!confirm(`¿Eliminar "${t?.nombre}"? También se eliminarán sus inscripciones.`)) return;
   const { error } = await supabase.from('talleres').delete().eq('id', id);
   if (error) { toast('Error al eliminar'); return; }
   talleres = talleres.filter(x => x.id !== id);
-  renderTalleres();
-  renderInscripcionesFilter();
+  renderTalleres(); renderInscripcionesFilter();
   toast('Taller eliminado');
 };
 
@@ -259,7 +358,7 @@ let inscripciones = [];
 let filterTallerId = 'all';
 
 async function loadInscripciones() {
-  let q = supabase.from('taller_inscripciones').select('*, talleres(nombre)').order('created_at', { ascending: false });
+  let q = supabase.from('taller_inscripciones').select('*, talleres(nombre)').order('created_at',{ascending:false});
   if (filterTallerId !== 'all') q = q.eq('taller_id', filterTallerId);
   const { data, error } = await q;
   if (error) { toast('Error al cargar inscripciones'); return; }
@@ -271,28 +370,26 @@ function renderInscripcionesFilter() {
   if (!sel) return;
   const val = sel.value;
   sel.innerHTML = `<option value="all">Todos los talleres</option>` +
-    talleres.map(t => `<option value="${t.id}" ${String(t.id) === String(val) ? 'selected' : ''}>${esc(t.nombre)}</option>`).join('');
+    talleres.map(t => `<option value="${t.id}" ${String(t.id)===String(val)?'selected':''}>${esc(t.nombre)}</option>`).join('');
 }
 
 async function renderInscripciones() {
   await loadInscripciones();
-  const total = inscripciones.length;
-  document.getElementById('stat-inscritos').textContent = total;
-
+  document.getElementById('stat-inscritos').textContent = inscripciones.length;
   const tbody = document.getElementById('inscripciones-tbody');
   if (!inscripciones.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="ti ti-users"></i>Sin inscripciones${filterTallerId !== 'all' ? ' para este taller' : ''}.</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="ti ti-users"></i>Sin inscripciones.</div></td></tr>`;
     return;
   }
   tbody.innerHTML = inscripciones.map(ins => {
-    const dt = new Date(ins.created_at).toLocaleDateString('es-CL', { day:'2-digit', month:'short', year:'numeric' });
+    const dt = new Date(ins.created_at).toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'});
     return `<tr>
       <td style="font-size:12px;color:var(--muted)">${dt}</td>
-      <td style="font-weight:500">${esc(ins.talleres?.nombre ?? '—')}</td>
+      <td style="font-weight:500">${esc(ins.talleres?.nombre??'—')}</td>
       <td>${esc(ins.nombre)}</td>
-      <td>${ins.edad ?? '—'}</td>
-      <td>${esc(ins.nombre_apoderado ?? '—')}</td>
-      <td>${esc(ins.telefono ?? '—')}</td>
+      <td>${ins.edad??'—'}</td>
+      <td>${esc(ins.nombre_apoderado??'—')}</td>
+      <td>${esc(ins.telefono??'—')}</td>
     </tr>`;
   }).join('');
 }
@@ -300,11 +397,9 @@ async function renderInscripciones() {
 function exportExcel() {
   if (!inscripciones.length) { toast('No hay inscripciones para exportar.'); return; }
   const rows = inscripciones.map(ins => ({
-    'Taller':       ins.talleres?.nombre ?? '',
-    'Nombre':       ins.nombre,
-    'Edad':         ins.edad ?? '',
-    'Apoderado':    ins.nombre_apoderado ?? '',
-    'Teléfono':     ins.telefono ?? '',
+    'Taller': ins.talleres?.nombre??'',
+    'Nombre': ins.nombre, 'Edad': ins.edad??'',
+    'Apoderado': ins.nombre_apoderado??'', 'Teléfono': ins.telefono??'',
     'Fecha inscripción': new Date(ins.created_at).toLocaleString('es-CL'),
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
@@ -312,63 +407,169 @@ function exportExcel() {
   XLSX.utils.book_append_sheet(wb, ws, 'Inscripciones');
   XLSX.writeFile(wb, `inscripciones_talleres_${Date.now()}.xlsx`);
 }
+window.exportExcel = exportExcel;
 
-// ── Modales ───────────────────────────────────────────────────
-function openModal(id)  { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-window.closeModal = closeModal;
+// ── Presets CRUD ──────────────────────────────────────────────
+function renderPresets() {
+  const list = document.getElementById('presets-list');
+  if (!presets.length) {
+    list.innerHTML = `<div class="empty-state"><i class="ti ti-credit-card"></i>No hay presets guardados. Crea el primero.</div>`;
+    return;
+  }
+  list.innerHTML = presets.map(p => {
+    const esBanco = p.tipo === 'transferencia';
+    const detalle = esBanco
+      ? [p.banco, p.tipo_cuenta, p.num_cuenta, p.titular].filter(Boolean).join(' · ')
+      : p.url ?? '';
+    return `<div class="preset-card">
+      <div class="preset-card-info">
+        <div class="preset-card-name">${esc(p.nombre)}</div>
+        <div class="preset-card-tipo ${esBanco?'preset-tipo-banco':'preset-tipo-link'}">
+          <i class="ti ti-${esBanco?'building-bank':'link'}"></i>
+          ${esBanco?'Transferencia':'Link de pago'}
+        </div>
+        <div class="preset-card-detail">${esc(detalle)}</div>
+      </div>
+      <div class="preset-card-actions">
+        <button class="btn btn-sm" onclick="openEditPreset(${p.id})"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-sm btn-icon danger" onclick="deletePreset(${p.id})"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
-function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+window.openCreatePreset = function(tipo) {
+  editPresetId = null;
+  resetPresetForm();
+  document.getElementById('preset-tipo-radio-' + tipo).checked = true;
+  togglePresetTipo(tipo);
+  document.getElementById('modal-preset-title').textContent = tipo === 'transferencia' ? 'Nueva cuenta bancaria' : 'Nuevo link de pago';
+  openModal('modal-preset');
+};
+
+window.openEditPreset = function(id) {
+  editPresetId = id;
+  const p = presets.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('p-nombre').value  = p.nombre ?? '';
+  document.getElementById('preset-tipo-radio-' + p.tipo).checked = true;
+  togglePresetTipo(p.tipo);
+  if (p.tipo === 'transferencia') {
+    document.getElementById('p-banco').value    = p.banco ?? '';
+    document.getElementById('p-tipo').value     = p.tipo_cuenta ?? '';
+    document.getElementById('p-cuenta').value   = p.num_cuenta ?? '';
+    document.getElementById('p-titular').value  = p.titular ?? '';
+    document.getElementById('p-rut').value      = p.rut_titular ?? '';
+    document.getElementById('p-email').value    = p.email_titular ?? '';
+  } else {
+    document.getElementById('p-url').value  = p.url ?? '';
+    document.getElementById('p-desc').value = p.descripcion ?? '';
+  }
+  document.getElementById('modal-preset-title').textContent = 'Editar preset';
+  openModal('modal-preset');
+};
+
+function resetPresetForm() {
+  ['p-nombre','p-banco','p-tipo','p-cuenta','p-titular','p-rut','p-email','p-url','p-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function togglePresetTipo(tipo) {
+  document.getElementById('preset-fields-banco').classList.toggle('hidden', tipo !== 'transferencia');
+  document.getElementById('preset-fields-link').classList.toggle('hidden', tipo !== 'link');
+}
+window.togglePresetTipo = togglePresetTipo;
+
+async function savePreset() {
+  const nombre = document.getElementById('p-nombre').value.trim();
+  if (!nombre) { toast('El nombre del preset es obligatorio.'); return; }
+  const tipo = document.querySelector('input[name="p-tipo"]:checked')?.value;
+  if (!tipo) { toast('Selecciona un tipo.'); return; }
+
+  const btn = document.getElementById('btn-save-preset');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite"></i> Guardando…';
+
+  const body = { nombre, tipo,
+    banco:         tipo==='transferencia' ? document.getElementById('p-banco').value.trim()||null : null,
+    tipo_cuenta:   tipo==='transferencia' ? document.getElementById('p-tipo').value.trim()||null : null,
+    num_cuenta:    tipo==='transferencia' ? document.getElementById('p-cuenta').value.trim()||null : null,
+    titular:       tipo==='transferencia' ? document.getElementById('p-titular').value.trim()||null : null,
+    rut_titular:   tipo==='transferencia' ? document.getElementById('p-rut').value.trim()||null : null,
+    email_titular: tipo==='transferencia' ? document.getElementById('p-email').value.trim()||null : null,
+    url:           tipo==='link' ? document.getElementById('p-url').value.trim()||null : null,
+    descripcion:   tipo==='link' ? document.getElementById('p-desc').value.trim()||null : null,
+  };
+
+  let error;
+  if (editPresetId) {
+    ({ error } = await supabase.from('pago_presets').update(body).eq('id', editPresetId));
+  } else {
+    ({ error } = await supabase.from('pago_presets').insert(body));
+  }
+
+  if (error) { toast('Error: ' + error.message); }
+  else {
+    toast(editPresetId ? 'Preset actualizado ✓' : 'Preset guardado ✓');
+    closeModal('modal-preset');
+    await loadPresets();
+    renderPresets();
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar';
+}
+
+window.deletePreset = async function(id) {
+  if (!confirm('¿Eliminar este preset?')) return;
+  const { error } = await supabase.from('pago_presets').delete().eq('id', id);
+  if (error) { toast('Error al eliminar'); return; }
+  presets = presets.filter(x => x.id !== id);
+  renderPresets();
+  toast('Preset eliminado');
+};
 
 // ── Render HTML ───────────────────────────────────────────────
 content.innerHTML = `
   <div class="tabs">
-    <button class="tab-btn active" data-tab="talleres">Talleres</button>
-    <button class="tab-btn"        data-tab="inscripciones">Inscripciones</button>
+    <button class="tab-btn active" data-tab="talleres"><i class="ti ti-school" style="margin-right:5px"></i>Talleres</button>
+    <button class="tab-btn" data-tab="inscripciones"><i class="ti ti-users" style="margin-right:5px"></i>Inscripciones</button>
+    <button class="tab-btn" data-tab="bancarios"><i class="ti ti-building-bank" style="margin-right:5px"></i>Datos bancarios</button>
   </div>
 
-  <!-- Tab: Talleres -->
+  <!-- ── Tab: Talleres ───────────────────────────────────────── -->
   <div class="tab-panel active" id="tab-talleres">
     <div class="page-header">
       <div style="font-size:14px;font-weight:600">Gestión de talleres</div>
       <button class="btn btn-accent" onclick="openCreate()"><i class="ti ti-plus"></i> Nuevo taller</button>
     </div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:4px">
-      Los talleres marcados como <strong>Mostrar</strong> aparecen en la página pública
+      Los talleres visibles aparecen en
       <a href="/talleres/" target="_blank" style="color:var(--accent)">/talleres/</a>.
     </p>
     <div id="taller-grid" class="taller-grid"></div>
   </div>
 
-  <!-- Tab: Inscripciones -->
+  <!-- ── Tab: Inscripciones ──────────────────────────────────── -->
   <div class="tab-panel" id="tab-inscripciones">
     <div class="page-header">
       <div style="font-size:14px;font-weight:600">Inscripciones</div>
       <button class="btn" onclick="exportExcel()"><i class="ti ti-file-spreadsheet"></i> Exportar Excel</button>
     </div>
-
     <div class="stat-mini">
       <div class="stat-mini-card">
         <div class="stat-mini-value" id="stat-inscritos">—</div>
         <div class="stat-mini-label">Inscripciones</div>
       </div>
     </div>
-
     <div class="inscripcion-filter">
-      <select class="filter-select" id="filter-taller">
-        <option value="all">Todos los talleres</option>
-      </select>
+      <select class="filter-select" id="filter-taller"><option value="all">Todos los talleres</option></select>
       <button class="btn btn-sm" id="btn-filtrar"><i class="ti ti-filter"></i> Filtrar</button>
     </div>
-
     <div class="card" style="padding:0;overflow:hidden">
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th>Fecha</th><th>Taller</th><th>Nombre</th>
-              <th>Edad</th><th>Apoderado</th><th>Teléfono</th>
-            </tr>
+            <tr><th>Fecha</th><th>Taller</th><th>Nombre</th><th>Edad</th><th>Apoderado</th><th>Teléfono</th></tr>
           </thead>
           <tbody id="inscripciones-tbody">
             <tr><td colspan="6"><div class="empty-state"><i class="ti ti-loader" style="animation:spin 1s linear infinite"></i>Cargando…</div></td></tr>
@@ -378,19 +579,34 @@ content.innerHTML = `
     </div>
   </div>
 
-  <!-- Modal: Crear / Editar taller -->
-  <div class="modal-backdrop" id="modal-taller">
-    <div class="modal-box" style="width:520px">
-      <div class="modal-title" id="modal-title">Nuevo taller</div>
+  <!-- ── Tab: Datos bancarios ────────────────────────────────── -->
+  <div class="tab-panel" id="tab-bancarios">
+    <div class="page-header">
+      <div>
+        <div style="font-size:14px;font-weight:600">Presets de pago</div>
+        <p style="font-size:12px;color:var(--muted);margin-top:2px">Guarda tus cuentas bancarias y links de pago con un nombre para reutilizarlos en los talleres.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-accent" onclick="openCreatePreset('transferencia')"><i class="ti ti-building-bank"></i> Nueva cuenta</button>
+        <button class="btn" onclick="openCreatePreset('link')"><i class="ti ti-link"></i> Nuevo link</button>
+      </div>
+    </div>
+    <div id="presets-list" class="presets-list"></div>
+  </div>
 
-      <div class="form-section-title">Información general</div>
+  <!-- ── Modal: Crear / Editar taller ───────────────────────── -->
+  <div class="modal-backdrop" id="modal-taller">
+    <div class="modal-box" style="width:540px">
+      <div class="modal-title" id="modal-t-title">Nuevo taller</div>
+
+      <div class="form-section-title"><i class="ti ti-info-circle"></i> Información general</div>
       <div class="form-group">
         <label class="form-label">Nombre del taller *</label>
         <input class="form-input" id="t-nombre" placeholder="Ej: Taller de decoración de galletas" />
       </div>
       <div class="form-group" style="margin-top:10px">
         <label class="form-label">Descripción</label>
-        <textarea class="form-input form-textarea" id="t-desc" placeholder="Descripción del taller, qué incluye, para quién es…"></textarea>
+        <textarea class="form-input form-textarea" id="t-desc" placeholder="Qué incluye, para quién es…"></textarea>
       </div>
       <div class="form-row2" style="margin-top:10px">
         <div class="form-group">
@@ -413,7 +629,7 @@ content.innerHTML = `
         </div>
       </div>
 
-      <div class="form-section-title">Imagen de portada</div>
+      <div class="form-section-title"><i class="ti ti-photo"></i> Imagen de portada</div>
       <div class="img-upload-area" id="img-upload-area">
         <img id="img-preview" style="display:none" alt="Preview" />
         <i class="ti ti-photo" style="font-size:28px"></i>
@@ -422,43 +638,65 @@ content.innerHTML = `
         <input type="file" accept="image/*" id="t-img-input" class="img-upload-input" />
       </div>
 
-      <div class="form-section-title">Pago con tarjeta</div>
-      <div class="form-group">
-        <label class="form-label">Link de pago (Webpay, Flow, Mercado Pago, etc.)</label>
-        <input class="form-input" id="t-link" placeholder="https://..." />
+      <div class="form-section-title"><i class="ti ti-link"></i> Link de pago</div>
+      <div class="preset-row">
+        <select class="preset-select" id="sel-preset-link">
+          <option value="">— Seleccionar link guardado —</option>
+        </select>
+        <button class="btn btn-sm" onclick="applyLinkPreset()" title="Aplicar preset"><i class="ti ti-check"></i> Usar</button>
       </div>
+      <div class="preset-fields" id="link-fields">
+        <div class="form-group">
+          <label class="form-label">URL de pago (Webpay, Flow, Mercado Pago…)</label>
+          <input class="form-input" id="t-link" placeholder="https://..." />
+        </div>
+      </div>
+      <button class="btn btn-sm" style="margin-top:4px;margin-bottom:4px" onclick="showLinkFields(true)">
+        <i class="ti ti-pencil"></i> Ingresar manualmente
+      </button>
 
-      <div class="form-section-title">Datos de transferencia</div>
-      <div class="form-row2">
-        <div class="form-group">
-          <label class="form-label">Banco</label>
-          <input class="form-input" id="t-banco" placeholder="Ej: Banco Estado" />
+      <div class="form-section-title"><i class="ti ti-building-bank"></i> Datos de transferencia</div>
+      <div class="preset-row">
+        <select class="preset-select" id="sel-preset-transfer">
+          <option value="">— Seleccionar cuenta guardada —</option>
+        </select>
+        <button class="btn btn-sm" onclick="applyTransferPreset()" title="Aplicar preset"><i class="ti ti-check"></i> Usar</button>
+      </div>
+      <div class="preset-fields hidden" id="transfer-fields">
+        <div class="form-row2">
+          <div class="form-group">
+            <label class="form-label">Banco</label>
+            <input class="form-input" id="t-banco" placeholder="Ej: Banco Estado" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de cuenta</label>
+            <input class="form-input" id="t-tipo" placeholder="Ej: Cuenta Rut" />
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Tipo de cuenta</label>
-          <input class="form-input" id="t-tipo" placeholder="Ej: Cuenta Rut" />
+        <div class="form-row2" style="margin-top:10px">
+          <div class="form-group">
+            <label class="form-label">Número de cuenta</label>
+            <input class="form-input" id="t-cuenta" placeholder="123456789" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Titular</label>
+            <input class="form-input" id="t-titular" placeholder="Nombre titular" />
+          </div>
+        </div>
+        <div class="form-row2" style="margin-top:10px">
+          <div class="form-group">
+            <label class="form-label">RUT titular</label>
+            <input class="form-input" id="t-rut" placeholder="12.345.678-9" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email titular</label>
+            <input class="form-input" type="email" id="t-email" placeholder="correo@empresa.cl" />
+          </div>
         </div>
       </div>
-      <div class="form-row2" style="margin-top:10px">
-        <div class="form-group">
-          <label class="form-label">Número de cuenta</label>
-          <input class="form-input" id="t-cuenta" placeholder="123456789" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Titular</label>
-          <input class="form-input" id="t-titular" placeholder="Nombre del titular" />
-        </div>
-      </div>
-      <div class="form-row2" style="margin-top:10px">
-        <div class="form-group">
-          <label class="form-label">RUT titular</label>
-          <input class="form-input" id="t-rut" placeholder="12.345.678-9" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email titular</label>
-          <input class="form-input" type="email" id="t-email" placeholder="correo@empresa.cl" />
-        </div>
-      </div>
+      <button class="btn btn-sm" style="margin-top:4px" onclick="showTransferFields(true)">
+        <i class="ti ti-pencil"></i> Ingresar manualmente
+      </button>
 
       <div class="modal-foot">
         <button class="btn" onclick="closeModal('modal-taller')">Cancelar</button>
@@ -466,7 +704,108 @@ content.innerHTML = `
       </div>
     </div>
   </div>
+
+  <!-- ── Modal: Crear / Editar preset ───────────────────────── -->
+  <div class="modal-backdrop" id="modal-preset">
+    <div class="modal-box" style="width:460px">
+      <div class="modal-title" id="modal-preset-title">Nuevo preset</div>
+
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Nombre del preset *</label>
+        <input class="form-input" id="p-nombre" placeholder="Ej: Cuenta principal, Flow talleres…" />
+      </div>
+
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Tipo</label>
+        <div style="display:flex;gap:16px;margin-top:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="p-tipo" id="preset-tipo-radio-transferencia" value="transferencia" onchange="togglePresetTipo('transferencia')" /> Transferencia bancaria
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="radio" name="p-tipo" id="preset-tipo-radio-link" value="link" onchange="togglePresetTipo('link')" /> Link de pago
+          </label>
+        </div>
+      </div>
+
+      <!-- Campos banco -->
+      <div id="preset-fields-banco" class="hidden">
+        <div class="form-row2">
+          <div class="form-group">
+            <label class="form-label">Banco</label>
+            <input class="form-input" id="p-banco" placeholder="Ej: Banco Estado" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de cuenta</label>
+            <input class="form-input" id="p-tipo" placeholder="Ej: Cuenta Rut" />
+          </div>
+        </div>
+        <div class="form-row2" style="margin-top:10px">
+          <div class="form-group">
+            <label class="form-label">Número de cuenta</label>
+            <input class="form-input" id="p-cuenta" placeholder="123456789" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Titular</label>
+            <input class="form-input" id="p-titular" placeholder="Nombre titular" />
+          </div>
+        </div>
+        <div class="form-row2" style="margin-top:10px">
+          <div class="form-group">
+            <label class="form-label">RUT</label>
+            <input class="form-input" id="p-rut" placeholder="12.345.678-9" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email titular</label>
+            <input class="form-input" type="email" id="p-email" placeholder="correo@empresa.cl" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Campos link -->
+      <div id="preset-fields-link" class="hidden">
+        <div class="form-group">
+          <label class="form-label">URL de pago *</label>
+          <input class="form-input" id="p-url" placeholder="https://..." />
+        </div>
+        <div class="form-group" style="margin-top:10px">
+          <label class="form-label">Descripción (opcional)</label>
+          <input class="form-input" id="p-desc" placeholder="Ej: Flow, Webpay Plus…" />
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn" onclick="closeModal('modal-preset')">Cancelar</button>
+        <button class="btn btn-accent" id="btn-save-preset"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
 `;
+
+// ── Aplicar presets al form del taller ───────────────────────
+window.applyTransferPreset = function() {
+  const id = parseInt(document.getElementById('sel-preset-transfer').value);
+  if (!id) return;
+  const p = presets.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('t-banco').value   = p.banco ?? '';
+  document.getElementById('t-tipo').value    = p.tipo_cuenta ?? '';
+  document.getElementById('t-cuenta').value  = p.num_cuenta ?? '';
+  document.getElementById('t-titular').value = p.titular ?? '';
+  document.getElementById('t-rut').value     = p.rut_titular ?? '';
+  document.getElementById('t-email').value   = p.email_titular ?? '';
+  showTransferFields(true);
+  toast(`Cuenta "${p.nombre}" aplicada`);
+};
+
+window.applyLinkPreset = function() {
+  const id = parseInt(document.getElementById('sel-preset-link').value);
+  if (!id) return;
+  const p = presets.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('t-link').value = p.url ?? '';
+  showLinkFields(true);
+  toast(`Link "${p.nombre}" aplicado`);
+};
 
 // ── Eventos ───────────────────────────────────────────────────
 content.querySelectorAll('.tab-btn').forEach(btn => {
@@ -474,16 +813,14 @@ content.querySelectorAll('.tab-btn').forEach(btn => {
     content.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     content.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
-    const panel = document.getElementById(`tab-${btn.dataset.tab}`);
-    panel.classList.add('active');
-    if (btn.dataset.tab === 'inscripciones') {
-      renderInscripcionesFilter();
-      renderInscripciones();
-    }
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    if (btn.dataset.tab === 'inscripciones') { renderInscripcionesFilter(); renderInscripciones(); }
+    if (btn.dataset.tab === 'bancarios')     { renderPresets(); }
   });
 });
 
 document.getElementById('btn-save-taller').addEventListener('click', saveTaller);
+document.getElementById('btn-save-preset').addEventListener('click', savePreset);
 document.getElementById('btn-filtrar').addEventListener('click', async () => {
   filterTallerId = document.getElementById('filter-taller').value;
   await renderInscripciones();
@@ -493,21 +830,18 @@ document.getElementById('btn-filtrar').addEventListener('click', async () => {
 const imgInput = document.getElementById('t-img-input');
 document.getElementById('img-upload-area').addEventListener('click', () => imgInput.click());
 imgInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const file = e.target.files[0]; if (!file) return;
   window._pendingImg = file;
-  const preview = document.getElementById('img-preview');
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = 'block';
+  const prev = document.getElementById('img-preview');
+  prev.src = URL.createObjectURL(file); prev.style.display = 'block';
 });
 
 document.querySelectorAll('.modal-backdrop').forEach(m =>
   m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); })
 );
 
-window.exportExcel = exportExcel;
-
 // ── Init ──────────────────────────────────────────────────────
+await loadPresets();
 await loadTalleres();
 renderTalleres();
 </script>
