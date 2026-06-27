@@ -277,9 +277,15 @@ header,main,section,.hero,footer{position:relative;z-index:1}
   transition:background .15s,transform .1s;margin-bottom:10px;
 }
 .btn-pago:hover{background:#e0aa44;transform:scale(1.01)}
+.btn-pago-transfer{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.btn-pago-transfer:hover{background:rgba(196,156,65,.12);transform:scale(1.01)}
+.btn-pago-transfer.active{background:rgba(196,156,65,.15)}
 .transfer-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px}
 .transfer-item label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);display:block;margin-bottom:1px}
 .transfer-item span{font-size:12px;color:var(--text)}
+.transfer-aviso{grid-column:1/-1;margin-top:10px;font-size:11px;color:var(--hint);line-height:1.5;border-top:1px solid var(--border);padding-top:10px}
+.transfer-aviso a{color:var(--gold);text-decoration:none}
+.transfer-aviso a:hover{text-decoration:underline}
 .divider{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:10px;color:var(--hint);text-transform:uppercase;letter-spacing:.06em}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
@@ -531,15 +537,27 @@ function openTaller(id){
     var tb=document.getElementById('transfer-block');
     var hayT=t.banco||t.num_cuenta||t.titular;
     if(hayT){
-      tb.style.display='block';
+      tb.style.display='none'; // oculto por defecto, se revela con el botón
       document.getElementById('transfer-data').innerHTML=[
         t.banco       ?'<div class="transfer-item"><label>Banco</label><span>'+esc(t.banco)+'</span></div>':'',
         t.tipo_cuenta ?'<div class="transfer-item"><label>Tipo cuenta</label><span>'+esc(t.tipo_cuenta)+'</span></div>':'',
-        t.num_cuenta  ?'<div class="transfer-item"><label>N cuenta</label><span>'+esc(t.num_cuenta)+'</span></div>':'',
+        t.num_cuenta  ?'<div class="transfer-item"><label>N&deg; cuenta</label><span>'+esc(t.num_cuenta)+'</span></div>':'',
         t.titular     ?'<div class="transfer-item"><label>Titular</label><span>'+esc(t.titular)+'</span></div>':'',
         t.rut_titular ?'<div class="transfer-item"><label>RUT</label><span>'+esc(t.rut_titular)+'</span></div>':'',
         t.email_titular?'<div class="transfer-item"><label>Email</label><span>'+esc(t.email_titular)+'</span></div>':'',
+        '<div class="transfer-aviso">* El tiempo m&aacute;ximo de espera para pago por transferencia es de (3) Hrs. Debe enviar el comprobante a <a href="mailto:hola@twcoffee.cl">hola@twcoffee.cl</a> indicando nombre del participante.</div>',
       ].filter(Boolean).join('');
+      // Agregar botón "Pagar con transferencia" al wrap de botones
+      var wrap=document.getElementById('btn-pago-wrap');
+      var btnT=document.createElement('button');
+      btnT.className='btn-pago btn-pago-transfer';
+      btnT.innerHTML='<i class="ti ti-building-bank"></i> Pagar con transferencia';
+      btnT.onclick=function(){
+        var visible=tb.style.display==='block';
+        tb.style.display=visible?'none':'block';
+        btnT.classList.toggle('active',!visible);
+      };
+      wrap.appendChild(btnT);
     }else{tb.style.display='none';}
   }else{pagoBlock.style.display='none';}
 
