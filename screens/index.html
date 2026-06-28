@@ -190,6 +190,22 @@ document.addEventListener('click', () => {
   if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(()=>{});
 });
 
+// Wake Lock — evita que la pantalla se apague mientras la página está abierta
+async function requestWakeLock() {
+  try {
+    const lock = await navigator.wakeLock?.request('screen');
+    // Si la página pierde foco (ej: alt+tab) el lock se libera; lo reactivamos al volver
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWakeLock();
+    });
+    console.log('Wake Lock activo');
+    return lock;
+  } catch (_) {
+    // Navegador no soporta Wake Lock — no pasa nada
+  }
+}
+
+requestWakeLock();
 init();
 </script>
 </body>
