@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>POS — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+/* ── Reset / base ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --pos-bg:       #1a1a1a;
+  --pos-bar:      #111111;
+  --pos-surface:  #242424;
+  --pos-border:   #333;
+  --pos-accent:   #b8982a;
+  --pos-green:    #22c55e;
+  --pos-muted:    #888;
+  --pos-text:     #f0f0f0;
+  --pos-subbar:   #2a2a2a;
+  --pos-radius:   10px;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var(--pos-text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Top bar ─────────────────────────────────────────────────── */
+.pos-topbar {
+  height: 52px; background: var(--pos-bar);
+  display: flex; align-items: center; gap: 0;
+  border-bottom: 1px solid var(--pos-border);
+  flex-shrink: 0; padding: 0 16px; gap: 8px;
+}
+.pos-logo {
+  font-size: 13px; font-weight: 700; color: var(--pos-accent);
+  letter-spacing: .05em; padding-right: 16px;
+  border-right: 1px solid var(--pos-border); margin-right: 8px;
+  white-space: nowrap;
+}
+.pos-nav-icon {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 6px 12px; border-radius: 8px;
+  cursor: pointer; transition: background .14s; border: none;
+  background: none; color: var(--pos-muted); font-family: inherit;
+  font-size: 10px; font-weight: 500;
+}
+.pos-nav-icon i { font-size: 20px; }
+.pos-nav-icon:hover { background: rgba(255,255,255,.07); color: var(--pos-text); }
+.pos-nav-icon.active { background: rgba(184,152,42,.15); color: var(--pos-accent); }
+.pos-topbar-right {
+  margin-left: auto; display: flex; align-items: center; gap: 14px;
+  font-size: 12px; color: var(--pos-muted);
+}
+.pos-topbar-time { font-size: 18px; font-weight: 700; color: var(--pos-text); }
+.pos-topbar-user { display: flex; align-items: center; gap: 6px; }
+.pos-back-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 6px;
+  background: rgba(255,255,255,.06); border: none;
+  color: var(--pos-muted); cursor: pointer; font-size: 12px;
+  font-family: inherit; transition: background .14s;
+}
+.pos-back-btn:hover { background: rgba(255,255,255,.12); color: var(--pos-text); }
+
+/* ── Sub bar ─────────────────────────────────────────────────── */
+.pos-subbar {
+  height: 42px; background: var(--pos-subbar);
+  display: flex; align-items: center; gap: 0;
+  border-bottom: 1px solid var(--pos-border);
+  flex-shrink: 0; padding: 0 16px;
+}
+.pos-sub-btn {
+  padding: 8px 16px; font-size: 13px; font-weight: 500;
+  color: var(--pos-muted); background: none; border: none;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: color .14s, border-color .14s;
+  font-family: inherit;
+}
+.pos-sub-btn.active { color: var(--pos-text); border-bottom-color: var(--pos-accent); }
+.pos-sub-btn:hover:not(.active) { color: var(--pos-text); }
+.pos-sub-btn:disabled { opacity: .4; cursor: default; }
+
+/* ── Layout principal ────────────────────────────────────────── */
+.pos-body { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar izquierdo (zonas + controles) ───────────────────── */
+.pos-sidebar {
+  width: 200px; background: var(--pos-surface);
+  border-right: 1px solid var(--pos-border);
+  display: flex; flex-direction: column;
+  flex-shrink: 0; padding: 12px 0;
+}
+.pos-sidebar-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--pos-muted);
+  padding: 0 14px 8px;
+}
+.pos-zone-tab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; font-size: 13px; font-weight: 500;
+  color: var(--pos-muted); background: none; border: none;
+  cursor: pointer; width: 100%; text-align: left;
+  transition: background .12s, color .12s; font-family: inherit;
+}
+.pos-zone-tab::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--pos-border); flex-shrink: 0; }
+.pos-zone-tab:hover { background: rgba(255,255,255,.05); color: var(--pos-text); }
+.pos-zone-tab.active { background: rgba(184,152,42,.12); color: var(--pos-accent); }
+.pos-zone-tab.active::before { background: var(--pos-accent); }
+
+.pos-sidebar-divider { border: none; border-top: 1px solid var(--pos-border); margin: 10px 0; }
+.pos-sidebar-controls { padding: 0 10px; display: flex; flex-direction: column; gap: 6px; }
+.pos-ctrl-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 10px; border-radius: 7px; border: 1px solid var(--pos-border);
+  background: none; color: var(--pos-muted); cursor: pointer;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.pos-ctrl-btn:hover { background: rgba(255,255,255,.06); color: var(--pos-text); border-color: #555; }
+.pos-ctrl-btn i { font-size: 15px; }
+#pos-add-mesa-btn { display: none; }
+
+/* ── Plano ───────────────────────────────────────────────────── */
+.pos-plano-wrap { flex: 1; overflow: auto; position: relative; }
+#pos-plano {
+  position: relative;
+  min-width: 900px; min-height: 600px;
+  width: 100%; height: 100%;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.pos-plano-empty {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px;
+  color: var(--pos-muted); font-size: 14px; pointer-events: none;
+}
+
+/* ── Mesa element ────────────────────────────────────────────── */
+.pos-mesa { position: absolute; user-select: none; }
+
+/* ── Panel derecho ───────────────────────────────────────────── */
+.pos-right-panel {
+  width: 240px; background: var(--pos-surface);
+  border-left: 1px solid var(--pos-border);
+  flex-shrink: 0; overflow-y: auto;
+}
+.pos-right-empty {
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; color: var(--pos-muted); font-size: 13px;
+}
+.pos-mesa-detail { padding: 20px 16px; }
+.pos-mesa-badge {
+  width: 64px; height: 64px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 700; color: #fff;
+  margin: 0 auto 12px;
+}
+.pos-detail-nombre { text-align: center; font-size: 16px; font-weight: 700; }
+.pos-detail-meta { text-align: center; font-size: 12px; color: var(--pos-muted); margin-top: 2px; }
+.pos-detail-section {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--pos-muted);
+  margin: 16px 0 8px;
+}
+.pos-estado-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pos-estado-btn {
+  padding: 7px 4px; border-radius: 7px; border: 1px solid var(--pos-border);
+  background: none; color: var(--pos-muted); cursor: pointer;
+  font-size: 11px; font-weight: 500; font-family: inherit;
+  transition: all .12s;
+}
+.pos-estado-btn:hover { border-color: #666; color: var(--pos-text); }
+.pos-estado-btn.active { border-color: transparent; }
+.pos-estado-label { text-align: center; font-size: 13px; }
+.pos-action-btn {
+  width: 100%; padding: 10px; border-radius: 8px; margin-top: 6px;
+  border: 1px solid var(--pos-border); background: none;
+  color: var(--pos-text); cursor: pointer; font-size: 13px;
+  font-weight: 500; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background .12s;
+}
+.pos-action-btn:hover { background: rgba(255,255,255,.07); }
+.pos-action-btn.danger { color: #ef4444; border-color: #ef444440; }
+.pos-action-btn.danger:hover { background: rgba(239,68,68,.1); }
+
+/* ── Modal ───────────────────────────────────────────────────── */
+.pos-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  display: none; align-items: center; justify-content: center; z-index: 999;
+}
+.pos-modal-backdrop.open { display: flex; }
+.pos-modal {
+  background: var(--pos-surface); border: 1px solid var(--pos-border);
+  border-radius: 14px; padding: 24px; width: 340px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.pos-modal-title { font-size: 15px; font-weight: 700; }
+.pos-modal-group { display: flex; flex-direction: column; gap: 5px; }
+.pos-modal-label { font-size: 12px; color: var(--pos-muted); }
+.pos-modal-input, .pos-modal-select {
+  padding: 9px 11px; border: 1px solid var(--pos-border);
+  border-radius: 8px; background: var(--pos-bg); color: var(--pos-text);
+  font-family: inherit; font-size: 13px; outline: none;
+}
+.pos-modal-input:focus, .pos-modal-select:focus { border-color: var(--pos-accent); }
+.pos-modal-footer { display: flex; gap: 8px; justify-content: flex-end; }
+.pos-modal-btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--pos-border);
+  background: none; color: var(--pos-text); cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 500;
+}
+.pos-modal-btn.primary { background: var(--pos-accent); color: #111; border-color: var(--pos-accent); }
+.pos-modal-btn:hover { background: rgba(255,255,255,.08); }
+.pos-modal-btn.primary:hover { background: #cda832; }
+
+/* ── Leyenda ─────────────────────────────────────────────────── */
+.pos-leyenda {
+  position: absolute; bottom: 14px; left: 14px;
+  display: flex; gap: 12px; background: rgba(0,0,0,.5);
+  border-radius: 8px; padding: 8px 12px; font-size: 11px;
+}
+.pos-ley-item { display: flex; align-items: center; gap: 5px; color: var(--pos-muted); }
+.pos-ley-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── Toast ───────────────────────────────────────────────────── */
+.pos-toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #333; color: #fff; padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 9999;
+}
+.pos-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.pos-toast.error { background: #7f1d1d; }
+
+/* ── Próximamente badge ──────────────────────────────────────── */
+.pos-soon {
+  font-size: 9px; font-weight: 600; background: var(--pos-border);
+  color: var(--pos-muted); padding: 1px 5px; border-radius: 4px;
+  letter-spacing: .04em;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ────────────────────────────────────────────────── -->
+<div class="pos-topbar">
+  <div class="pos-logo">🧙 WIZARD</div>
+
+  <button class="pos-nav-icon active" title="Mesas">
+    <i class="ti ti-layout-grid"></i>Mesas
+  </button>
+  <button class="pos-nav-icon" title="Mostrador" disabled style="opacity:.4;cursor:default">
+    <i class="ti ti-device-desktop"></i>Mostrador
+  </button>
+  <button class="pos-nav-icon" title="Delivery" disabled style="opacity:.4;cursor:default">
+    <i class="ti ti-bike"></i>Delivery
+  </button>
+  <button class="pos-nav-icon" title="Reservas" disabled style="opacity:.4;cursor:default">
+    <i class="ti ti-calendar"></i>Reservas
+  </button>
+  <button class="pos-nav-icon" title="Caja" disabled style="opacity:.4;cursor:default">
+    <i class="ti ti-cash"></i>Caja
+  </button>
+
+  <div class="pos-topbar-right">
+    <div id="pos-reloj" class="pos-topbar-time">00:00</div>
+    <div class="pos-topbar-user">
+      <i class="ti ti-user-circle" style="font-size:18px"></i>
+      <span id="pos-username">—</span>
+    </div>
+    <button class="pos-back-btn" onclick="location.href='/platform/dashboard.html'">
+      <i class="ti ti-arrow-left"></i> Admin
+    </button>
+  </div>
+</div>
+
+<!-- ── Sub bar ────────────────────────────────────────────────── -->
+<div class="pos-subbar">
+  <button class="pos-sub-btn active">Mesas</button>
+  <button class="pos-sub-btn" disabled>Mostrador <span class="pos-soon">pronto</span></button>
+  <button class="pos-sub-btn" disabled>Delivery <span class="pos-soon">pronto</span></button>
+  <button class="pos-sub-btn" disabled>Mostrador express <span class="pos-soon">pronto</span></button>
+  <button class="pos-sub-btn" disabled>Reservas <span class="pos-soon">pronto</span></button>
+</div>
+
+<!-- ── Body ───────────────────────────────────────────────────── -->
+<div class="pos-body">
+
+  <!-- Sidebar izquierdo: zonas -->
+  <div class="pos-sidebar">
+    <div class="pos-sidebar-title">Zonas</div>
+    <div id="pos-zonas"></div>
+
+    <hr class="pos-sidebar-divider" />
+    <div class="pos-sidebar-controls">
+      <button class="pos-ctrl-btn" id="pos-edit-btn" onclick="posToggleEdit(this)">
+        <i class="ti ti-pencil"></i> Editar plano
+      </button>
+      <button class="pos-ctrl-btn" id="pos-add-mesa-btn" onclick="posOpenAddMesa()">
+        <i class="ti ti-plus"></i> Agregar mesa
+      </button>
+      <button class="pos-ctrl-btn" id="pos-add-zona-btn" onclick="posOpenAddZona()">
+        <i class="ti ti-folder-plus"></i> Nueva zona
+      </button>
+    </div>
+  </div>
+
+  <!-- Plano -->
+  <div class="pos-plano-wrap">
+    <div id="pos-plano">
+      <div class="pos-plano-empty" id="pos-plano-empty" style="display:none">
+        <i class="ti ti-layout-grid" style="font-size:40px"></i>
+        <div>No hay mesas en esta zona</div>
+        <div style="font-size:12px">Activa "Editar plano" y agrega mesas</div>
+      </div>
+
+      <!-- Leyenda -->
+      <div class="pos-leyenda">
+        <div class="pos-ley-item"><div class="pos-ley-dot" style="background:#22c55e"></div>Libre</div>
+        <div class="pos-ley-item"><div class="pos-ley-dot" style="background:#f97316"></div>Ocupada</div>
+        <div class="pos-ley-item"><div class="pos-ley-dot" style="background:#ef4444"></div>Cuenta</div>
+        <div class="pos-ley-item"><div class="pos-ley-dot" style="background:#a855f7"></div>Reservada</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel derecho -->
+  <div class="pos-right-panel" id="pos-right-panel">
+    <div class="pos-right-empty">
+      <i class="ti ti-layout-grid" style="font-size:36px;color:#555"></i>
+      <p>Selecciona una mesa</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: agregar mesa ────────────────────────────────────── -->
+<div class="pos-modal-backdrop" id="modal-add-mesa">
+  <div class="pos-modal">
+    <div class="pos-modal-title">Agregar mesa</div>
+    <div class="pos-modal-group">
+      <label class="pos-modal-label">Número / nombre</label>
+      <input id="new-mesa-numero" class="pos-modal-input" type="text" placeholder="Ej: 7, A1, Barra…" />
+    </div>
+    <div class="pos-modal-group">
+      <label class="pos-modal-label">Capacidad (personas)</label>
+      <input id="new-mesa-capacidad" class="pos-modal-input" type="number" min="1" value="4" />
+    </div>
+    <div class="pos-modal-group">
+      <label class="pos-modal-label">Forma</label>
+      <select id="new-mesa-forma" class="pos-modal-select">
+        <option value="cuadrado">Cuadrada</option>
+        <option value="redondo">Redonda</option>
+      </select>
+    </div>
+    <div class="pos-modal-footer">
+      <button class="pos-modal-btn" onclick="posCloseModal('modal-add-mesa')">Cancelar</button>
+      <button class="pos-modal-btn primary" onclick="posConfirmAddMesa()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: agregar zona ────────────────────────────────────── -->
+<div class="pos-modal-backdrop" id="modal-add-zona">
+  <div class="pos-modal">
+    <div class="pos-modal-title">Nueva zona</div>
+    <div class="pos-modal-group">
+      <label class="pos-modal-label">Nombre de la zona</label>
+      <input id="new-zona-nombre" class="pos-modal-input" type="text" placeholder="Ej: Terraza, 2do Piso…" />
+    </div>
+    <div class="pos-modal-footer">
+      <button class="pos-modal-btn" onclick="posCloseModal('modal-add-zona')">Cancelar</button>
+      <button class="pos-modal-btn primary" onclick="posConfirmAddZona()">Crear zona</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: comanda (placeholder) ──────────────────────────── -->
+<div class="pos-modal-backdrop" id="modal-comanda">
+  <div class="pos-modal" style="text-align:center;gap:16px">
+    <i class="ti ti-clipboard-list" style="font-size:40px;color:#555"></i>
+    <div class="pos-modal-title">Comandas — Próximamente</div>
+    <p style="font-size:13px;color:#888">Este módulo estará disponible en la próxima etapa del POS.</p>
+    <div class="pos-modal-footer" style="justify-content:center">
+      <button class="pos-modal-btn primary" onclick="posCloseModal('modal-comanda')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="pos-toast" class="pos-toast"></div>
+
+<!-- ── Script ─────────────────────────────────────────────────── -->
+<script type="module">
+import { requireAuth } from '/js/core/auth.js';
+import { supabase }   from '/js/core/supabase.js';
+import {
+  loadZonas, loadMesas, renderZonaTabs, renderPlano, renderRightPanel,
+  cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona, getZonas,
+} from '/js/pos/mesas.js';
+
+// Auth
+const user = await requireAuth('/platform/login.html');
+if (!user) throw new Error('No auth');
+document.getElementById('pos-username').textContent = user.email.split('@')[0];
+
+// Reloj
+function updateClock() {
+  const now = new Date();
+  document.getElementById('pos-reloj').textContent =
+    now.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+// Carga inicial
+const zonas = await loadZonas();
+const zonasEl = document.getElementById('pos-zonas');
+
+if (!zonas.length) {
+  zonasEl.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:#666">Sin zonas — crea una</div>';
+} else {
+  await loadMesas(zonas[0].id);
+  renderZonaTabs(zonasEl, () => {
+    renderPlano(document.getElementById('pos-plano'));
+    checkEmpty();
+  });
+  renderPlano(document.getElementById('pos-plano'));
+  checkEmpty();
+}
+
+function checkEmpty() {
+  const { getMesas } = window._posApi || {};
+  // mostrar/ocultar estado vacío
+}
+
+// Exponer funciones globales
+window.posToggleEdit     = (btn) => toggleEditMode(btn);
+window.posOpenAddMesa    = ()    => document.getElementById('modal-add-mesa').classList.add('open');
+window.posOpenAddZona    = ()    => document.getElementById('modal-add-zona').classList.add('open');
+window.posCloseModal     = (id)  => document.getElementById(id).classList.remove('open');
+
+window.posConfirmAddMesa = async () => {
+  await addMesa(
+    document.getElementById('new-mesa-numero').value,
+    document.getElementById('new-mesa-capacidad').value,
+    document.getElementById('new-mesa-forma').value,
+  );
+  document.getElementById('new-mesa-numero').value = '';
+  document.getElementById('new-mesa-capacidad').value = '4';
+  posCloseModal('modal-add-mesa');
+};
+
+window.posConfirmAddZona = async () => {
+  const nombre = document.getElementById('new-zona-nombre').value;
+  const zona = await addZona(nombre);
+  if (zona) {
+    document.getElementById('new-zona-nombre').value = '';
+    posCloseModal('modal-add-zona');
+    const zonas = await loadZonas();
+    renderZonaTabs(document.getElementById('pos-zonas'), () => {
+      renderPlano(document.getElementById('pos-plano'));
+    });
+  }
+};
+
+window.posCambiarEstado  = (id, estado) => cambiarEstado(id, estado);
+window.posEliminarMesa   = (id) => eliminarMesa(id);
+window.posAbrirComanda   = (id) => document.getElementById('modal-comanda').classList.add('open');
+
+// Cerrar modales al click en backdrop
+document.querySelectorAll('.pos-modal-backdrop').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
