@@ -49,13 +49,6 @@ DROP POLICY IF EXISTS "write_auth"  ON public.screens;
 CREATE POLICY "read_public" ON public.screens FOR SELECT USING (true);
 CREATE POLICY "write_auth"  ON public.screens FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
--- configuracion
-ALTER TABLE public.configuracion ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "read_public" ON public.configuracion;
-DROP POLICY IF EXISTS "write_auth"  ON public.configuracion;
-CREATE POLICY "read_public" ON public.configuracion FOR SELECT USING (true);
-CREATE POLICY "write_auth"  ON public.configuracion FOR ALL TO authenticated USING (true) WITH CHECK (true);
-
 -- ── 2. TABLAS SOLO PARA USUARIOS AUTENTICADOS ─────────────────
 -- Solo el admin panel (usuarios logueados) puede leer y escribir
 

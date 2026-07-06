@@ -1927,14 +1927,20 @@
     let productsSignature = "";
     let bannersSignature = "";
     let initialDataLoaded = false;
+    let loadDataInFlight = false;
+    let lastDataRefreshAt = 0;
+    const LIVE_REFRESH_INTERVAL_MS = 60000;
+    const MIN_MANUAL_REFRESH_GAP_MS = 10000;
     const localMediaFiles = new Set();
 </script>
 <script data-purpose="data-fetching">
     async function sbFetch(path) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        cache: "no-store",
         headers: {
           "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Cache-Control": "no-cache"
         }
       });
       if (!res.ok) throw new Error(`Supabase respondió ${res.status}`);
@@ -1942,6 +1948,8 @@
     }
 
     async function loadData() {
+      if (loadDataInFlight) return;
+      loadDataInFlight = true;
       try {
         const [cats, prods, bans] = await Promise.all([
           sbFetch("categories?select=*&order=position"),
@@ -1972,10 +1980,18 @@
         productsSignature = nextProductsSignature;
         bannersSignature = nextBannersSignature;
         initialDataLoaded = true;
+        lastDataRefreshAt = Date.now();
       } catch (err) {
         console.error("No se pudo actualizar el menú:", err);
         if (!initialDataLoaded) await showStaticFallback();
+      } finally {
+        loadDataInFlight = false;
       }
+    }
+
+    function refreshLiveDataSoon() {
+      if (Date.now() - lastDataRefreshAt < MIN_MANUAL_REFRESH_GAP_MS) return;
+      loadData();
     }
 </script>
 <script data-purpose="ui-rendering">
@@ -2161,7 +2177,13 @@
     }
 
     bootstrapMenu();
-    setInterval(loadData, 300000);
+    setInterval(loadData, LIVE_REFRESH_INTERVAL_MS);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshLiveDataSoon();
+    });
+    window.addEventListener("focus", refreshLiveDataSoon);
+    window.addEventListener("pageshow", refreshLiveDataSoon);
+    window.addEventListener("online", refreshLiveDataSoon);
 </script>
 <!-- END: Scripts -->
 
