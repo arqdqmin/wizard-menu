@@ -393,8 +393,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
 
 <!-- ── Script ─────────────────────────────────────────────────── -->
 <script type="module">
-import { requireAuth } from '/js/core/auth.js';
-import { supabase }   from '/js/core/supabase.js';
+import { requireAuth }  from '/js/core/auth.js';
+import { supabase }    from '/js/core/supabase.js';
+import { getUserRoles } from '/js/core/permissions.js';
 import {
   loadZonas, loadMesas, renderZonaTabs, renderPlano, renderRightPanel,
   cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona, getZonas,
@@ -404,6 +405,14 @@ import {
 const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
 document.getElementById('pos-username').textContent = user.email.split('@')[0];
+
+// Permisos — solo super_admin y administrador pueden editar el plano
+const roles = await getUserRoles(user.id);
+const canEdit = roles.some(r => r === 'super_admin' || r === 'administrador');
+if (!canEdit) {
+  document.getElementById('pos-edit-btn').style.display   = 'none';
+  document.getElementById('pos-add-zona-btn').style.display = 'none';
+}
 
 // Reloj
 function updateClock() {
