@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wcontrol — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link rel="stylesheet" href="/css/platform.css" />
+<style>
+/* ── Tabs ──────────────────────────────────────────────────────── */
+.wc-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px}
+.wc-tab-btn{padding:10px 18px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .14s,border-color .14s}
+.wc-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.wc-tab-btn:hover:not(.active){color:var(--text)}
+.wc-panel{display:none}.wc-panel.active{display:block}
+
+/* ── Cards trabajadores ─────────────────────────────────────────── */
+.trab-card{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);transition:border-color .2s}
+.trab-card:hover{border-color:var(--accent)}
+.trab-card+.trab-card{margin-top:10px}
+.trab-inactivo{opacity:.5}
+.trab-avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0}
+.trab-info{flex:1;min-width:0}
+.trab-nombre{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.trab-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.trab-tag{font-size:11px;font-weight:500;background:var(--border);color:var(--hint);padding:2px 6px;border-radius:20px}
+.trab-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.wc-empty{text-align:center;padding:48px 20px;color:var(--hint);font-size:14px}
+
+/* ── Form secciones ─────────────────────────────────────────────── */
+.wc-sec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--hint);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.wc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.wc-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:640px){.wc-grid2,.wc-grid3{grid-template-columns:1fr}}
+
+/* ── Horario tabla ──────────────────────────────────────────────── */
+.wc-horario-table{width:100%;border-collapse:collapse;font-size:13px}
+.wc-horario-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hint);padding:6px 8px;border-bottom:1px solid var(--border)}
+.wc-horario-table td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.wc-dia-nombre{font-weight:500;width:110px}
+.wc-time-input{border:1px solid var(--border-strong);border-radius:6px;padding:4px 6px;font-size:12px;color:var(--text);background:var(--surface);outline:none;font-family:inherit}
+.wc-time-input:focus{border-color:var(--accent)}
+.wc-time-input:disabled{opacity:.4}
+.wc-hrs-badge{font-size:12px;font-weight:600;padding:2px 8px;border-radius:12px}
+
+/* ── Asistencia tabla ───────────────────────────────────────────── */
+.wc-asis-wrap{overflow-x:auto}
+.wc-asis-table{width:100%;border-collapse:collapse;font-size:12px;min-width:750px}
+.wc-asis-table th{text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hint);padding:8px 8px;border-bottom:2px solid var(--border);white-space:nowrap}
+.wc-asis-table td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.wc-semana-div td{background:var(--bg);font-size:11px;font-weight:600;color:var(--muted);padding:6px 8px;letter-spacing:.05em;text-transform:uppercase}
+.wc-fila-ausente td{background:rgba(220,53,69,.06)}
+.wc-fila-libre td{color:var(--hint)}
+.wc-tipo-select{border:1px solid var(--border-strong);border-radius:6px;padding:3px 6px;font-size:12px;color:var(--text);background:var(--surface);outline:none;font-family:inherit}
+.wc-tipo-select:focus{border-color:var(--accent)}
+.wc-horario-ref{font-size:11px;color:var(--hint);white-space:nowrap}
+.wc-tag-dia{font-size:11px;font-weight:500;padding:2px 8px;border-radius:12px}
+.tag-normal{background:var(--green-light);color:var(--green)}
+.tag-extra{background:#fff3cd;color:#856404}
+.tag-normferiado{background:#cfe2ff;color:#0a58ca}
+.tag-ausente{background:var(--danger-light);color:var(--danger)}
+.tag-libre{background:var(--border);color:var(--hint)}
+.tag-feriado{background:#e2d9f3;color:#6610f2}
+
+/* ── Resumen asistencia ─────────────────────────────────────────── */
+.wc-resumen-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.wc-resumen-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;flex:1;min-width:120px}
+.wc-resumen-val{font-size:20px;font-weight:700;color:var(--accent)}
+.wc-resumen-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── Preliq / info asistencia ───────────────────────────────────── */
+.wc-preliq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:12px}
+.wc-preliq-item{font-size:12px;color:var(--muted)}
+.wc-preliq-val{font-size:14px;font-weight:600;color:var(--text)}
+
+/* ── Liquidación ────────────────────────────────────────────────── */
+.wc-trabinfo-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:13px}
+.wc-trabinfo-lbl{color:var(--muted);font-size:12px}
+.wc-trabinfo-val{font-weight:500}
+#btn-validar{display:none}
+#btn-validar.visible{display:inline-flex}
+.resultado-box{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;margin-top:16px}
+.resultado-box.visible{display:block}
+.wc-res-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.wc-res-row:last-child{border-bottom:none}
+.wc-res-val{font-weight:600}
+.negativo{color:var(--danger)}
+.wc-liq-total{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:600;border-top:2px solid var(--border);margin-top:6px}
+.wc-liq-liquido{display:flex;justify-content:space-between;padding:12px 14px;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:15px;font-weight:700;margin-top:10px}
+
+/* ── Vista impresión ────────────────────────────────────────────── */
+.vista-impresion{display:none}
+.vista-impresion.visible{display:block}
+.liq-header{display:flex;gap:20px;align-items:flex-start;margin-bottom:16px;padding-bottom:16px;border-bottom:2px solid var(--border)}
+.liq-logo{width:80px;height:60px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:6px;overflow:hidden;flex-shrink:0}
+.liq-empresa-nombre{font-size:16px;font-weight:700}
+.liq-titulo{text-align:center;font-size:15px;font-weight:700;letter-spacing:.05em;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:14px}
+.liq-info-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:12px;margin-bottom:16px}
+.liq-lbl{color:var(--muted);white-space:nowrap}
+.liq-val{font-weight:500}
+.haberes-desc{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px}
+.hd-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--hint);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.hd-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.hd-lbl{color:var(--muted)}.hd-val{font-weight:600}
+.totales-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px}
+.tot-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.tot-lbl{color:var(--muted)}
+.liquido-box{background:var(--accent);color:#fff;border-radius:var(--radius);padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.liquido-lbl{font-size:13px;font-weight:500}
+.liquido-val{font-size:22px;font-weight:700}
+
+/* ── Historial ──────────────────────────────────────────────────── */
+.wc-hist-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;font-size:13px}
+.wc-hist-item:hover{background:var(--bg)}
+.wc-hist-item:last-child{border-bottom:none}
+
+/* ── Empresa logo ───────────────────────────────────────────────── */
+.wc-logo-preview{width:120px;height:80px;border:1px solid var(--border-strong);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg)}
+
+/* ── Print ──────────────────────────────────────────────────────── */
+@media print {
+  #platform-shell > *:not(#platform-content) { display:none !important }
+  .wc-tabs,.wc-panel:not(.active),.btn,button,.vista-impresion:not(.visible) { display:none !important }
+  .vista-impresion.visible { display:block !important }
+}
+</style>
+</head>
+<body>
+<div id="platform-shell"></div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import { requireAuth }   from '/js/core/auth.js';
+import { initShell }     from '/js/ui/sidebar.js';
+import { cargarTrabajadoresCache, poblarSelectsTrabajador, renderTrabajadoresList,
+         abrirFormTrabajador, cerrarFormTrabajador, guardarTrabajador,
+         archivarTrabajador, eliminarTrabajador, onIndefinidoChange,
+         renderHorarioSemanaForm, onHorarioChange,
+         verContrato, quitarContrato } from '/js/wcontrol/trabajadores.js';
+import { onTrabajadorChangeAsis, cargarAsistencia, renderTablaAsis,
+         cambiarTipo, cambiarHora, guardarAsistencia } from '/js/wcontrol/asistencia.js';
+import { onTrabajadorChangeLiq, cargarTrabajadorLiq, calcularLiq,
+         mostrarImpresionLiq, volverDatosLiq, recalcularDesdeAsistencia,
+         eliminarLiquidacion, cargarEmpresa, guardarEmpresa,
+         subirLogoEmpresa, quitarLogoEmpresa, onLogoFileSelected } from '/js/wcontrol/liquidacion.js';
+
+const user = await requireAuth('/platform/login.html');
+if (!user) throw new Error('No auth');
+await initShell('wcontrol', 'Wcontrol');
+
+// ── HTML principal ───────────────────────────────────────────────
+document.getElementById('platform-content').innerHTML = `
+<div class="page-header">
+  <h1 class="page-title"><i class="ti ti-users" style="margin-right:8px"></i>Wcontrol</h1>
+</div>
+
+<div class="wc-tabs">
+  <button class="wc-tab-btn active" onclick="wcTab('tab-trabajadores',this)">Trabajadores</button>
+  <button class="wc-tab-btn" onclick="wcTab('tab-asistencia',this)">Asistencia</button>
+  <button class="wc-tab-btn" onclick="wcTab('tab-liquidacion',this)">Liquidación</button>
+  <button class="wc-tab-btn" onclick="wcTab('tab-empresa',this)">Empresa</button>
+</div>
+
+<!-- ═══════════════════════════ TRABAJADORES ═════════════════════════════ -->
+<div id="tab-trabajadores" class="wc-panel active">
+  <!-- Lista -->
+  <div id="trab-list-card">
+    <div class="page-header" style="margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600">Trabajadores</div>
+      <button class="btn btn-accent btn-sm" onclick="wcAbrirFormTrabajador(null)"><i class="ti ti-plus"></i> Nuevo trabajador</button>
+    </div>
+    <div id="trab-list"></div>
+  </div>
+
+  <!-- Formulario -->
+  <div id="trab-form-wrap" style="display:none">
+    <div class="page-header" style="margin-bottom:16px">
+      <h2 id="trab-form-title" style="font-size:15px;font-weight:600">Nuevo trabajador</h2>
+      <button class="btn btn-sm" onclick="wcCerrarFormTrabajador()"><i class="ti ti-arrow-left"></i> Volver</button>
+    </div>
+    <div class="card">
+      <div class="wc-sec-title">Datos personales</div>
+      <div class="wc-grid2">
+        <div class="form-group"><label class="form-label">Nombre completo *</label><input id="t-nombre" class="form-input" type="text" /></div>
+        <div class="form-group"><label class="form-label">RUT</label><input id="t-rut" class="form-input" type="text" placeholder="12.345.678-9" /></div>
+        <div class="form-group"><label class="form-label">Cargo</label><input id="t-cargo" class="form-input" type="text" /></div>
+        <div class="form-group"><label class="form-label">Centro de negocio</label><input id="t-centro-negocio" class="form-input" type="text" /></div>
+        <div class="form-group"><label class="form-label">Domicilio</label><input id="t-domicilio" class="form-input" type="text" /></div>
+        <div class="form-group"><label class="form-label">Teléfono</label><input id="t-telefono" class="form-input" type="text" /></div>
+        <div class="form-group"><label class="form-label">Correo</label><input id="t-correo" class="form-input" type="email" /></div>
+      </div>
+
+      <div class="wc-sec-title">Contrato</div>
+      <div class="wc-grid3">
+        <div class="form-group"><label class="form-label">Tipo de contrato</label>
+          <select id="t-tipo-contrato" class="form-select">
+            <option value="PLAZO FIJO">Plazo fijo</option>
+            <option value="INDEFINIDO">Indefinido</option>
+            <option value="HONORARIOS">Honorarios</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Fecha inicio</label><input id="t-fecha-inicio" class="form-input" type="date" /></div>
+        <div class="form-group"><label class="form-label">Fecha término</label><input id="t-fecha-fin" class="form-input" type="date" /></div>
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="t-indefinido" onchange="wcOnIndefinidoChange()" />
+          Contrato indefinido (sin fecha de término)
+        </label>
+      </div>
+
+      <div class="wc-sec-title">Datos bancarios</div>
+      <div class="wc-grid3">
+        <div class="form-group"><label class="form-label">Banco</label><input id="t-banco" class="form-input" type="text" /></div>
+        <div class="form-group"><label class="form-label">Tipo de cuenta</label><input id="t-tipo-cuenta" class="form-input" type="text" placeholder="Cuenta RUT / Corriente…" /></div>
+        <div class="form-group"><label class="form-label">Número de cuenta</label><input id="t-numero-cuenta" class="form-input" type="text" /></div>
+      </div>
+
+      <div class="wc-sec-title">Remuneración</div>
+      <div class="wc-grid3">
+        <div class="form-group"><label class="form-label">Sueldo base ($)</label><input id="t-sueldo-base" class="form-input" type="number" min="0" /></div>
+        <div class="form-group"><label class="form-label">AFP</label><input id="t-afp" class="form-input" type="text" placeholder="Habitat, Capital…" /></div>
+        <div class="form-group"><label class="form-label">Tasa AFP (%)</label><input id="t-tasa-afp" class="form-input" type="number" step="0.01" /></div>
+        <div class="form-group"><label class="form-label">AFP adicional (%)</label><input id="t-afp-adicional" class="form-input" type="number" step="0.01" /></div>
+        <div class="form-group"><label class="form-label">Institución de salud</label>
+          <select id="t-inst-salud" class="form-select">
+            <option value="FONASA">FONASA</option>
+            <option value="ISAPRE">ISAPRE</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Plan de salud (%)</label><input id="t-plan-salud" class="form-input" type="number" step="0.1" /></div>
+      </div>
+
+      <div class="wc-sec-title">Jornada</div>
+      <div class="wc-grid2" style="margin-bottom:12px">
+        <div class="form-group"><label class="form-label">Días laborales</label>
+          <select id="t-dias-laborales" class="form-select" onchange="wcRenderHorario()">
+            <option value="lunes-viernes">Lunes a viernes</option>
+            <option value="lunes-sabado">Lunes a sábado</option>
+            <option value="martes-sabado">Martes a sábado</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Horas semanales</label><input id="t-hrs-semana" class="form-input" type="number" min="1" max="48" /></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="wc-horario-table">
+          <thead><tr>
+            <th>Día</th><th>Entrada</th><th>Salida</th><th>Colación</th>
+            <th>Hrs netas</th>
+          </tr></thead>
+          <tbody id="t-horario-body"></tbody>
+          <tfoot><tr><td colspan="4" style="text-align:right;font-size:12px;font-weight:600;padding:6px 8px">Total semanal:</td>
+            <td><span id="t-total-hrs" class="wc-hrs-badge" style="background:var(--green-light);color:var(--green)">0,00 hrs</span></td>
+          </tr></tfoot>
+        </table>
+      </div>
+
+      <div class="wc-sec-title">Contrato (PDF)</div>
+      <div id="t-contrato-actual" style="margin-bottom:8px"></div>
+      <input type="file" id="t-contrato-file" accept=".pdf,image/*" style="font-size:13px" />
+
+      <div style="display:flex;gap:10px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
+        <button class="btn btn-accent" onclick="wcGuardarTrabajador()">Guardar trabajador</button>
+        <button class="btn" onclick="wcCerrarFormTrabajador()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ASISTENCIA ═══════════════════════════════ -->
+<div id="tab-asistencia" class="wc-panel">
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:14px;font-weight:600;margin-bottom:14px">Registro de asistencia</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div class="form-group" style="flex:2;min-width:180px">
+        <label class="form-label">Trabajador</label>
+        <select id="a-trabajador" class="form-select" onchange="wcOnTrabajadorChangeAsis()">
+          <option value="">— Selecciona —</option>
+        </select>
+      </div>
+      <div class="form-group" style="min-width:140px">
+        <label class="form-label">Mes</label>
+        <select id="a-mes" class="form-select">
+          <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+          <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+          <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+          <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+        </select>
+      </div>
+      <div class="form-group" style="min-width:90px">
+        <label class="form-label">Año</label>
+        <input id="a-anio" class="form-input" type="number" value="${new Date().getFullYear()}" style="width:90px" />
+      </div>
+      <button class="btn btn-accent btn-sm" style="align-self:flex-end" onclick="wcCargarAsistencia()">Cargar</button>
+    </div>
+    <div id="a-status" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+  </div>
+
+  <!-- Planilla -->
+  <div id="a-planilla-wrap" style="display:none">
+    <div class="card">
+      <div class="page-header" style="margin-bottom:14px">
+        <div id="a-titulo-registro" style="font-size:14px;font-weight:600"></div>
+        <button class="btn btn-accent btn-sm" onclick="wcGuardarAsistencia()"><i class="ti ti-device-floppy"></i> Guardar</button>
+      </div>
+
+      <div class="wc-resumen-row">
+        <div class="wc-resumen-card"><div class="wc-resumen-val" id="ar-dias">—</div><div class="wc-resumen-lbl">Días trabajados</div></div>
+        <div class="wc-resumen-card"><div class="wc-resumen-val" id="ar-hnorm">—</div><div class="wc-resumen-lbl">Hrs normales</div></div>
+        <div class="wc-resumen-card"><div class="wc-resumen-val" id="ar-hext">—</div><div class="wc-resumen-lbl">Hrs extra (netas)</div></div>
+        <div class="wc-resumen-card"><div class="wc-resumen-val" id="ar-hdesc">—</div><div class="wc-resumen-lbl">Hrs descuento</div></div>
+      </div>
+
+      <div class="wc-asis-wrap">
+        <table class="wc-asis-table">
+          <thead><tr>
+            <th>Fecha</th><th>Día</th><th>Tipo</th>
+            <th>Entrada</th><th>Salida</th><th>Horario</th>
+            <th>Hrs norm.</th><th>Hrs extra</th><th>Hrs desc.</th><th>Estado</th>
+          </tr></thead>
+          <tbody id="a-tabla-dias"></tbody>
+        </table>
+      </div>
+
+      <!-- Resumen semanal -->
+      <div style="margin-top:24px">
+        <div class="wc-sec-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Resumen semanal (licuadora)</span>
+          <button class="btn btn-sm" onclick="wcRenderTablaAsis()" title="Forzar recálculo">🔄 Recalcular</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="wc-asis-table">
+            <thead><tr>
+              <th>Semana</th><th>Días</th><th>Hrs norm.</th><th>Hrs extra c/</th>
+              <th>Extra s/horario</th><th>Hrs desc. c/</th><th>Extra final</th><th>Desc. final</th>
+            </tr></thead>
+            <tbody id="a-tabla-semanas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Info para liquidación -->
+      <div style="margin-top:16px">
+        <div class="wc-sec-title">Datos para liquidación</div>
+        <div class="wc-preliq-grid">
+          <div class="wc-preliq-item"><div class="wc-preliq-val" id="a-liq-dias">—</div>Días trabajados</div>
+          <div class="wc-preliq-item"><div class="wc-preliq-val" id="a-liq-hrs-desc">—</div>Hrs a descontar</div>
+          <div class="wc-preliq-item"><div class="wc-preliq-val" id="a-liq-val-hora">—</div>Valor hora</div>
+          <div class="wc-preliq-item"><div class="wc-preliq-val" id="a-liq-hrs-ext">—</div>Hrs extra</div>
+          <div class="wc-preliq-item"><div class="wc-preliq-val" id="a-liq-ausencias">—</div>Días ausencia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial asistencia -->
+  <div id="a-hist-card" class="card" style="display:none;margin-top:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted)">Registros guardados</div>
+    <div id="a-hist-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ LIQUIDACIÓN ══════════════════════════════ -->
+<div id="tab-liquidacion" class="wc-panel">
+  <div id="liq-panel-datos">
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:14px">Liquidación de sueldo</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <div class="form-group" style="flex:2;min-width:180px">
+          <label class="form-label">Trabajador</label>
+          <select id="l-trabajador" class="form-select" onchange="wcOnTrabajadorChangeLiq()">
+            <option value="">— Selecciona —</option>
+          </select>
+        </div>
+        <div class="form-group" style="min-width:140px">
+          <label class="form-label">Mes</label>
+          <select id="l-mes" class="form-select">
+            <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+            <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+            <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+            <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+          </select>
+        </div>
+        <div class="form-group" style="min-width:90px">
+          <label class="form-label">Año</label>
+          <input id="l-anio" class="form-input" type="number" value="${new Date().getFullYear()}" style="width:90px" />
+        </div>
+        <button class="btn btn-accent btn-sm" style="align-self:flex-end" onclick="wcCargarTrabajadorLiq()">Cargar</button>
+      </div>
+      <div id="l-status" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+    </div>
+
+    <div id="l-form-wrap" style="display:none">
+      <div class="card">
+        <!-- Info trabajador -->
+        <div class="wc-trabinfo-box">
+          <div><div class="wc-trabinfo-lbl">Trabajador</div><div class="wc-trabinfo-val" id="lr-nombre"></div></div>
+          <div><div class="wc-trabinfo-lbl">Cargo</div><div class="wc-trabinfo-val" id="lr-cargo"></div></div>
+          <div><div class="wc-trabinfo-lbl">RUT</div><div class="wc-trabinfo-val" id="lr-rut"></div></div>
+          <div><div class="wc-trabinfo-lbl">Sueldo base</div><div class="wc-trabinfo-val" id="lr-sbase"></div></div>
+          <div><div class="wc-trabinfo-lbl">AFP</div><div class="wc-trabinfo-val" id="lr-afp"></div></div>
+          <div><div class="wc-trabinfo-lbl">Salud</div><div class="wc-trabinfo-val" id="lr-salud"></div></div>
+          <div style="grid-column:1/-1"><div class="wc-trabinfo-lbl">Período</div><div class="wc-trabinfo-val" id="lr-periodo"></div></div>
+        </div>
+
+        <!-- Entradas -->
+        <div class="wc-sec-title">Datos del período</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px">
+          <button class="btn btn-sm" onclick="wcRecalcularDesdeAsistencia()">🔄 Recalcular desde Asistencia</button>
+        </div>
+        <div class="wc-grid3">
+          <div class="form-group"><label class="form-label">Días trabajados</label><input id="d-trab" class="form-input" type="number" min="0" /></div>
+          <div class="form-group"><label class="form-label">Días de licencia</label><input id="d-lic" class="form-input" type="number" min="0" /></div>
+          <div class="form-group"><label class="form-label">Días de ausencia</label><input id="d-aus" class="form-input" type="number" min="0" /></div>
+          <div class="form-group"><label class="form-label">Días de vacaciones</label><input id="d-vac" class="form-input" type="number" min="0" /></div>
+          <div class="form-group"><label class="form-label">Hrs a descontar</label><input id="hrs-desc" class="form-input" type="number" step="0.01" min="0" /></div>
+          <div class="form-group"><label class="form-label">Hrs extra</label><input id="hrs-ext" class="form-input" type="number" step="0.01" min="0" /></div>
+          <div class="form-group"><label class="form-label">Valor hora ($)</label><input id="val-hora" class="form-input" type="number" min="0" /></div>
+        </div>
+
+        <button class="btn btn-accent" style="margin-top:16px" onclick="wcCalcularLiq()">Calcular liquidación</button>
+
+        <!-- Resultado -->
+        <div id="resultado-box" class="resultado-box">
+          <div class="wc-sec-title" style="margin-top:0">Resultado</div>
+          <div class="wc-res-row"><span id="r-hrs-lbl">Descuento hrs</span><span id="r-hrs" class="wc-res-val">—</span></div>
+          <div class="wc-res-row"><span>Sueldo base proporcional</span><span id="r-prop" class="wc-res-val">—</span></div>
+          <div class="wc-res-row"><span id="r-ext-lbl">Horas extra</span><span id="r-ext" class="wc-res-val">—</span></div>
+          <div class="wc-res-row"><span>Gratificación mensual (25%)</span><span id="r-grat" class="wc-res-val">—</span></div>
+          <div class="wc-liq-total"><span>Total imponible</span><span id="r-imp">—</span></div>
+          <div class="wc-res-row"><span id="r-afp-lbl">AFP</span><span id="r-afp" class="wc-res-val negativo">—</span></div>
+          <div class="wc-res-row"><span id="r-sal-lbl">Salud</span><span id="r-sal" class="wc-res-val negativo">—</span></div>
+          <div class="wc-res-row"><span>Total descuentos</span><span id="r-desc" class="wc-res-val negativo">—</span></div>
+          <div class="wc-liq-liquido"><span>Sueldo líquido a pagar</span><span id="r-liq">—</span></div>
+        </div>
+
+        <button id="btn-validar" class="btn btn-accent" style="margin-top:16px" onclick="wcMostrarImpresionLiq()">
+          <i class="ti ti-printer"></i> Ver e imprimir liquidación
+        </button>
+      </div>
+    </div>
+
+    <!-- Historial liquidaciones -->
+    <div id="l-hist-card" class="card" style="display:none;margin-top:16px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted)">Liquidaciones guardadas</div>
+      <div id="l-hist-list"></div>
+    </div>
+  </div>
+
+  <!-- Vista impresión -->
+  <div id="vista-impresion" class="vista-impresion">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="wcVolverDatosLiq()"><i class="ti ti-arrow-left"></i> Volver</button>
+      <button class="btn btn-accent btn-sm" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+    </div>
+    <div class="card">
+      <div id="liq-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ EMPRESA ══════════════════════════════════ -->
+<div id="tab-empresa" class="wc-panel">
+  <div class="card">
+    <div style="font-size:14px;font-weight:600;margin-bottom:16px">Datos de la empresa</div>
+    <div class="wc-grid2">
+      <div class="form-group"><label class="form-label">RUT</label><input id="emp-rut" class="form-input" type="text" placeholder="76.543.210-K" /></div>
+      <div class="form-group"><label class="form-label">Nombre / Razón social</label><input id="emp-nombre" class="form-input" type="text" /></div>
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Dirección</label><input id="emp-direccion" class="form-input" type="text" /></div>
+    </div>
+    <button class="btn btn-accent btn-sm" style="margin-top:12px" onclick="wcGuardarEmpresa()">Guardar datos</button>
+
+    <div class="wc-sec-title" style="margin-top:24px">Logo de la empresa</div>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+      <div id="emp-logo-preview" class="wc-logo-preview"></div>
+      <div>
+        <input type="file" id="emp-logo-file" accept="image/*" onchange="wcOnLogoFileSelected()" style="font-size:13px;display:block;margin-bottom:8px" />
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-accent btn-sm" onclick="wcSubirLogoEmpresa()">Subir logo</button>
+          <button class="btn btn-sm btn-danger" onclick="wcQuitarLogoEmpresa()">Quitar logo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+// ── Exponer funciones a window (usadas por onclick) ──────────────
+window.wcTab = (id, btn) => {
+  document.querySelectorAll('.wc-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.wc-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+};
+
+window.wcAbrirFormTrabajador    = (id) => abrirFormTrabajador(id);
+window.wcCerrarFormTrabajador   = ()   => cerrarFormTrabajador();
+window.wcGuardarTrabajador      = ()   => guardarTrabajador();
+window.wcArchivarTrabajador     = (id, s) => archivarTrabajador(id, s);
+window.wcEliminarTrabajador     = (id) => eliminarTrabajador(id);
+window.wcOnIndefinidoChange     = ()   => onIndefinidoChange();
+window.wcRenderHorario          = ()   => renderHorarioSemanaForm();
+window.wcHorarioChange          = (d,c,v) => onHorarioChange(d, c, v);
+window.wcVerContrato            = (p)  => verContrato(p);
+window.wcQuitarContrato         = (id) => quitarContrato(id);
+
+window.wcOnTrabajadorChangeAsis = ()   => onTrabajadorChangeAsis();
+window.wcCargarAsistencia       = ()   => cargarAsistencia();
+window.wcRenderTablaAsis        = ()   => renderTablaAsis();
+window.wcCambiarTipo            = (i,v) => cambiarTipo(i, v);
+window.wcCambiarHora            = (i,c,v) => cambiarHora(i, c, v);
+window.wcGuardarAsistencia      = ()   => guardarAsistencia();
+
+window.wcOnTrabajadorChangeLiq  = ()   => onTrabajadorChangeLiq();
+window.wcCargarTrabajadorLiq    = ()   => cargarTrabajadorLiq();
+window.wcCalcularLiq            = ()   => calcularLiq();
+window.wcMostrarImpresionLiq    = ()   => mostrarImpresionLiq();
+window.wcVolverDatosLiq         = ()   => volverDatosLiq();
+window.wcRecalcularDesdeAsistencia = () => recalcularDesdeAsistencia();
+window.wcEliminarLiquidacion    = (tid,m,a) => eliminarLiquidacion(tid, m, a);
+
+window.wcGuardarEmpresa         = ()   => guardarEmpresa();
+window.wcSubirLogoEmpresa       = ()   => subirLogoEmpresa();
+window.wcQuitarLogoEmpresa      = ()   => quitarLogoEmpresa();
+window.wcOnLogoFileSelected     = ()   => onLogoFileSelected();
+
+// ── Inicialización ───────────────────────────────────────────────
+// Preseleccionar el mes actual
+const now = new Date();
+document.getElementById('a-mes').value = String(now.getMonth());
+document.getElementById('l-mes').value = String(now.getMonth());
+
+await cargarTrabajadoresCache();
+renderTrabajadoresList();
+poblarSelectsTrabajador();
+await cargarEmpresa();
+</script>
+</body>
+</html>

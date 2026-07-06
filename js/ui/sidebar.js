@@ -10,6 +10,7 @@ const MODULE_URLS = {
   talleres:     '/platform/talleres.html',
   marketing:    '/platform/marketing.html',
   configuracion:'/platform/settings.html',
+  wcontrol:     '/platform/wcontrol/index.html',
 };
 
 /**
