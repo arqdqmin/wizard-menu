@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wcontrol — Wizard Platform</title>
+<title>Recursos Humanos — Wizard Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
@@ -148,12 +148,12 @@ import { onTrabajadorChangeLiq, cargarTrabajadorLiq, calcularLiq,
 
 const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
-await initShell('wcontrol', 'Wcontrol');
+await initShell('wcontrol', 'Recursos Humanos');
 
 // ── HTML principal ───────────────────────────────────────────────
 document.getElementById('platform-content').innerHTML = `
 <div class="page-header">
-  <h1 class="page-title"><i class="ti ti-users" style="margin-right:8px"></i>Wcontrol</h1>
+  <h1 class="page-title"><i class="ti ti-users" style="margin-right:8px"></i>Recursos Humanos</h1>
 </div>
 
 <div class="wc-tabs">
