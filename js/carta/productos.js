@@ -199,7 +199,7 @@ function _renderForm(p) {
       </div><!-- /col der -->
     </div><!-- /form-body -->
 
-    <!-- Picker ingredientes -->
+    <!-- Picker ingredientes: click directo para agregar -->
     <div class="carta-ing-picker" id="carta-ing-picker" style="display:none">
       <div class="carta-mod-picker-header">
         Agregar ingrediente
@@ -207,31 +207,10 @@ function _renderForm(p) {
       </div>
       <div style="padding:10px 16px">
         <input class="carta-input" type="text" placeholder="Buscar ingrediente…"
-          oninput="cartaFiltrarIng(this.value)" id="ing-search" />
+          oninput="cartaFiltrarIng(this.value)" id="ing-search" autocomplete="off" />
       </div>
       <div class="carta-mod-picker-list" id="ing-picker-lista">
         ${_renderIngPickerLista('')}
-      </div>
-      <div style="padding:12px 16px;border-top:1px solid var(--border)">
-        <div class="carta-field-row" style="margin-bottom:10px">
-          <div class="carta-field-group">
-            <label class="carta-label">Cantidad neta</label>
-            <input id="ing-cant" class="carta-input" type="number" min="0" step="0.1" value="1" />
-          </div>
-          <div class="carta-field-group">
-            <label class="carta-label">Unidad</label>
-            <select id="ing-unidad" class="carta-select">
-              <option>unid.</option><option>g</option><option>kg</option>
-              <option>ml</option><option>l</option><option>cc</option>
-              <option>tbsp</option><option>tsp</option><option>pizca</option>
-            </select>
-          </div>
-        </div>
-        <div class="carta-field-group" style="margin-bottom:10px">
-          <label class="carta-label">Merma %</label>
-          <input id="ing-merma" class="carta-input" type="number" min="0" step="0.1" value="0" />
-        </div>
-        <button class="carta-btn-save" style="width:100%" onclick="cartaConfirmarIng()">Agregar</button>
       </div>
     </div>
 
@@ -294,29 +273,36 @@ function _renderRecetaLineas() {
 }
 
 function _renderIngPickerLista(filtro) {
-  const lista = filtro
-    ? state.ingredientes.filter(i => i.nombre.toLowerCase().includes(filtro.toLowerCase()))
+  const f = filtro.toLowerCase();
+  const lista = f
+    ? state.ingredientes.filter(i => i.nombre.toLowerCase().includes(f) || (i.categoria||'').toLowerCase().includes(f))
     : state.ingredientes;
-  return lista.slice(0, 60).map(i => `
-    <div class="carta-mod-pick-item" onclick="cartaSelIng('${i.id}','${i.nombre.replace(/'/g,"\\'")}','${i.unidad || 'unid.'}')">
+  const yaAgregados = new Set(_receta.map(r => r.ingrediente_id));
+  return lista.slice(0, 80).map(i => {
+    const agregado = yaAgregados.has(i.id);
+    return `
+    <div class="carta-mod-pick-item${agregado ? ' ing-ya-agregado' : ''}"
+         onclick="cartaAgregarIng('${i.id}')" style="cursor:pointer">
       <span>${i.nombre}</span>
-      <span style="margin-left:auto;font-size:11px;color:#888">${i.unidad || ''} · ${fmtPesos(i.costo)}/u</span>
-    </div>`).join('');
+      <span style="margin-left:auto;font-size:11px;color:#888;white-space:nowrap">
+        ${i.unidad || ''} · ${fmtPesos(i.costo)}/u
+        ${agregado ? ' ✓' : ''}
+      </span>
+    </div>`;
+  }).join('') || `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Sin resultados</div>`;
 }
 
-let _ingSeleccionado = null;
-
 export function abrirIngPicker() {
-  _ingSeleccionado = null;
   const picker = document.getElementById('carta-ing-picker');
-  if (picker) { picker.style.display = 'flex'; }
-  document.getElementById('ing-search')?.focus();
+  if (picker) picker.style.display = 'flex';
+  const search = document.getElementById('ing-search');
+  if (search) { search.value = ''; search.focus(); }
+  document.getElementById('ing-picker-lista').innerHTML = _renderIngPickerLista('');
 }
 
 export function cerrarIngPicker() {
   const picker = document.getElementById('carta-ing-picker');
   if (picker) picker.style.display = 'none';
-  _ingSeleccionado = null;
 }
 
 export function filtrarIng(val) {
@@ -327,47 +313,45 @@ export function filtrarIng(val) {
   }, 150);
 }
 
-export function selIng(id, nombre, unidad) {
-  _ingSeleccionado = { id, nombre, unidad };
-  document.querySelectorAll('#ing-picker-lista .carta-mod-pick-item').forEach(el => {
-    el.style.background = el.textContent.trim().startsWith(nombre) ? 'rgba(184,152,42,.12)' : '';
-  });
-  const selUnidad = document.getElementById('ing-unidad');
-  if (selUnidad && unidad) {
-    const opt = Array.from(selUnidad.options).find(o => o.value === unidad);
-    if (opt) selUnidad.value = unidad;
+export async function agregarIng(ingId) {
+  const ing = state.ingredientes.find(i => i.id === ingId);
+  if (!ing) return;
+
+  const yaExiste = _receta.findIndex(r => r.ingrediente_id === ingId);
+  if (yaExiste >= 0) {
+    showToast(`${ing.nombre} ya está en la receta`, 'error');
+    return;
   }
-}
 
-export async function confirmarIng() {
-  if (!_ingSeleccionado) { showToast('Selecciona un ingrediente', 'error'); return; }
-  const cant  = parseFloat(document.getElementById('ing-cant')?.value) || 1;
-  const unidad = document.getElementById('ing-unidad')?.value || 'unid.';
-  const merma = parseFloat(document.getElementById('ing-merma')?.value) || 0;
-
-  const ing = state.ingredientes.find(i => i.id === _ingSeleccionado.id);
+  const nuevaLinea = {
+    ingrediente_id: ingId,
+    cantidad_neta: 1,
+    unidad: ing.unidad || 'unid.',
+    merma: ing.merma || 0,
+    ingredientes: ing,
+  };
 
   if (_productoEditando) {
-    const { error } = await supabase.from('recetas').upsert({
+    const { data, error } = await supabase.from('recetas').insert({
       producto_id: _productoEditando.id,
-      ingrediente_id: _ingSeleccionado.id,
-      cantidad_neta: cant, unidad, merma,
-    }, { onConflict: 'producto_id,ingrediente_id' });
+      ingrediente_id: ingId,
+      cantidad_neta: 1,
+      unidad: ing.unidad || 'unid.',
+      merma: ing.merma || 0,
+    }).select('id').single();
     if (error) { showToast('Error: ' + error.message, 'error'); return; }
-    _receta = await cargarReceta(_productoEditando.id);
-  } else {
-    const yaExiste = _receta.findIndex(r => r.ingrediente_id === _ingSeleccionado.id);
-    if (yaExiste >= 0) {
-      _receta[yaExiste] = { ..._receta[yaExiste], cantidad_neta: cant, unidad, merma };
-    } else {
-      _receta.push({ ingrediente_id: _ingSeleccionado.id, cantidad_neta: cant, unidad, merma, ingredientes: ing });
-    }
+    nuevaLinea.id = data.id;
   }
 
+  _receta.push(nuevaLinea);
   cerrarIngPicker();
   document.getElementById('cf-receta-lista').innerHTML = _renderRecetaLineas();
   _actualizarCostCard();
 }
+
+// mantener compatibilidad con globales previos
+export async function confirmarIng() {}
+export function selIng() {}
 
 export async function quitarRecetaLinea(idx) {
   const linea = _receta[idx];

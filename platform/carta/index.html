@@ -364,7 +364,7 @@ import {
   renderListaProductos, onBusqueda, toggleInactivos,
   abrirProducto, cerrarForm, guardarProducto, eliminarProducto,
   abrirPickerMod, cerrarPickerMod, confirmarMods, quitarMod,
-  abrirIngPicker, cerrarIngPicker, filtrarIng, selIng, confirmarIng,
+  abrirIngPicker, cerrarIngPicker, filtrarIng, agregarIng,
   quitarRecetaLinea, actualizarRecetaLinea, actualizarCostos,
 } from '/js/carta/productos.js';
 import {
@@ -501,11 +501,10 @@ window.cartaCerrarPickerMod   = ()       => cerrarPickerMod();
 window.cartaConfirmarMods     = ()       => confirmarMods();
 window.cartaQuitarMod         = (id)     => quitarMod(id);
 
-window.cartaAbrirIngPicker    = ()       => abrirIngPicker();
-window.cartaCerrarIngPicker   = ()       => cerrarIngPicker();
-window.cartaFiltrarIng        = (v)      => filtrarIng(v);
-window.cartaSelIng            = (id,n,u) => selIng(id,n,u);
-window.cartaConfirmarIng      = ()       => confirmarIng();
+window.cartaAbrirIngPicker    = ()   => abrirIngPicker();
+window.cartaCerrarIngPicker   = ()   => cerrarIngPicker();
+window.cartaFiltrarIng        = (v)  => filtrarIng(v);
+window.cartaAgregarIng        = (id) => agregarIng(id);
 window.cartaQuitarRecetaLinea = (i)      => quitarRecetaLinea(i);
 window.cartaActualizarRecetaLinea = (i,c,v) => actualizarRecetaLinea(i,c,v);
 
