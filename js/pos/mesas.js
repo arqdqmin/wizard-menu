@@ -973,6 +973,7 @@ export async function ejecutarCierre(mesaId) {
     mesa_id: mesaId,
     mesa_numero: mesa?.numero?.toString()||'',
     zona_nombre: zonas.find(z=>z.id===mesa?.zona_id)?.nombre||'',
+    garzon_nombre: _mesaGarzon[mesaId]||null,
     estado: 'cerrado',
     personas: _mesaPersonas[mesaId]||1,
     subtotal,

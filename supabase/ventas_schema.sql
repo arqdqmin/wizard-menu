@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS public.pos_ventas (
   descuento_monto numeric(12,2) DEFAULT 0,
   propina         numeric(12,2) DEFAULT 0,
   total           numeric(12,2) DEFAULT 0,
+  garzon_nombre   text,
+  tipo_venta      text NOT NULL DEFAULT 'mesa',  -- 'mesa' | 'mostrador'
   hora_inicio     timestamptz,
   hora_cierre     timestamptz DEFAULT now(),
   created_by      uuid REFERENCES auth.users(id) ON DELETE SET NULL
@@ -36,6 +38,10 @@ CREATE TABLE IF NOT EXISTS public.pos_venta_pagos (
   monto     numeric(12,2) DEFAULT 0,
   tipo      text NOT NULL DEFAULT 'pago'  -- 'pago' | 'propina'
 );
+
+-- Columnas para tablas ya existentes (idempotente)
+ALTER TABLE public.pos_ventas ADD COLUMN IF NOT EXISTS garzon_nombre text;
+ALTER TABLE public.pos_ventas ADD COLUMN IF NOT EXISTS tipo_venta text NOT NULL DEFAULT 'mesa';
 
 ALTER TABLE public.pos_venta_pagos ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "pos_venta_pagos_all" ON public.pos_venta_pagos;

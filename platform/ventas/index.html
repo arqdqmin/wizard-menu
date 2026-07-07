@@ -9,49 +9,82 @@
 <link rel="stylesheet" href="/css/platform.css" />
 <style>
 :root {
-  --bg:       #f5f5f7;
-  --surface:  #fff;
-  --border:   #e4e4e7;
-  --text:     #111;
-  --muted:    #888;
-  --accent:   #b8982a;
-  --radius:   10px;
+  --bg:      #f5f5f7;
+  --surface: #fff;
+  --border:  #e4e4e7;
+  --text:    #111;
+  --muted:   #888;
+  --accent:  #b8982a;
+  --radius:  10px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-.platform-topbar { display:flex; align-items:center; gap:16px; padding:14px 24px; background:var(--surface); border-bottom:1px solid var(--border); }
-.platform-topbar h1 { font-size:18px; font-weight:700; }
+.topbar { display:flex; align-items:center; gap:12px; padding:14px 24px; background:var(--surface); border-bottom:1px solid var(--border); }
+.topbar h1 { font-size:18px; font-weight:700; }
 
-.tab-bar { display:flex; gap:4px; padding:16px 24px 0; border-bottom:1px solid var(--border); background:var(--surface); }
+.tab-bar { display:flex; gap:4px; padding:12px 24px 0; background:var(--surface); border-bottom:1px solid var(--border); }
 .tab-btn { padding:8px 18px; border:none; background:none; cursor:pointer; font-family:inherit; font-size:14px; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; transition:.15s; }
 .tab-btn.active { color:var(--accent); border-color:var(--accent); }
 
-.tab-content { display:none; padding:24px; }
+.tab-content { display:none; }
 .tab-content.active { display:block; }
 
-.table-wrap { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; }
-table { width:100%; border-collapse:collapse; font-size:14px; }
-th { padding:10px 14px; text-align:left; font-size:11px; font-weight:600; letter-spacing:.07em; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border); background:#fafafa; }
-td { padding:10px 14px; border-bottom:1px solid #f4f4f5; }
+/* ── Filtros ── */
+.filters-bar {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+  padding: 16px 24px; background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.filter-group { display:flex; flex-direction:column; gap:4px; }
+.filter-group label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+.filter-group select,
+.filter-group input[type=date] {
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size:13px; background: var(--bg); color: var(--text);
+  min-width: 130px; cursor: pointer;
+}
+.filter-group input[type=date] { min-width: 140px; }
+.btn-reset {
+  padding: 7px 14px; border: 1px solid var(--border); border-radius: 8px;
+  background: none; font-family: inherit; font-size: 13px; cursor: pointer; color: var(--muted);
+  align-self: flex-end;
+}
+.btn-reset:hover { background: var(--bg); }
+
+/* ── Stats ── */
+.stats-row { display:flex; flex-wrap:wrap; gap:14px; padding:20px 24px 0; }
+.stat-card { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:16px 20px; min-width:160px; flex:1; }
+.stat-card .lbl { font-size:11px; color:var(--muted); margin-bottom:5px; display:flex; align-items:center; gap:4px; }
+.stat-card .val { font-size:22px; font-weight:700; }
+.stat-card .lbl .ti { font-size:13px; }
+.tip { position:relative; display:inline-flex; }
+.tip-icon { cursor:default; color:var(--muted); font-size:13px; }
+.tip-box {
+  display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+  background:#111; color:#fff; font-size:11px; padding:6px 10px; border-radius:6px;
+  white-space:nowrap; pointer-events:none; z-index:10; width:220px; white-space:normal; text-align:center;
+}
+.tip:hover .tip-box { display:block; }
+
+/* ── Tabla ── */
+.table-area { padding:20px 24px 24px; }
+.table-wrap { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); overflow:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { padding:9px 12px; text-align:left; font-size:11px; font-weight:600; letter-spacing:.07em; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border); background:#fafafa; white-space:nowrap; }
+td { padding:9px 12px; border-bottom:1px solid #f4f4f5; white-space:nowrap; }
 tr:last-child td { border-bottom:none; }
 tr:hover td { background:#fafafa; }
-
 .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:600; }
 .badge-green  { background:#dcfce7; color:#166534; }
-.badge-yellow { background:#fef9c3; color:#854d0e; }
 .badge-gray   { background:#f3f4f6; color:#374151; }
-
-.stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
-.stat-card { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:18px 20px; }
-.stat-card .label { font-size:12px; color:var(--muted); margin-bottom:6px; }
-.stat-card .value { font-size:24px; font-weight:700; }
-
 .empty { text-align:center; padding:48px; color:var(--muted); font-size:14px; }
+.metodos-cell { display:flex; flex-wrap:wrap; gap:4px; }
+.metodo-tag { padding:2px 7px; border-radius:12px; font-size:11px; background:#f3f4f6; color:#374151; }
 </style>
 </head>
 <body>
-<div class="platform-topbar">
+
+<div class="topbar">
   <i class="ti ti-cash-register" style="font-size:22px;color:var(--accent)"></i>
   <h1>Ventas</h1>
 </div>
@@ -62,54 +95,146 @@ tr:hover td { background:#fafafa; }
   <button class="tab-btn" onclick="showTab('propinas',this)">Propinas</button>
 </div>
 
-<!-- VENTAS -->
+<!-- ══ VENTAS ══ -->
 <div id="tab-ventas" class="tab-content active">
-  <div class="stat-grid" id="ventas-stats"></div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Mesa</th>
-          <th>Zona</th>
-          <th>Personas</th>
-          <th>Inicio</th>
-          <th>Cierre</th>
-          <th>Subtotal</th>
-          <th>Descuento</th>
-          <th>Propina</th>
-          <th>Total</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-      <tbody id="ventas-tbody"><tr><td colspan="11" class="empty">Cargando…</td></tr></tbody>
-    </table>
+
+  <!-- Filtros -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Tipo de fecha</label>
+      <select id="f-tipo-fecha" onchange="onFiltroChange()">
+        <option value="hoy">Hoy</option>
+        <option value="fecha">Fecha específica</option>
+        <option value="rango">Rango de fechas</option>
+        <option value="todo">Todos</option>
+      </select>
+    </div>
+    <div class="filter-group" id="fg-fecha" style="display:none">
+      <label>Fecha</label>
+      <input type="date" id="f-fecha" onchange="aplicarFiltros()">
+    </div>
+    <div class="filter-group" id="fg-desde" style="display:none">
+      <label>Desde</label>
+      <input type="date" id="f-desde" onchange="aplicarFiltros()">
+    </div>
+    <div class="filter-group" id="fg-hasta" style="display:none">
+      <label>Hasta</label>
+      <input type="date" id="f-hasta" onchange="aplicarFiltros()">
+    </div>
+    <div class="filter-group">
+      <label>Estado</label>
+      <select id="f-estado" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option value="cerrado">Cerrado</option>
+        <option value="abierto">Abierto</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Tipo de venta</label>
+      <select id="f-tipo" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option value="mesa">Mesa</option>
+        <option value="mostrador">Mostrador</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Medio de pago</label>
+      <select id="f-pago" onchange="aplicarFiltros()">
+        <option value="">Todos</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Tarj. Débito">Tarj. Débito</option>
+        <option value="Tarj. Crédito">Tarj. Crédito</option>
+        <option value="Transferencia">Transferencia</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Mesa</label>
+      <select id="f-mesa" onchange="aplicarFiltros()">
+        <option value="">Todas</option>
+      </select>
+    </div>
+    <button class="btn-reset" onclick="resetFiltros()"><i class="ti ti-refresh"></i> Limpiar</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="ventas-stats">
+    <div class="stat-card"><div class="lbl">Ventas</div><div class="val" id="s-count">—</div></div>
+    <div class="stat-card"><div class="lbl">Total</div><div class="val" id="s-total">—</div></div>
+    <div class="stat-card">
+      <div class="lbl">
+        Promedio por venta
+        <span class="tip"><i class="ti ti-info-circle tip-icon"></i><span class="tip-box">Total de ventas dividido número de ventas con ítems confirmados, independientemente del tipo de venta</span></span>
+      </div>
+      <div class="val" id="s-avg">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">Personas atendidas</div>
+      <div class="val" id="s-personas">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="lbl">
+        Promedio por persona
+        <span class="tip"><i class="ti ti-info-circle tip-icon"></i><span class="tip-box">Total de ventas de mesas dividido número de personas</span></span>
+      </div>
+      <div class="val" id="s-avgp">—</div>
+    </div>
+    <div class="stat-card"><div class="lbl">Propinas</div><div class="val" id="s-propinas">—</div></div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-area">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Mesa</th>
+            <th>Zona</th>
+            <th>Garzón</th>
+            <th>Personas</th>
+            <th>Inicio</th>
+            <th>Cierre</th>
+            <th>Subtotal</th>
+            <th>Descuento</th>
+            <th>Propina</th>
+            <th>Total</th>
+            <th>Medio de pago</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="ventas-tbody"><tr><td colspan="14" class="empty">Cargando…</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<!-- ARQUEOS -->
+<!-- ══ ARQUEOS ══ -->
 <div id="tab-arqueos" class="tab-content">
-  <div class="empty" style="padding-top:64px">
+  <div class="empty" style="padding-top:80px">
     <i class="ti ti-safe" style="font-size:48px;display:block;margin-bottom:12px;opacity:.3"></i>
     Módulo de Arqueos de Caja — próximamente
   </div>
 </div>
 
-<!-- PROPINAS -->
+<!-- ══ PROPINAS ══ -->
 <div id="tab-propinas" class="tab-content">
-  <div class="stat-grid" id="propinas-stats"></div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Mesa</th>
-          <th>Método</th>
-          <th>Monto</th>
-        </tr>
-      </thead>
-      <tbody id="propinas-tbody"><tr><td colspan="4" class="empty">Cargando…</td></tr></tbody>
-    </table>
+  <div class="stats-row" style="padding-bottom:0" id="propinas-stats"></div>
+  <div class="table-area">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Mesa</th>
+            <th>Garzón</th>
+            <th>Método</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody id="propinas-tbody"><tr><td colspan="5" class="empty">Cargando…</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -120,7 +245,28 @@ function showTab(id, btn) {
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
 }
+
+function onFiltroChange() {
+  const v = document.getElementById('f-tipo-fecha').value;
+  document.getElementById('fg-fecha').style.display  = v==='fecha' ? '' : 'none';
+  document.getElementById('fg-desde').style.display  = v==='rango' ? '' : 'none';
+  document.getElementById('fg-hasta').style.display  = v==='rango' ? '' : 'none';
+  aplicarFiltros();
+}
+
+function resetFiltros() {
+  document.getElementById('f-tipo-fecha').value = 'hoy';
+  document.getElementById('f-fecha').value = '';
+  document.getElementById('f-desde').value = '';
+  document.getElementById('f-hasta').value = '';
+  document.getElementById('f-estado').value = '';
+  document.getElementById('f-tipo').value = '';
+  document.getElementById('f-pago').value = '';
+  document.getElementById('f-mesa').value = '';
+  onFiltroChange();
+}
 </script>
+
 <script type="module">
 import { supabase } from '/js/core/supabase.js';
 import { requireAuth } from '/js/core/auth.js';
@@ -128,38 +274,115 @@ import { requireAuth } from '/js/core/auth.js';
 await requireAuth('/platform/login.html');
 
 const fmt = n => new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n||0);
-const fmtDate = s => s ? new Date(s).toLocaleString('es-CL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+const fmtDate  = s => s ? new Date(s).toLocaleString('es-CL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+const fmtFecha = s => s ? new Date(s).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
 
-// ── Ventas ────────────────────────────────────────────────────────
-async function loadVentas() {
-  const { data, error } = await supabase
-    .from('pos_ventas')
-    .select('*')
-    .order('hora_cierre', { ascending: false })
-    .limit(200);
-  if (error) { document.getElementById('ventas-tbody').innerHTML = `<tr><td colspan="11" class="empty">Error cargando ventas</td></tr>`; return; }
+let _allVentas = [];  // data completa con pagos
+let _allPropinas = [];
 
-  // Stats
+// ── Cargar todo ────────────────────────────────────────────────────
+async function loadAll() {
+  const [{ data: ventas }, { data: pagos }] = await Promise.all([
+    supabase.from('pos_ventas').select('*').order('hora_cierre', { ascending: false }).limit(500),
+    supabase.from('pos_venta_pagos').select('*').order('id'),
+  ]);
+
+  _allVentas = (ventas||[]).map(v => ({
+    ...v,
+    pagos: (pagos||[]).filter(p => p.venta_id === v.id && p.tipo === 'pago'),
+    propinas_rows: (pagos||[]).filter(p => p.venta_id === v.id && p.tipo === 'propina'),
+  }));
+  _allPropinas = (pagos||[]).filter(p => p.tipo === 'propina').map(p => ({
+    ...p,
+    venta: ventas?.find(v => v.id === p.venta_id),
+  }));
+
+  // Poblar select de mesas
+  const mesas = [...new Set(_allVentas.map(v => v.mesa_numero).filter(Boolean))].sort((a,b)=>Number(a)-Number(b));
+  const sel = document.getElementById('f-mesa');
+  mesas.forEach(m => { const o = document.createElement('option'); o.value=m; o.textContent='Mesa '+m; sel.appendChild(o); });
+
+  aplicarFiltros();
+  renderPropinas();
+}
+
+// ── Filtros ────────────────────────────────────────────────────────
+window.aplicarFiltros = function() {
+  const tipoFecha = document.getElementById('f-tipo-fecha').value;
+  const fecha     = document.getElementById('f-fecha').value;
+  const desde     = document.getElementById('f-desde').value;
+  const hasta     = document.getElementById('f-hasta').value;
+  const estado    = document.getElementById('f-estado').value;
+  const tipo      = document.getElementById('f-tipo').value;
+  const pago      = document.getElementById('f-pago').value;
+  const mesa      = document.getElementById('f-mesa').value;
+
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const hoyData = (data||[]).filter(v => new Date(v.hora_cierre) >= hoy);
-  const totalHoy = hoyData.reduce((s,v)=>s+Number(v.total||0),0);
-  const propinaHoy = hoyData.reduce((s,v)=>s+Number(v.propina||0),0);
-  document.getElementById('ventas-stats').innerHTML = `
-    <div class="stat-card"><div class="label">Ventas hoy</div><div class="value">${hoyData.length}</div></div>
-    <div class="stat-card"><div class="label">Total hoy</div><div class="value">${fmt(totalHoy)}</div></div>
-    <div class="stat-card"><div class="label">Propinas hoy</div><div class="value">${fmt(propinaHoy)}</div></div>
-    <div class="stat-card"><div class="label">Total histórico</div><div class="value">${fmt((data||[]).reduce((s,v)=>s+Number(v.total||0),0))}</div></div>
-  `;
 
-  if (!data?.length) {
-    document.getElementById('ventas-tbody').innerHTML = `<tr><td colspan="11" class="empty">No hay ventas registradas</td></tr>`;
+  let data = _allVentas.filter(v => {
+    const cierre = v.hora_cierre ? new Date(v.hora_cierre) : null;
+
+    // Filtro fecha
+    if (tipoFecha === 'hoy' && cierre) {
+      if (cierre < hoy || cierre >= new Date(hoy.getTime()+86400000)) return false;
+    } else if (tipoFecha === 'fecha' && fecha && cierre) {
+      const d = new Date(fecha); d.setHours(0,0,0,0);
+      if (cierre < d || cierre >= new Date(d.getTime()+86400000)) return false;
+    } else if (tipoFecha === 'rango' && cierre) {
+      if (desde && cierre < new Date(desde)) return false;
+      if (hasta && cierre > new Date(hasta+'T23:59:59')) return false;
+    }
+
+    if (estado && v.estado !== estado) return false;
+    if (tipo   && v.tipo_venta !== tipo) return false;
+    if (mesa   && v.mesa_numero !== mesa) return false;
+    if (pago   && !v.pagos.some(p => p.metodo === pago)) return false;
+    return true;
+  });
+
+  renderStats(data);
+  renderTabla(data);
+};
+
+window.onFiltroChange = function() {
+  const v = document.getElementById('f-tipo-fecha').value;
+  document.getElementById('fg-fecha').style.display  = v==='fecha' ? '' : 'none';
+  document.getElementById('fg-desde').style.display  = v==='rango' ? '' : 'none';
+  document.getElementById('fg-hasta').style.display  = v==='rango' ? '' : 'none';
+  aplicarFiltros();
+};
+
+// ── Stats ──────────────────────────────────────────────────────────
+function renderStats(data) {
+  const total     = data.reduce((s,v) => s+Number(v.total||0), 0);
+  const propinas  = data.reduce((s,v) => s+Number(v.propina||0), 0);
+  const personas  = data.reduce((s,v) => s+Number(v.personas||1), 0);
+  const count     = data.length;
+  document.getElementById('s-count').textContent    = count;
+  document.getElementById('s-total').textContent    = fmt(total);
+  document.getElementById('s-avg').textContent      = count ? fmt(Math.round(total/count)) : '—';
+  document.getElementById('s-personas').textContent = personas;
+  document.getElementById('s-avgp').textContent     = personas ? fmt(Math.round(total/personas)) : '—';
+  document.getElementById('s-propinas').textContent = fmt(propinas);
+}
+
+// ── Tabla ventas ───────────────────────────────────────────────────
+function renderTabla(data) {
+  if (!data.length) {
+    document.getElementById('ventas-tbody').innerHTML = `<tr><td colspan="14" class="empty">Sin ventas para el filtro seleccionado</td></tr>`;
     return;
   }
-  document.getElementById('ventas-tbody').innerHTML = data.map(v => `
-    <tr>
+  document.getElementById('ventas-tbody').innerHTML = data.map(v => {
+    const metodosUniq = [...new Set(v.pagos.map(p=>p.metodo))];
+    const metodosHtml = metodosUniq.length
+      ? `<div class="metodos-cell">${metodosUniq.map(m=>`<span class="metodo-tag">${m}</span>`).join('')}</div>`
+      : '—';
+    return `<tr>
       <td>${v.numero||'—'}</td>
-      <td>${v.mesa_numero||'—'}</td>
+      <td>${fmtFecha(v.hora_cierre)}</td>
+      <td>${v.mesa_numero ? 'Mesa '+v.mesa_numero : '—'}</td>
       <td>${v.zona_nombre||'—'}</td>
+      <td>${v.garzon_nombre||'—'}</td>
       <td style="text-align:center">${v.personas||1}</td>
       <td>${fmtDate(v.hora_inicio)}</td>
       <td>${fmtDate(v.hora_cierre)}</td>
@@ -167,45 +390,40 @@ async function loadVentas() {
       <td>${v.descuento_monto>0 ? `<span style="color:#dc2626">-${fmt(v.descuento_monto)}</span>` : '—'}</td>
       <td>${fmt(v.propina)}</td>
       <td style="font-weight:700">${fmt(v.total)}</td>
+      <td>${metodosHtml}</td>
       <td><span class="badge badge-green">${v.estado}</span></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
-// ── Propinas ──────────────────────────────────────────────────────
-async function loadPropinas() {
-  const { data, error } = await supabase
-    .from('pos_venta_pagos')
-    .select('*, pos_ventas(mesa_numero, hora_cierre)')
-    .eq('tipo', 'propina')
-    .order('id', { ascending: false })
-    .limit(200);
-  if (error) return;
-
+// ── Propinas ───────────────────────────────────────────────────────
+function renderPropinas() {
+  const total  = _allPropinas.reduce((s,p)=>s+Number(p.monto||0),0);
   const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const hoyData = (data||[]).filter(p => new Date(p.pos_ventas?.hora_cierre) >= hoy);
-  const totalHoy = hoyData.reduce((s,p)=>s+Number(p.monto||0),0);
+  const hoyP   = _allPropinas.filter(p => new Date(p.venta?.hora_cierre) >= hoy);
+  const totalH = hoyP.reduce((s,p)=>s+Number(p.monto||0),0);
 
   document.getElementById('propinas-stats').innerHTML = `
-    <div class="stat-card"><div class="label">Propinas hoy</div><div class="value">${hoyData.length}</div></div>
-    <div class="stat-card"><div class="label">Total propinas hoy</div><div class="value">${fmt(totalHoy)}</div></div>
-    <div class="stat-card"><div class="label">Total histórico</div><div class="value">${fmt((data||[]).reduce((s,p)=>s+Number(p.monto||0),0))}</div></div>
+    <div class="stat-card"><div class="lbl">Propinas hoy</div><div class="val">${hoyP.length}</div></div>
+    <div class="stat-card"><div class="lbl">Total hoy</div><div class="val">${fmt(totalH)}</div></div>
+    <div class="stat-card"><div class="lbl">Total histórico</div><div class="val">${fmt(total)}</div></div>
   `;
 
-  if (!data?.length) {
-    document.getElementById('propinas-tbody').innerHTML = `<tr><td colspan="4" class="empty">No hay propinas registradas</td></tr>`;
+  if (!_allPropinas.length) {
+    document.getElementById('propinas-tbody').innerHTML = `<tr><td colspan="5" class="empty">No hay propinas registradas</td></tr>`;
     return;
   }
-  document.getElementById('propinas-tbody').innerHTML = data.map(p => `
+  document.getElementById('propinas-tbody').innerHTML = _allPropinas.map(p=>`
     <tr>
-      <td>${fmtDate(p.pos_ventas?.hora_cierre)}</td>
-      <td>Mesa ${p.pos_ventas?.mesa_numero||'—'}</td>
+      <td>${fmtFecha(p.venta?.hora_cierre)}</td>
+      <td>${p.venta?.mesa_numero ? 'Mesa '+p.venta.mesa_numero : '—'}</td>
+      <td>${p.venta?.garzon_nombre||'—'}</td>
       <td>${p.metodo}</td>
       <td style="font-weight:600">${fmt(p.monto)}</td>
     </tr>`).join('');
 }
 
-loadVentas();
-loadPropinas();
+loadAll();
 </script>
 </body>
 </html>
