@@ -213,16 +213,20 @@ async function _selectMesa(mesa, planoEl) {
   renderRightPanel(panel);
 }
 
-// Carga ítems confirmados desde pos_comandas para que persistan entre sesiones
+// Carga ítems confirmados desde pos_comandas — siempre al seleccionar la mesa
 async function _syncConfirmedFromDB(mesaId) {
-  // Solo carga si la cubeta está vacía (evita duplicar ítems ya en memoria)
-  if (_confirmedItems[mesaId]?.length) return;
-  const { data: comandas } = await supabase
+  const { data: comandas, error } = await supabase
     .from('pos_comandas')
-    .select('id, pos_comanda_items(id, nombre, precio, cantidad, comentario, modificadores, estado)')
+    .select('id, hora_inicio, pos_comanda_items(id, nombre, precio, cantidad, comentario, modificadores)')
     .eq('mesa_id', mesaId)
-    .in('estado', ['pendiente', 'preparando', 'listo']);
-  if (!comandas?.length) return;
+    .in('estado', ['pendiente', 'preparando', 'listo']);   // excluye 'cerrado'
+  if (error) { console.error('sync comandas:', error); return; }
+  if (!comandas?.length) {
+    _confirmedItems[mesaId] = [];
+    return;
+  }
+  // Ordenar comandas por hora_inicio para respetar el orden de llegada
+  comandas.sort((a, b) => new Date(a.hora_inicio) - new Date(b.hora_inicio));
   _confirmedItems[mesaId] = comandas.flatMap(c =>
     (c.pos_comanda_items || []).map(i => ({
       localId: ++_localId,
@@ -235,7 +239,8 @@ async function _syncConfirmedFromDB(mesaId) {
       showComment: false,
     }))
   );
-  if (!_mesaHora[mesaId]) _mesaHora[mesaId] = new Date();
+  // Restaurar hora de apertura a partir de la comanda más antigua
+  if (!_mesaHora[mesaId]) _mesaHora[mesaId] = new Date(comandas[0].hora_inicio);
 }
 
 // ── Panel derecho ────────────────────────────────────────────────
@@ -726,6 +731,11 @@ export function cerrarMesa(mesaId) {
 
 export async function confirmarCierre(mesaId) {
   document.getElementById('modal-cerrar-mesa')?.classList.remove('open');
+  // Marcar todas las comandas activas de esta mesa como cerradas
+  await supabase.from('pos_comandas')
+    .update({ estado: 'cerrado' })
+    .eq('mesa_id', mesaId)
+    .in('estado', ['pendiente', 'preparando', 'listo']);
   _confirmedItems[mesaId] = [];
   _pendingItems[mesaId]   = [];
   delete _mesaHora[mesaId];
