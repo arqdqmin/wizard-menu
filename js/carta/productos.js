@@ -430,7 +430,7 @@ function _renderModsAsignados(p) {
 
 async function _cargarModsProducto(productoId) {
   const { data } = await supabase
-    .from('producto_modificadores')
+    .from('producto_grupos_modificadores')
     .select('grupo_id, grupos_modificadores(nombre, cantidad_min, cantidad_max)')
     .eq('producto_id', productoId);
   const lista = document.getElementById('cf-mods-lista');
@@ -457,7 +457,7 @@ export async function confirmarMods() {
   if (!_productoEditando) return;
   const checks = document.querySelectorAll('.mod-picker-chk:checked');
   for (const chk of checks) {
-    await supabase.from('producto_modificadores')
+    await supabase.from('producto_grupos_modificadores')
       .upsert({ producto_id: _productoEditando.id, grupo_id: chk.value });
   }
   cerrarPickerMod();
@@ -465,7 +465,7 @@ export async function confirmarMods() {
 }
 export async function quitarMod(grupoId) {
   if (!_productoEditando) return;
-  await supabase.from('producto_modificadores')
+  await supabase.from('producto_grupos_modificadores')
     .delete().eq('producto_id', _productoEditando.id).eq('grupo_id', grupoId);
   _cargarModsProducto(_productoEditando.id);
 }
