@@ -400,17 +400,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
   <button class="pos-nav-icon active" id="nav-mesas" onclick="posSetView('mesas',this)" title="Mesas">
     <i class="ti ti-layout-grid"></i>Mesas
   </button>
-  <button class="pos-nav-icon" id="nav-mostrador" onclick="posSetView('mostrador',this)" title="Mostrador">
-    <i class="ti ti-device-desktop"></i>Mostrador
+  <button class="pos-nav-icon" id="nav-productos" onclick="posSetView('productos',this)" title="Productos">
+    <i class="ti ti-package"></i>Productos
   </button>
-  <button class="pos-nav-icon" title="Delivery" disabled style="opacity:.4;cursor:default">
-    <i class="ti ti-bike"></i>Delivery
+  <button class="pos-nav-icon" id="nav-cocina" onclick="posSetView('cocina',this)" title="Monitor de cocina">
+    <i class="ti ti-tools-kitchen-2"></i>Cocina
   </button>
-  <button class="pos-nav-icon" title="Reservas" disabled style="opacity:.4;cursor:default">
-    <i class="ti ti-calendar"></i>Reservas
-  </button>
-  <button class="pos-nav-icon" title="Caja" disabled style="opacity:.4;cursor:default">
-    <i class="ti ti-cash"></i>Caja
+  <button class="pos-nav-icon" id="nav-config" onclick="posSetView('config',this)" title="Configuración">
+    <i class="ti ti-settings"></i>Config
   </button>
 
   <div class="pos-topbar-right">
@@ -431,9 +428,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
 <!-- ── Sub bar ────────────────────────────────────────────────── -->
 <div class="pos-subbar">
   <button class="pos-sub-btn active">Mesas</button>
-  <button class="pos-sub-btn" disabled>Mostrador <span class="pos-soon">pronto</span></button>
-  <button class="pos-sub-btn" disabled>Delivery <span class="pos-soon">pronto</span></button>
-  <button class="pos-sub-btn" disabled>Mostrador express <span class="pos-soon">pronto</span></button>
+  <button class="pos-sub-btn" disabled>Mostrador</button>
   <button class="pos-sub-btn" disabled>Reservas <span class="pos-soon">pronto</span></button>
 </div>
 
@@ -531,6 +526,33 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
       <div class="mostrador-total">Total: <span id="mostrador-total">$0</span></div>
       <button class="mostrador-close-btn" id="mostrador-close-btn" disabled>Cerrar Pedido</button>
     </div>
+  </div>
+</div>
+
+<!-- ── View: Productos ────────────────────────────────────────── -->
+<div class="pos-view" id="view-productos">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#555">
+    <i class="ti ti-package" style="font-size:48px"></i>
+    <div style="font-size:16px;font-weight:600">Productos</div>
+    <div style="font-size:13px">Módulo en construcción — importando catálogo FUDO</div>
+  </div>
+</div>
+
+<!-- ── View: Monitor cocina ───────────────────────────────────── -->
+<div class="pos-view" id="view-cocina">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#555">
+    <i class="ti ti-tools-kitchen-2" style="font-size:48px"></i>
+    <div style="font-size:16px;font-weight:600">Monitor de Cocina</div>
+    <div style="font-size:13px">Módulo en construcción</div>
+  </div>
+</div>
+
+<!-- ── View: Configuración ────────────────────────────────────── -->
+<div class="pos-view" id="view-config">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#555">
+    <i class="ti ti-settings" style="font-size:48px"></i>
+    <div style="font-size:16px;font-weight:600">Configuración POS</div>
+    <div style="font-size:13px">Módulo en construcción</div>
   </div>
 </div>
 
