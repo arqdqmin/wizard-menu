@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS public.recetas (
 ALTER TABLE public.ingredientes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.recetas ENABLE ROW LEVEL SECURITY;
 
-DO $ BEGIN
+DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='auth_ingredientes' AND tablename='ingredientes') THEN
     CREATE POLICY auth_ingredientes ON public.ingredientes FOR ALL TO authenticated USING (true) WITH CHECK (true);
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='auth_recetas' AND tablename='recetas') THEN
     CREATE POLICY auth_recetas ON public.recetas FOR ALL TO authenticated USING (true) WITH CHECK (true);
   END IF;
-END $;
+END $$;
 
 -- Insert ingredientes
 INSERT INTO public.ingredientes (id_fudo, nombre, categoria, unidad, costo, proveedor, controlar_stock, merma) VALUES(25, 'Masa de pizza 28cms', 'Bases Panadería - Dulces', 'unid.', 2100, 'Panadería San Juan', true, 0),
