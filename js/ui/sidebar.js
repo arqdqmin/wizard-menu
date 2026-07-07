@@ -11,6 +11,7 @@ const MODULE_URLS = {
   configuracion:'/platform/settings.html',
   wcontrol:     '/platform/wcontrol/index.html',
   carta:        '/platform/carta/index.html',
+  ventas:       '/platform/ventas/index.html',
 };
 
 export async function initShell(activeSlug, pageTitle, initialModule = null) {

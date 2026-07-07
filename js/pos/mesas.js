@@ -27,6 +27,15 @@ let _localId = 0;
 // Panel "Editar venta" activo
 let _editingMesaId = null;
 
+// Descuentos por mesa
+let _descuentos   = {};  // mesaId → { tipo: '%'|'$', valor: number }
+let _showDescuento = {}; // mesaId → boolean
+
+// Estado del checkout (modal de cobro)
+let _co    = null;   // { mesaId, propinas:[{metodo,monto}], pagos:[{metodo,monto}] }
+let _coIdx = 0;
+const CO_METODOS = ['Efectivo', 'Tarj. Débito', 'Tarj. Crédito', 'Transferencia'];
+
 const CASAS = [
   { id: 'gryffindor', nombre: 'Gryffindor', emoji: '🦁', color: '#ae0001', text: '#ffd700' },
   { id: 'hufflepuff',  nombre: 'Hufflepuff',  emoji: '🦡', color: '#ecb939', text: '#372e29' },
@@ -266,8 +275,12 @@ function _renderComandaPanel(panelEl, m) {
   const horaStr  = hora ? hora.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
   const confirmed = _confirmedItems[m.id] || [];
   const pending   = _pendingItems[m.id]   || [];
-  const confirmedTotal = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
-  const pendingTotal   = pending.reduce  ((s,i) => s + i.precio*i.cantidad, 0);
+  const subtotalConfirmed = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const pendingTotal      = pending.reduce  ((s,i) => s + i.precio*i.cantidad, 0);
+  const desc = _descuentos[m.id];
+  const descMonto = desc?.valor ? (desc.tipo === '%' ? Math.round(subtotalConfirmed * desc.valor / 100) : Math.min(desc.valor, subtotalConfirmed)) : 0;
+  const confirmedTotal = subtotalConfirmed - descMonto;
+  const showDesc = !!_showDescuento[m.id];
 
   panelEl.innerHTML = `
     <div class="pos-mesa-detail">
@@ -346,8 +359,29 @@ function _renderComandaPanel(panelEl, m) {
 
       <!-- Footer total + cerrar -->
       <div style="padding:12px;border-top:2px solid var(--pos-border);background:rgba(0,0,0,.15);flex-shrink:0">
+        ${showDesc ? `
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;background:rgba(255,255,255,.05);border-radius:8px;padding:8px">
+          <label style="font-size:11px;color:var(--pos-muted);white-space:nowrap">Descuento</label>
+          <label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:3px">
+            <input type="radio" name="desc-tipo-${m.id}" value="%" ${!desc||desc.tipo==='%'?'checked':''} onchange="posSetDescTipo('${m.id}','%')"> %
+          </label>
+          <label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:3px">
+            <input type="radio" name="desc-tipo-${m.id}" value="$" ${desc?.tipo==='$'?'checked':''} onchange="posSetDescTipo('${m.id}','$')"> $
+          </label>
+          <input id="desc-val-${m.id}" type="number" min="0" value="${desc?.valor||''}" placeholder="0"
+            style="width:70px;padding:4px 6px;border-radius:6px;border:1px solid var(--pos-border);background:rgba(0,0,0,.3);color:var(--pos-text);font-size:13px"
+            onkeydown="if(event.key==='Enter')posAplicarDescuento('${m.id}')">
+          <button onclick="posAplicarDescuento('${m.id}')" style="padding:4px 10px;border-radius:6px;background:var(--pos-accent);color:#fff;border:none;cursor:pointer;font-size:12px">OK</button>
+          ${descMonto>0 ? `<span style="margin-left:auto;font-size:12px;color:#f87;white-space:nowrap">-${_fmtPesos(descMonto)}</span>` : ''}
+        </div>` : ''}
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-          <span style="font-size:13px;color:var(--pos-muted)">Total</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;color:var(--pos-muted)">Total</span>
+            <button onclick="posToglDesc('${m.id}')" title="Descuento"
+              style="background:${descMonto>0?'var(--pos-accent)':'rgba(255,255,255,.1)'};border:none;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:${descMonto>0?'#fff':'var(--pos-muted)'}">
+              <i class="ti ti-tag"></i> %/$
+            </button>
+          </div>
           <span id="comanda-total-${m.id}" style="font-size:20px;font-weight:700">${_fmtPesos(confirmedTotal)}</span>
         </div>
         <button class="pos-action-btn danger" onclick="posCerrarMesa('${m.id}')">
@@ -698,40 +732,265 @@ export function setGrupoOpcion(mesaId, pendingIdx, grupoIdx, opcionId, opcionTex
   g.precio_adicional = opc?.precio_adicional || 0;
 }
 
-// ── Cerrar mesa ──────────────────────────────────────────────────
-export function cerrarMesa(mesaId) {
+// ── Descuento helpers ────────────────────────────────────────────
+export function toglDesc(mesaId) {
+  _showDescuento[mesaId] = !_showDescuento[mesaId];
+  renderRightPanel(document.getElementById('pos-right-panel'));
+}
+export function setDescTipo(mesaId, tipo) {
+  if (!_descuentos[mesaId]) _descuentos[mesaId] = { tipo, valor: 0 };
+  else _descuentos[mesaId].tipo = tipo;
+}
+export function aplicarDescuento(mesaId) {
+  const inp = document.getElementById(`desc-val-${mesaId}`);
+  const val = parseFloat(inp?.value) || 0;
+  const tipo = document.querySelector(`input[name="desc-tipo-${mesaId}"]:checked`)?.value || '%';
+  _descuentos[mesaId] = { tipo, valor: val };
+  renderRightPanel(document.getElementById('pos-right-panel'));
+}
+
+// ── Cerrar mesa → modal de checkout ──────────────────────────────
+export async function cerrarMesa(mesaId) {
+  await _syncConfirmedFromDB(mesaId);
   const confirmed = _confirmedItems[mesaId] || [];
   const pending   = _pendingItems[mesaId]   || [];
   const mesa      = mesas.find(m => m.id === mesaId);
-  const total     = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
 
-  // Mostrar modal de confirmación
-  let modalEl = document.getElementById('modal-cerrar-mesa');
-  if (!modalEl) {
-    modalEl = document.createElement('div');
-    modalEl.id = 'modal-cerrar-mesa';
-    modalEl.className = 'pos-modal-backdrop';
-    document.body.appendChild(modalEl);
-    modalEl.addEventListener('click', e => { if (e.target===modalEl) modalEl.classList.remove('open'); });
+  if (!confirmed.length && !pending.length) {
+    let warnEl = document.getElementById('modal-cerrar-mesa');
+    if (!warnEl) {
+      warnEl = document.createElement('div');
+      warnEl.id = 'modal-cerrar-mesa';
+      warnEl.className = 'pos-modal-backdrop';
+      document.body.appendChild(warnEl);
+      warnEl.addEventListener('click', e => { if(e.target===warnEl) warnEl.classList.remove('open'); });
+    }
+    warnEl.innerHTML = `
+      <div class="pos-modal">
+        <div class="pos-modal-title">CERRAR MESA ${mesa?.numero||''}</div>
+        <div style="color:#f87171;font-style:italic;font-size:13px">La mesa no contiene adiciones.</div>
+        <div class="pos-modal-footer">
+          <button class="pos-modal-btn" onclick="document.getElementById('modal-cerrar-mesa').classList.remove('open')">Cancelar</button>
+          <button class="pos-modal-btn primary" onclick="posConfirmarCierre('${mesaId}')">Cerrar igual</button>
+        </div>
+      </div>`;
+    warnEl.classList.add('open');
+    return;
   }
-  const noItems = !confirmed.length && !pending.length;
-  modalEl.innerHTML = `
-    <div class="pos-modal">
-      <div class="pos-modal-title">CERRAR MESA ${mesa?.numero||''}</div>
-      ${noItems
-        ? `<div style="color:#f87171;font-style:italic;font-size:13px">La mesa no contiene adiciones.</div>`
-        : `<div style="font-size:13px;color:var(--pos-muted)">Total: <strong>${_fmtPesos(total)}</strong> — se marcará como libre.</div>`}
-      <div class="pos-modal-footer">
-        <button class="pos-modal-btn" onclick="document.getElementById('modal-cerrar-mesa').classList.remove('open')">Cancelar</button>
-        <button class="pos-modal-btn primary" onclick="posConfirmarCierre('${mesaId}')">Cerrar mesa ${mesa?.numero||''}</button>
+
+  // Init checkout state
+  const desc = _descuentos[mesaId];
+  const subtotal = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const descMonto = desc?.valor ? (desc.tipo==='%' ? Math.round(subtotal*desc.valor/100) : Math.min(desc.valor,subtotal)) : 0;
+  const totalSinPropina = subtotal - descMonto;
+  const propinaSugerida = Math.round(totalSinPropina * 0.10);
+
+  _co = {
+    mesaId,
+    propinas: [{ metodo: 'Efectivo', monto: propinaSugerida }],
+    pagos: [],
+    parcial: false,
+  };
+  _coIdx = 0;
+  _renderCheckoutModal(mesaId);
+}
+
+function _renderCheckoutModal(mesaId) {
+  let el = document.getElementById('modal-checkout');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'modal-checkout';
+    el.className = 'pos-modal-backdrop';
+    el.style.cssText = 'z-index:3000';
+    document.body.appendChild(el);
+  }
+  const mesa     = mesas.find(m => m.id === mesaId);
+  const confirmed = _confirmedItems[mesaId] || [];
+  const desc = _descuentos[mesaId];
+  const subtotal  = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const descMonto = desc?.valor ? (desc.tipo==='%' ? Math.round(subtotal*desc.valor/100) : Math.min(desc.valor,subtotal)) : 0;
+  const totalBase = subtotal - descMonto;
+  const propinaMonto = (_co.propinas||[]).reduce((s,p)=>s+Number(p.monto||0),0);
+  const total     = totalBase + propinaMonto;
+  const pagado    = (_co.pagos||[]).reduce((s,p)=>s+Number(p.monto||0),0);
+  const vuelto    = pagado - total;
+
+  const metodosHtml = CO_METODOS.map(m=>`<option value="${m}">${m}</option>`).join('');
+
+  const propinasHtml = (_co.propinas||[]).map((p,i)=>`
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+      <select onchange="posCoSetPropina(${i},'metodo',this.value)"
+        style="flex:1;padding:5px;border-radius:6px;border:1px solid var(--pos-border);background:rgba(0,0,0,.4);color:var(--pos-text);font-size:13px">
+        ${CO_METODOS.map(m=>`<option value="${m}" ${p.metodo===m?'selected':''}>${m}</option>`).join('')}
+      </select>
+      <input type="number" min="0" value="${p.monto}" onchange="posCoSetPropina(${i},'monto',this.value)"
+        style="width:90px;padding:5px;border-radius:6px;border:1px solid var(--pos-border);background:rgba(0,0,0,.4);color:var(--pos-text);font-size:13px">
+      <button onclick="posCoRemovePropina(${i})" style="background:none;border:none;color:#f87;cursor:pointer;font-size:16px;line-height:1">×</button>
+    </div>`).join('');
+
+  const pagosHtml = (_co.pagos||[]).map((p,i)=>`
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+      <select onchange="posCoSetPago(${i},'metodo',this.value)"
+        style="flex:1;padding:5px;border-radius:6px;border:1px solid var(--pos-border);background:rgba(0,0,0,.4);color:var(--pos-text);font-size:13px">
+        ${CO_METODOS.map(m=>`<option value="${m}" ${p.metodo===m?'selected':''}>${m}</option>`).join('')}
+      </select>
+      <input type="number" min="0" value="${p.monto}" onchange="posCoSetPago(${i},'monto',this.value)"
+        style="width:90px;padding:5px;border-radius:6px;border:1px solid var(--pos-border);background:rgba(0,0,0,.4);color:var(--pos-text);font-size:13px">
+      <button onclick="posCoRemovePago(${i})" style="background:none;border:none;color:#f87;cursor:pointer;font-size:16px;line-height:1">×</button>
+    </div>`).join('');
+
+  const adicionesHtml = confirmed.map(i=>`
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+      <span>${i.cantidad}x ${i.nombre}</span>
+      <span>${_fmtPesos(i.precio*i.cantidad)}</span>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="pos-modal" style="width:min(800px,96vw);max-height:90vh;overflow-y:auto;padding:0">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--pos-border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700;font-size:16px">COBRO — MESA ${mesa?.numero||''}</div>
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" ${_co.parcial?'checked':''} onchange="_coParcialChange(this.checked)"> Cierre parcial
+        </label>
+      </div>
+      <div style="display:flex;gap:0;min-height:360px">
+        <!-- LEFT: resumen -->
+        <div style="flex:1;padding:16px 20px;border-right:1px solid var(--pos-border)">
+          <div style="font-size:11px;font-weight:600;color:var(--pos-muted);letter-spacing:.08em;margin-bottom:8px">ADICIONES</div>
+          ${adicionesHtml}
+          <div style="margin-top:12px;font-size:13px;display:flex;justify-content:space-between;padding:4px 0">
+            <span>Subtotal</span><span>${_fmtPesos(subtotal)}</span>
+          </div>
+          ${descMonto>0?`<div style="font-size:13px;display:flex;justify-content:space-between;padding:4px 0;color:#f87">
+            <span>Descuento</span><span>-${_fmtPesos(descMonto)}</span>
+          </div>`:''}
+          <div style="font-size:13px;display:flex;justify-content:space-between;padding:4px 0">
+            <span>Propina</span><span>${_fmtPesos(propinaMonto)}</span>
+          </div>
+          <div style="font-size:18px;font-weight:700;display:flex;justify-content:space-between;padding:10px 0 0;border-top:2px solid var(--pos-border);margin-top:6px">
+            <span>TOTAL</span><span>${_fmtPesos(total)}</span>
+          </div>
+        </div>
+        <!-- RIGHT: propina + pago -->
+        <div style="flex:1;padding:16px 20px;display:flex;flex-direction:column;gap:20px">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--pos-muted);letter-spacing:.08em;margin-bottom:8px">PROPINA</div>
+            ${propinasHtml}
+            <button onclick="posCoAddPropina()" style="font-size:12px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid var(--pos-border);color:var(--pos-text);cursor:pointer;margin-top:4px">
+              + Agregar propina
+            </button>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--pos-muted);letter-spacing:.08em;margin-bottom:8px">PAGO</div>
+            ${pagosHtml}
+            <button onclick="posCoAddPago()" style="font-size:12px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid var(--pos-border);color:var(--pos-text);cursor:pointer;margin-top:4px">
+              + Agregar método de pago
+            </button>
+          </div>
+          <div style="margin-top:auto;padding-top:12px;border-top:1px solid var(--pos-border)">
+            <div style="font-size:13px;display:flex;justify-content:space-between;margin-bottom:4px">
+              <span>Pagado</span><span>${_fmtPesos(pagado)}</span>
+            </div>
+            <div style="font-size:15px;font-weight:700;display:flex;justify-content:space-between;color:${vuelto<0?'#f87171':'#4ade80'}">
+              <span>Vuelto</span><span>${_fmtPesos(Math.abs(vuelto))} ${vuelto<0?'(falta)':''}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid var(--pos-border);display:flex;justify-content:flex-end;gap:10px">
+        <button class="pos-modal-btn" onclick="document.getElementById('modal-checkout').classList.remove('open')">Cancelar</button>
+        <button class="pos-modal-btn primary" onclick="posEjecutarCierre('${mesaId}')">
+          <i class="ti ti-door-exit"></i> Cerrar mesa ${mesa?.numero||''}
+        </button>
       </div>
     </div>`;
-  modalEl.classList.add('open');
+  el.classList.add('open');
+}
+
+// Helpers checkout
+export function coAddPropina() {
+  if (!_co) return;
+  _co.propinas.push({ metodo:'Efectivo', monto:0 });
+  _renderCheckoutModal(_co.mesaId);
+}
+export function coRemovePropina(idx) {
+  if (!_co) return;
+  _co.propinas.splice(idx,1);
+  _renderCheckoutModal(_co.mesaId);
+}
+export function coSetPropina(idx, field, val) {
+  if (!_co) return;
+  _co.propinas[idx][field] = field==='monto' ? Number(val)||0 : val;
+  _renderCheckoutModal(_co.mesaId);
+}
+export function coAddPago() {
+  if (!_co) return;
+  _co.pagos.push({ metodo:'Efectivo', monto:0 });
+  _renderCheckoutModal(_co.mesaId);
+}
+export function coRemovePago(idx) {
+  if (!_co) return;
+  _co.pagos.splice(idx,1);
+  _renderCheckoutModal(_co.mesaId);
+}
+export function coSetPago(idx, field, val) {
+  if (!_co) return;
+  _co.pagos[idx][field] = field==='monto' ? Number(val)||0 : val;
+  _renderCheckoutModal(_co.mesaId);
+}
+
+export async function ejecutarCierre(mesaId) {
+  if (!_co) return;
+  const confirmed = _confirmedItems[mesaId] || [];
+  const desc = _descuentos[mesaId];
+  const subtotal  = confirmed.reduce((s,i)=>s+i.precio*i.cantidad,0);
+  const descMonto = desc?.valor ? (desc.tipo==='%' ? Math.round(subtotal*desc.valor/100) : Math.min(desc.valor,subtotal)) : 0;
+  const propinaMonto = _co.propinas.reduce((s,p)=>s+Number(p.monto||0),0);
+  const total = subtotal - descMonto + propinaMonto;
+  const mesa  = mesas.find(m=>m.id===mesaId);
+
+  const { data: venta, error: eVenta } = await supabase.from('pos_ventas').insert({
+    mesa_id: mesaId,
+    mesa_numero: mesa?.numero?.toString()||'',
+    zona_nombre: zonas.find(z=>z.id===mesa?.zona_id)?.nombre||'',
+    estado: 'cerrado',
+    personas: _mesaPersonas[mesaId]||1,
+    subtotal,
+    descuento_tipo: desc?.tipo||null,
+    descuento_valor: desc?.valor||0,
+    descuento_monto: descMonto,
+    propina: propinaMonto,
+    total,
+    hora_inicio: _mesaHora[mesaId]?.toISOString()||new Date().toISOString(),
+    hora_cierre: new Date().toISOString(),
+  }).select('id').single();
+
+  if (eVenta) { console.error('pos_ventas:', eVenta); showPosToast('Error guardando venta'); return; }
+
+  const pagosRows = [
+    ..._co.propinas.map(p=>({ venta_id:venta.id, metodo:p.metodo, monto:Number(p.monto)||0, tipo:'propina' })),
+    ..._co.pagos.map(p=>({ venta_id:venta.id, metodo:p.metodo, monto:Number(p.monto)||0, tipo:'pago' })),
+  ].filter(r=>r.monto>0);
+  if (pagosRows.length) await supabase.from('pos_venta_pagos').insert(pagosRows);
+
+  await supabase.from('pos_comandas')
+    .update({ estado:'cerrado' })
+    .eq('mesa_id', mesaId)
+    .in('estado',['pendiente','preparando','listo']);
+
+  document.getElementById('modal-checkout')?.classList.remove('open');
+  _confirmedItems[mesaId] = [];
+  _pendingItems[mesaId]   = [];
+  delete _mesaHora[mesaId];
+  delete _descuentos[mesaId];
+  delete _showDescuento[mesaId];
+  _co = null;
+  await cambiarEstado(mesaId, 'libre');
+  showPosToast('Mesa cerrada ✓');
 }
 
 export async function confirmarCierre(mesaId) {
   document.getElementById('modal-cerrar-mesa')?.classList.remove('open');
-  // Marcar todas las comandas activas de esta mesa como cerradas
   await supabase.from('pos_comandas')
     .update({ estado: 'cerrado' })
     .eq('mesa_id', mesaId)
@@ -1010,7 +1269,7 @@ export function renderMonitorCards(containerEl, comandas) {
         </div>
 
         <!-- Ítems con botón por ítem -->
-        <div style="background:#f9fafb;border-radius:10px;overflow:hidden;margin-bottom:14px;font-size:13px;color:#111;border:1px solid #f3f4f6">
+        <div style="background:#f9fafb;border-radius:10px;overflow:hidden;margin-bottom:14px;font-size:16px;color:#111;border:1px solid #f3f4f6">
           ${items.map(i => {
             const mods = Array.isArray(i.modificadores) ? i.modificadores : [];
             const iEst = i.estado || 'pendiente';
@@ -1026,12 +1285,12 @@ export function renderMonitorCards(containerEl, comandas) {
                 <div style="${iDone?'text-decoration:line-through;color:#9ca3af':''};font-weight:600">
                   ${i.cantidad > 1 ? `<span style="color:#6b7280">${i.cantidad}×</span> ` : ''}${i.nombre}
                 </div>
-                ${mods.map(m => `<div style="padding-left:8px;font-size:11px;color:#6b7280">· ${m.opcion||m.nombre||''}</div>`).join('')}
-                ${i.comentario ? `<div style="padding-left:8px;font-size:11px;color:#9ca3af;font-style:italic">💬 ${i.comentario}</div>` : ''}
+                ${mods.map(m => `<div style="padding-left:8px;font-size:13px;color:#6b7280">· ${m.opcion||m.nombre||''}</div>`).join('')}
+                ${i.comentario ? `<div style="padding-left:8px;font-size:13px;color:#9ca3af;font-style:italic">💬 ${i.comentario}</div>` : ''}
               </div>
               <button onclick="${btnFn}"
-                style="flex-shrink:0;padding:4px 10px;border-radius:6px;border:none;background:${btnBg};color:#fff;
-                  font-size:11px;font-weight:700;cursor:${iDone?'default':'pointer'};font-family:inherit;white-space:nowrap">
+                style="flex-shrink:0;padding:5px 12px;border-radius:6px;border:none;background:${btnBg};color:#fff;
+                  font-size:13px;font-weight:700;cursor:${iDone?'default':'pointer'};font-family:inherit;white-space:nowrap">
                 ${btnTxt}
               </button>
             </div>`;

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Ventas — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<link rel="stylesheet" href="/css/platform.css" />
+<style>
+:root {
+  --bg:       #f5f5f7;
+  --surface:  #fff;
+  --border:   #e4e4e7;
+  --text:     #111;
+  --muted:    #888;
+  --accent:   #b8982a;
+  --radius:   10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+
+.platform-topbar { display:flex; align-items:center; gap:16px; padding:14px 24px; background:var(--surface); border-bottom:1px solid var(--border); }
+.platform-topbar h1 { font-size:18px; font-weight:700; }
+
+.tab-bar { display:flex; gap:4px; padding:16px 24px 0; border-bottom:1px solid var(--border); background:var(--surface); }
+.tab-btn { padding:8px 18px; border:none; background:none; cursor:pointer; font-family:inherit; font-size:14px; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; transition:.15s; }
+.tab-btn.active { color:var(--accent); border-color:var(--accent); }
+
+.tab-content { display:none; padding:24px; }
+.tab-content.active { display:block; }
+
+.table-wrap { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th { padding:10px 14px; text-align:left; font-size:11px; font-weight:600; letter-spacing:.07em; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border); background:#fafafa; }
+td { padding:10px 14px; border-bottom:1px solid #f4f4f5; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:#fafafa; }
+
+.badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-green  { background:#dcfce7; color:#166534; }
+.badge-yellow { background:#fef9c3; color:#854d0e; }
+.badge-gray   { background:#f3f4f6; color:#374151; }
+
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+.stat-card { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:18px 20px; }
+.stat-card .label { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.stat-card .value { font-size:24px; font-weight:700; }
+
+.empty { text-align:center; padding:48px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<div class="platform-topbar">
+  <i class="ti ti-cash-register" style="font-size:22px;color:var(--accent)"></i>
+  <h1>Ventas</h1>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('ventas',this)">Ventas</button>
+  <button class="tab-btn" onclick="showTab('arqueos',this)">Arqueos de Caja</button>
+  <button class="tab-btn" onclick="showTab('propinas',this)">Propinas</button>
+</div>
+
+<!-- VENTAS -->
+<div id="tab-ventas" class="tab-content active">
+  <div class="stat-grid" id="ventas-stats"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Mesa</th>
+          <th>Zona</th>
+          <th>Personas</th>
+          <th>Inicio</th>
+          <th>Cierre</th>
+          <th>Subtotal</th>
+          <th>Descuento</th>
+          <th>Propina</th>
+          <th>Total</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="ventas-tbody"><tr><td colspan="11" class="empty">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ARQUEOS -->
+<div id="tab-arqueos" class="tab-content">
+  <div class="empty" style="padding-top:64px">
+    <i class="ti ti-safe" style="font-size:48px;display:block;margin-bottom:12px;opacity:.3"></i>
+    Módulo de Arqueos de Caja — próximamente
+  </div>
+</div>
+
+<!-- PROPINAS -->
+<div id="tab-propinas" class="tab-content">
+  <div class="stat-grid" id="propinas-stats"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Mesa</th>
+          <th>Método</th>
+          <th>Monto</th>
+        </tr>
+      </thead>
+      <tbody id="propinas-tbody"><tr><td colspan="4" class="empty">Cargando…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { requireAuth }  from '/js/auth.js';
+
+const SUPA_URL = 'https://bqrgdtqfwkivxjcupquy.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmdkdHFmd2tpdnhqY3VwcXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjA3NjUsImV4cCI6MjA2MDM5Njc2NX0.tNBiJt4HXKN6mS1bAf2rrYFJbRBF0xUbdHVQbXg5GDM';
+const supabase = createClient(SUPA_URL, SUPA_KEY);
+
+await requireAuth('/platform/login.html');
+
+const fmt = n => new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n||0);
+const fmtDate = s => s ? new Date(s).toLocaleString('es-CL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+window.showTab = showTab;
+
+// ── Ventas ────────────────────────────────────────────────────────
+async function loadVentas() {
+  const { data, error } = await supabase
+    .from('pos_ventas')
+    .select('*')
+    .order('hora_cierre', { ascending: false })
+    .limit(200);
+  if (error) { document.getElementById('ventas-tbody').innerHTML = `<tr><td colspan="11" class="empty">Error cargando ventas</td></tr>`; return; }
+
+  // Stats
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const hoyData = (data||[]).filter(v => new Date(v.hora_cierre) >= hoy);
+  const totalHoy = hoyData.reduce((s,v)=>s+Number(v.total||0),0);
+  const propinaHoy = hoyData.reduce((s,v)=>s+Number(v.propina||0),0);
+  document.getElementById('ventas-stats').innerHTML = `
+    <div class="stat-card"><div class="label">Ventas hoy</div><div class="value">${hoyData.length}</div></div>
+    <div class="stat-card"><div class="label">Total hoy</div><div class="value">${fmt(totalHoy)}</div></div>
+    <div class="stat-card"><div class="label">Propinas hoy</div><div class="value">${fmt(propinaHoy)}</div></div>
+    <div class="stat-card"><div class="label">Total histórico</div><div class="value">${fmt((data||[]).reduce((s,v)=>s+Number(v.total||0),0))}</div></div>
+  `;
+
+  if (!data?.length) {
+    document.getElementById('ventas-tbody').innerHTML = `<tr><td colspan="11" class="empty">No hay ventas registradas</td></tr>`;
+    return;
+  }
+  document.getElementById('ventas-tbody').innerHTML = data.map(v => `
+    <tr>
+      <td>${v.numero||'—'}</td>
+      <td>${v.mesa_numero||'—'}</td>
+      <td>${v.zona_nombre||'—'}</td>
+      <td style="text-align:center">${v.personas||1}</td>
+      <td>${fmtDate(v.hora_inicio)}</td>
+      <td>${fmtDate(v.hora_cierre)}</td>
+      <td>${fmt(v.subtotal)}</td>
+      <td>${v.descuento_monto>0 ? `<span style="color:#dc2626">-${fmt(v.descuento_monto)}</span>` : '—'}</td>
+      <td>${fmt(v.propina)}</td>
+      <td style="font-weight:700">${fmt(v.total)}</td>
+      <td><span class="badge badge-green">${v.estado}</span></td>
+    </tr>`).join('');
+}
+
+// ── Propinas ──────────────────────────────────────────────────────
+async function loadPropinas() {
+  const { data, error } = await supabase
+    .from('pos_venta_pagos')
+    .select('*, pos_ventas(mesa_numero, hora_cierre)')
+    .eq('tipo', 'propina')
+    .order('id', { ascending: false })
+    .limit(200);
+  if (error) return;
+
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const hoyData = (data||[]).filter(p => new Date(p.pos_ventas?.hora_cierre) >= hoy);
+  const totalHoy = hoyData.reduce((s,p)=>s+Number(p.monto||0),0);
+
+  document.getElementById('propinas-stats').innerHTML = `
+    <div class="stat-card"><div class="label">Propinas hoy</div><div class="value">${hoyData.length}</div></div>
+    <div class="stat-card"><div class="label">Total propinas hoy</div><div class="value">${fmt(totalHoy)}</div></div>
+    <div class="stat-card"><div class="label">Total histórico</div><div class="value">${fmt((data||[]).reduce((s,p)=>s+Number(p.monto||0),0))}</div></div>
+  `;
+
+  if (!data?.length) {
+    document.getElementById('propinas-tbody').innerHTML = `<tr><td colspan="4" class="empty">No hay propinas registradas</td></tr>`;
+    return;
+  }
+  document.getElementById('propinas-tbody').innerHTML = data.map(p => `
+    <tr>
+      <td>${fmtDate(p.pos_ventas?.hora_cierre)}</td>
+      <td>Mesa ${p.pos_ventas?.mesa_numero||'—'}</td>
+      <td>${p.metodo}</td>
+      <td style="font-weight:600">${fmt(p.monto)}</td>
+    </tr>`).join('');
+}
+
+loadVentas();
+loadPropinas();
+</script>
+</body>
+</html>

@@ -647,6 +647,9 @@ import {
   toggleCommentP, toggleCommentC, setCommentP, setCommentC,
   setGrupoOpcion,
   cerrarMesa, confirmarCierre,
+  toglDesc, setDescTipo, aplicarDescuento,
+  coAddPropina, coRemovePropina, coSetPropina,
+  coAddPago, coRemovePago, coSetPago, ejecutarCierre,
   editarVenta, volverComanda, moverMesa,
   verPreCuenta,
   loadMonitor, prepararComanda, terminarComanda, prepararItem, terminarItem,
@@ -782,6 +785,17 @@ window.posSetCommentC            = (mid, idx, v)   => setCommentC(mid, idx, v);
 window.posSetGrupoOpcion         = (mid, pi, gi, oid, otxt) => setGrupoOpcion(mid, pi, gi, oid, otxt);
 window.posCerrarMesa             = (mid)           => cerrarMesa(mid);
 window.posConfirmarCierre        = (mid)           => confirmarCierre(mid);
+window.posToglDesc               = (mid)           => toglDesc(mid);
+window.posSetDescTipo            = (mid, tipo)     => setDescTipo(mid, tipo);
+window.posAplicarDescuento       = (mid)           => aplicarDescuento(mid);
+window.posCoAddPropina           = ()              => coAddPropina();
+window.posCoRemovePropina        = (i)             => coRemovePropina(i);
+window.posCoSetPropina           = (i, f, v)       => coSetPropina(i, f, v);
+window.posCoAddPago              = ()              => coAddPago();
+window.posCoRemovePago           = (i)             => coRemovePago(i);
+window.posCoSetPago              = (i, f, v)       => coSetPago(i, f, v);
+window.posEjecutarCierre         = (mid)           => ejecutarCierre(mid);
+window._coParcialChange          = (v)             => { if(window._coState) window._coState.parcial=v; };
 window.posEditarVenta            = (mid)           => editarVenta(mid);
 window.posVolverComanda          = (mid)           => volverComanda(mid);
 window.posMoverMesa              = (desde, hasta)  => moverMesa(desde, hasta);
