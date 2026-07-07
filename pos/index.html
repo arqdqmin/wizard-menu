@@ -26,7 +26,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
 
 /* ── Top bar ─────────────────────────────────────────────────── */
 .pos-topbar {
-  height: 52px; background: var(--pos-bar);
+  height: 56px; background: var(--pos-bar);
   display: flex; align-items: center; gap: 0;
   border-bottom: 1px solid var(--pos-border);
   flex-shrink: 0; padding: 0 16px; gap: 8px;
@@ -419,7 +419,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
       <i class="ti ti-user-circle" style="font-size:18px"></i>
       <span id="pos-username">—</span>
     </div>
-    <button class="pos-back-btn" onclick="location.href='/platform/dashboard.html'">
+    <button class="pos-back-btn" onclick="location.href='/platform/index.html'">
       <i class="ti ti-arrow-left"></i> Admin
     </button>
   </div>
@@ -617,10 +617,11 @@ import { requireAuth }  from '/js/core/auth.js';
 import { supabase }    from '/js/core/supabase.js';
 import { getUserRoles } from '/js/core/permissions.js';
 import {
-  loadZonas, loadMesas, renderZonaTabs, renderPlano, renderRightPanel,
+  loadZonas, loadMesas, loadProductos, renderZonaTabs, renderPlano, renderRightPanel,
   cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona, getZonas,
   toggleSnapToGrid, initGrid,
   setUserContext, setGarzonesData, changePersonas, setGarzon, abrirMesa, toggleCasa,
+  filtrarProductos, agregarAComanda, changeItemQty, cobrarMesa,
 } from '/js/pos/mesas.js';
 
 // Auth
@@ -662,6 +663,9 @@ setInterval(updateClock, 10000);
 
 // Inicializar grilla
 initGrid(document.getElementById('pos-plano'));
+
+// Cargar catálogo de productos
+await loadProductos();
 
 // Carga inicial
 const zonas = await loadZonas();
@@ -727,14 +731,17 @@ window.posNuevoPedido = () => {
   alert('Módulo de pedidos mostrador en desarrollo.');
 };
 
-window.posToggleSnap     = (btn) => toggleSnapToGrid(btn);
-window.posCambiarEstado  = (id, estado) => cambiarEstado(id, estado);
-window.posEliminarMesa   = (id) => eliminarMesa(id);
-window.posAbrirComanda   = (id) => document.getElementById('modal-comanda').classList.add('open');
-window.posChangePersonas = (id, delta) => changePersonas(id, delta);
-window.posSetGarzon      = (id, nombre) => setGarzon(id, nombre);
-window.posToggleCasa     = (id, casa)   => toggleCasa(id, casa);
-window.posAbrirMesa      = (id) => abrirMesa(id);
+window.posToggleSnap       = (btn)         => toggleSnapToGrid(btn);
+window.posCambiarEstado    = (id, estado)  => cambiarEstado(id, estado);
+window.posEliminarMesa     = (id)          => eliminarMesa(id);
+window.posChangePersonas   = (id, delta)   => changePersonas(id, delta);
+window.posSetGarzon        = (id, nombre)  => setGarzon(id, nombre);
+window.posToggleCasa       = (id, casa)    => toggleCasa(id, casa);
+window.posAbrirMesa        = (id)          => abrirMesa(id);
+window.posFiltrarProductos = (mid, val)    => filtrarProductos(mid, val);
+window.posAgregarAComanda  = (mid, pid)    => agregarAComanda(mid, pid);
+window.posChangeItemQty    = (mid, i, d)   => changeItemQty(mid, i, d);
+window.posCobrarMesa       = (mid)         => cobrarMesa(mid);
 
 // Cerrar modales al click en backdrop
 document.querySelectorAll('.pos-modal-backdrop').forEach(el => {

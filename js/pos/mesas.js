@@ -15,12 +15,17 @@ let dragOffX = 0;
 let dragOffY = 0;
 
 // Contexto de usuario y garzonas
-let _garzonesData  = [];  // [{ id, nombre, apellido }]
+let _garzonesData  = [];
 let _currentUser   = null;
 let _canEdit       = false;
-let _mesaPersonas  = {};  // { mesaId: número }
-let _mesaGarzon    = {};  // { mesaId: nombre }
-let _mesaCasa      = {};  // { mesaId: 'gryffindor'|'hufflepuff'|'ravenclaw'|'slytherin'|null }
+let _mesaPersonas  = {};
+let _mesaGarzon    = {};
+let _mesaCasa      = {};
+let _mesaHora      = {};  // mesaId → Date de apertura
+
+// Comanda por mesa
+let _comandas  = {};   // mesaId → [{id, nombre, precio, cantidad}]
+let _productos = [];   // catálogo completo cargado de Supabase
 
 const CASAS = [
   { id: 'gryffindor', nombre: 'Gryffindor', emoji: '🦁', color: '#ae0001', text: '#ffd700' },
@@ -36,7 +41,21 @@ function snapVal(v) {
   return snapToGrid ? Math.round(v / GRID_SIZE) * GRID_SIZE : v;
 }
 
-// ── Carga ────────────────────────────────────────────────────────
+function _fmtPesos(n) {
+  return '$' + Math.round(Number(n) || 0).toLocaleString('es-CL');
+}
+
+// ── Cargar catálogo de productos ─────────────────────────────────
+export async function loadProductos() {
+  const { data } = await supabase
+    .from('productos')
+    .select('id, nombre, precio, categoria_id, categorias_productos(nombre)')
+    .eq('activo', true)
+    .order('nombre');
+  _productos = data || [];
+}
+
+// ── Carga de zonas/mesas ─────────────────────────────────────────
 export async function loadZonas() {
   const { data, error } = await supabase.from('zonas').select('*').eq('activa', true).order('orden');
   if (error) { showPosToast('Error al cargar zonas', 'error'); return []; }
@@ -79,7 +98,7 @@ const ESTADO_COLOR = {
   cuenta:   { bg: '#06b6d4', text: '#fff' },
   reservada:{ bg: '#a855f7', text: '#fff' },
 };
-const MESA_SIZE = 90; // px
+const MESA_SIZE = 90;
 
 export function renderPlano(planoEl) {
   planoEl.querySelectorAll('.pos-mesa').forEach(el => el.remove());
@@ -87,6 +106,7 @@ export function renderPlano(planoEl) {
   mesas.forEach(mesa => {
     const c = ESTADO_COLOR[mesa.estado] || ESTADO_COLOR.libre;
     const personas = _mesaPersonas[mesa.id] || '';
+    const nItems   = (_comandas[mesa.id] || []).reduce((s, i) => s + i.cantidad, 0);
     const el = document.createElement('div');
     el.className = 'pos-mesa';
     el.dataset.id = mesa.id;
@@ -108,21 +128,19 @@ export function renderPlano(planoEl) {
     el.innerHTML = `
       <span>${mesa.numero}</span>
       ${personas ? `<span style="font-size:11px;font-weight:500;opacity:.85"><i class="ti ti-users" style="font-size:10px"></i> ${personas}</span>` : ''}
+      ${nItems ? `<span style="font-size:10px;font-weight:600;background:rgba(0,0,0,.25);padding:1px 6px;border-radius:10px">${nItems} ítem${nItems!==1?'s':''}</span>` : ''}
     `;
     el.title = `Mesa ${mesa.numero} · ${mesa.estado}`;
 
-    // Hover
     el.addEventListener('mouseenter', () => { if(!dragging) el.style.transform = 'scale(1.07)'; });
     el.addEventListener('mouseleave', () => { if(!dragging) el.style.transform = ''; });
-
-    // Pointer events para drag y click
     el.addEventListener('pointerdown', e => onPointerDown(e, mesa, el, planoEl));
     planoEl.appendChild(el);
   });
 }
 
 // ── Drag & Drop ──────────────────────────────────────────────────
-const DRAG_THRESHOLD = 6; // px de movimiento mínimo para iniciar drag
+const DRAG_THRESHOLD = 6;
 
 function onPointerDown(e, mesa, el, planoEl) {
   e.preventDefault();
@@ -173,7 +191,6 @@ function onPointerDown(e, mesa, el, planoEl) {
     el.style.cursor = 'grab';
     el.style.zIndex = '';
     if (!moved) {
-      // fue un click — seleccionar
       selectMesa(mesa, planoEl);
     } else if (dragging?.newX !== undefined) {
       await saveMesaPosition(mesa.id, dragging.newX, dragging.newY);
@@ -214,18 +231,139 @@ function selectMesa(mesa, planoEl) {
   renderRightPanel(document.getElementById('pos-right-panel'));
 }
 
+// ── Panel derecho ─────────────────────────────────────────────────
 export function renderRightPanel(panelEl) {
   if (!panelEl) return;
   if (!mesaSelected) {
     panelEl.innerHTML = `<div class="pos-right-empty"><i class="ti ti-layout-grid" style="font-size:36px;color:var(--pos-muted)"></i><p>Selecciona una mesa</p></div>`;
     return;
   }
-  const m  = mesaSelected;
+  const m = mesaSelected;
+  const isOcupada = ['ocupada', 'cuenta'].includes(m.estado);
+  if (isOcupada) {
+    _renderComandaPanel(panelEl, m);
+  } else {
+    _renderInfoPanel(panelEl, m);
+  }
+}
+
+// ── Panel comanda (mesa ocupada / cuenta) ────────────────────────
+function _renderComandaPanel(panelEl, m) {
+  const c        = ESTADO_COLOR[m.estado] || ESTADO_COLOR.ocupada;
+  const personas = _mesaPersonas[m.id] || 1;
+  const hora     = _mesaHora[m.id];
+  const horaStr  = hora
+    ? hora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false })
+    : '';
+  const items    = _comandas[m.id] || [];
+  const total    = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+
+  panelEl.innerHTML = `
+    <div class="pos-mesa-detail">
+      <!-- Cabecera -->
+      <div class="pos-mesa-header" style="background:${c.bg}">
+        <div class="pos-mesa-badge-lg">${m.numero}</div>
+        <div>
+          <div style="font-size:17px;font-weight:700">Mesa ${m.numero}</div>
+          <div style="font-size:12px;opacity:.85">${personas} persona${personas !== 1 ? 's' : ''}${horaStr ? ' · ' + horaStr : ''}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <button style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px"
+            onclick="posCambiarEstado('${m.id}','libre')" title="Cerrar mesa sin cobrar">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado rápido mini -->
+      <div style="display:flex;gap:4px;padding:8px 14px;border-bottom:1px solid var(--pos-border)">
+        ${['ocupada','cuenta'].map(s => `
+          <button style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid ${m.estado===s?'transparent':'var(--pos-border)'};
+            background:${m.estado===s?ESTADO_COLOR[s].bg:'none'};
+            color:${m.estado===s?'#fff':'var(--pos-muted)'};cursor:pointer;font-size:11px;font-weight:500;font-family:inherit"
+            onclick="posCambiarEstado('${m.id}','${s}')">
+            ${s.charAt(0).toUpperCase()+s.slice(1)}
+          </button>`).join('')}
+      </div>
+
+      <!-- Lista de ítems -->
+      <div style="flex:1;overflow-y:auto;min-height:0" id="comanda-list-${m.id}">
+        ${_renderComandaItems(m.id)}
+      </div>
+
+      <!-- Buscador de productos -->
+      <div style="padding:10px 14px;border-top:1px solid var(--pos-border)">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--pos-muted);margin-bottom:7px">Agregar ítem</div>
+        <div style="position:relative">
+          <input type="text" id="cmd-search-${m.id}" autocomplete="off"
+            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:13px;outline:none"
+            placeholder="Buscar producto…"
+            oninput="posFiltrarProductos('${m.id}',this.value)"
+            onfocus="posFiltrarProductos('${m.id}',this.value)"
+            onblur="setTimeout(()=>{const d=document.getElementById('cmd-drop-${m.id}');if(d)d.style.display='none'},150)" />
+          <div id="cmd-drop-${m.id}"
+            style="display:none;position:absolute;bottom:100%;left:0;right:0;
+              background:var(--pos-surface);border:1px solid var(--pos-border);
+              border-radius:8px;max-height:200px;overflow-y:auto;z-index:50;
+              margin-bottom:4px;box-shadow:0 -4px 16px rgba(0,0,0,.4)"></div>
+        </div>
+      </div>
+
+      <!-- Footer total + cobro -->
+      <div style="padding:12px 14px;border-top:2px solid var(--pos-border);background:rgba(0,0,0,.15);flex-shrink:0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+          <span style="font-size:13px;color:var(--pos-muted)">Total</span>
+          <span id="comanda-total-${m.id}" style="font-size:22px;font-weight:700">${_fmtPesos(total)}</span>
+        </div>
+        <button id="cobrar-btn-${m.id}" class="pos-action-btn primary" style="margin-bottom:6px" onclick="posCobrarMesa('${m.id}')">
+          <i class="ti ti-cash"></i> Cobrar${total ? ' — ' + _fmtPesos(total) : ''}
+        </button>
+      </div>
+    </div>`;
+}
+
+function _renderComandaItems(mesaId) {
+  const items = _comandas[mesaId] || [];
+  if (!items.length) {
+    return `<div style="text-align:center;padding:32px 16px;color:var(--pos-muted);font-size:13px">
+      <i class="ti ti-clipboard-list" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
+      Comanda vacía — busca productos arriba
+    </div>`;
+  }
+  return `<div>` + items.map((item, idx) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nombre}</div>
+        <div style="font-size:11px;color:var(--pos-muted)">${_fmtPesos(item.precio)} c/u</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+        <button style="width:22px;height:22px;border-radius:5px;border:1px solid var(--pos-border);background:none;color:var(--pos-text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1"
+          onmousedown="posChangeItemQty('${mesaId}',${idx},-1)">−</button>
+        <span style="min-width:20px;text-align:center;font-weight:600;font-size:13px">${item.cantidad}</span>
+        <button style="width:22px;height:22px;border-radius:5px;border:1px solid var(--pos-border);background:none;color:var(--pos-text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1"
+          onmousedown="posChangeItemQty('${mesaId}',${idx},1)">+</button>
+      </div>
+      <div style="min-width:60px;text-align:right;font-weight:600;font-size:13px">${_fmtPesos(item.precio * item.cantidad)}</div>
+    </div>`).join('') + `</div>`;
+}
+
+function _updateComandaUI(mesaId) {
+  const listEl = document.getElementById(`comanda-list-${mesaId}`);
+  if (listEl) listEl.innerHTML = _renderComandaItems(mesaId);
+  const total = (_comandas[mesaId] || []).reduce((s, i) => s + i.precio * i.cantidad, 0);
+  const totalEl = document.getElementById(`comanda-total-${mesaId}`);
+  if (totalEl) totalEl.textContent = _fmtPesos(total);
+  const cobrarBtn = document.getElementById(`cobrar-btn-${mesaId}`);
+  if (cobrarBtn) cobrarBtn.innerHTML = `<i class="ti ti-cash"></i> Cobrar${total ? ' — ' + _fmtPesos(total) : ''}`;
+  // Actualizar badge de ítems en el plano
+  renderPlano(document.getElementById('pos-plano'));
+}
+
+// ── Panel info (mesa libre / reservada) ──────────────────────────
+function _renderInfoPanel(panelEl, m) {
   const c  = ESTADO_COLOR[m.estado] || ESTADO_COLOR.libre;
   const personas = _mesaPersonas[m.id] || 1;
   const garzonActual = _mesaGarzon[m.id] || '';
-
-  // Si no es admin/super_admin → forzar garzón al usuario actual
   const esAdmin = _canEdit;
   const nombreUsuario = _currentUser ? (_currentUser.email || '').split('@')[0] : '';
 
@@ -236,7 +374,6 @@ export function renderRightPanel(panelEl) {
 
   panelEl.innerHTML = `
     <div class="pos-mesa-detail">
-      <!-- Cabecera -->
       <div class="pos-mesa-header" style="background:${c.bg}">
         <div class="pos-mesa-badge-lg">${m.numero}</div>
         <div>
@@ -245,7 +382,6 @@ export function renderRightPanel(panelEl) {
         </div>
       </div>
 
-      <!-- Estado rápido -->
       <div class="pos-detail-section">Estado</div>
       <div class="pos-estado-btns">
         ${['libre','ocupada','cuenta','reservada'].map(s =>
@@ -257,7 +393,6 @@ export function renderRightPanel(panelEl) {
         ).join('')}
       </div>
 
-      <!-- Personas -->
       <div class="pos-detail-section">Personas</div>
       <div class="pos-personas-row">
         <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',-1)"><i class="ti ti-minus"></i></button>
@@ -265,63 +400,100 @@ export function renderRightPanel(panelEl) {
         <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',1)"><i class="ti ti-plus"></i></button>
       </div>
 
-      <!-- Garzón -->
       <div class="pos-detail-section">Garzón</div>
       ${esAdmin ? `
         <select class="pos-garzon-select" onchange="posSetGarzon('${m.id}',this.value)">
           <option value="">— Sin asignar —</option>
           ${garzonesOpts}
-        </select>
-      ` : `
-        <div class="pos-garzon-name">${nombreUsuario}</div>
-      `}
+        </select>` : `
+        <div class="pos-garzon-name">${nombreUsuario}</div>`}
 
-      <!-- Casa Harry Potter -->
       <div class="pos-detail-section">Casa</div>
       <div class="pos-casas-row">
         ${CASAS.map(casa => {
           const activa = (_mesaCasa[m.id] === casa.id);
-          return `<button
-            class="pos-casa-btn ${activa ? 'active' : ''}"
-            title="${casa.nombre}"
-            style="${activa
-              ? `background:${casa.color};color:${casa.text};border-color:${casa.color};`
-              : ''}"
-            onclick="posToggleCasa('${m.id}','${casa.id}')">
-            ${casa.emoji}
-          </button>`;
+          return `<button class="pos-casa-btn ${activa ? 'active' : ''}" title="${casa.nombre}"
+            style="${activa ? `background:${casa.color};color:${casa.text};border-color:${casa.color};` : ''}"
+            onclick="posToggleCasa('${m.id}','${casa.id}')">${casa.emoji}</button>`;
         }).join('')}
       </div>
       ${_mesaCasa[m.id] ? (() => {
-        const c = CASAS.find(x => x.id === _mesaCasa[m.id]);
-        return `<div class="pos-casa-label" style="background:${c.color};color:${c.text}">${c.emoji} ${c.nombre}</div>`;
+        const casa = CASAS.find(x => x.id === _mesaCasa[m.id]);
+        return `<div class="pos-casa-label" style="background:${casa.color};color:${casa.text}">${casa.emoji} ${casa.nombre}</div>`;
       })() : ''}
 
-      <!-- Acciones -->
       <div style="margin-top:auto;padding-top:16px;display:flex;flex-direction:column;gap:8px">
         ${m.estado === 'libre' ? `
-        <button class="pos-action-btn primary" onclick="posAbrirMesa('${m.id}')">
-          <i class="ti ti-door-enter"></i> Abrir mesa
-        </button>` : `
-        <button class="pos-action-btn" onclick="posAbrirComanda('${m.id}')">
-          <i class="ti ti-clipboard-list"></i> Ver comanda
-        </button>`}
+          <button class="pos-action-btn primary" onclick="posAbrirMesa('${m.id}')">
+            <i class="ti ti-door-enter"></i> Abrir mesa
+          </button>` : `
+          <button class="pos-action-btn primary" onclick="posAbrirMesa('${m.id}')">
+            <i class="ti ti-clipboard-list"></i> Ver comanda
+          </button>`}
         ${editMode ? `
-        <button class="pos-action-btn danger" onclick="posEliminarMesa('${m.id}')">
-          <i class="ti ti-trash"></i> Eliminar mesa
-        </button>` : ''}
+          <button class="pos-action-btn danger" onclick="posEliminarMesa('${m.id}')">
+            <i class="ti ti-trash"></i> Eliminar mesa
+          </button>` : ''}
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
+// ── Comanda: filtrar productos ───────────────────────────────────
+export function filtrarProductos(mesaId, val) {
+  const drop = document.getElementById(`cmd-drop-${mesaId}`);
+  if (!drop) return;
+  const f = val.toLowerCase().trim();
+  const lista = f
+    ? _productos.filter(p => p.nombre.toLowerCase().includes(f)).slice(0, 25)
+    : _productos.slice(0, 25);
+  if (!lista.length) { drop.style.display = 'none'; return; }
+  drop.innerHTML = lista.map(p => `
+    <div style="padding:9px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);
+      display:flex;justify-content:space-between;align-items:center;font-size:13px"
+      onmousedown="posAgregarAComanda('${mesaId}','${p.id}')">
+      <div>
+        <div style="font-weight:500">${p.nombre}</div>
+        <div style="font-size:11px;color:var(--pos-muted)">${p.categorias_productos?.nombre || ''}</div>
+      </div>
+      <div style="font-weight:600;color:var(--pos-accent);margin-left:12px">${_fmtPesos(p.precio)}</div>
+    </div>`).join('');
+  drop.style.display = 'block';
+}
+
+// ── Comanda: agregar ítem ────────────────────────────────────────
+export function agregarAComanda(mesaId, productoId) {
+  const producto = _productos.find(p => p.id === productoId);
+  if (!producto) return;
+  if (!_comandas[mesaId]) _comandas[mesaId] = [];
+  const existing = _comandas[mesaId].find(i => i.id === productoId);
+  if (existing) {
+    existing.cantidad++;
+  } else {
+    _comandas[mesaId].push({ id: productoId, nombre: producto.nombre, precio: producto.precio || 0, cantidad: 1 });
+  }
+  const inp = document.getElementById(`cmd-search-${mesaId}`);
+  if (inp) inp.value = '';
+  const drop = document.getElementById(`cmd-drop-${mesaId}`);
+  if (drop) drop.style.display = 'none';
+  _updateComandaUI(mesaId);
+}
+
+// ── Comanda: cambiar cantidad ────────────────────────────────────
+export function changeItemQty(mesaId, idx, delta) {
+  const items = _comandas[mesaId];
+  if (!items || !items[idx]) return;
+  items[idx].cantidad += delta;
+  if (items[idx].cantidad <= 0) items.splice(idx, 1);
+  _updateComandaUI(mesaId);
+}
+
+// ── Personas ─────────────────────────────────────────────────────
 export function changePersonas(mesaId, delta) {
   const current = _mesaPersonas[mesaId] || 1;
   const next = Math.max(1, Math.min(current + delta, 20));
   _mesaPersonas[mesaId] = next;
   const el = document.getElementById('pos-personas-val');
   if (el) el.textContent = next;
-  // actualizar badge en plano
   renderPlano(document.getElementById('pos-plano'));
 }
 
@@ -335,8 +507,23 @@ export function toggleCasa(mesaId, casaId) {
   renderPlano(document.getElementById('pos-plano'));
 }
 
+// ── Abrir mesa ───────────────────────────────────────────────────
 export async function abrirMesa(id) {
+  if (!_mesaHora[id]) _mesaHora[id] = new Date();
   await cambiarEstado(id, 'ocupada');
+}
+
+// ── Cobrar (placeholder — próxima etapa) ─────────────────────────
+export function cobrarMesa(mesaId) {
+  const items = _comandas[mesaId] || [];
+  const total = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  if (!items.length) { showPosToast('La comanda está vacía', 'error'); return; }
+  // TODO: implementar flujo de cobro (efectivo, tarjeta, etc.)
+  if (confirm(`Cobrar mesa ${mesaSelected?.numero} — Total ${_fmtPesos(total)}\n¿Confirmar cierre?`)) {
+    _comandas[mesaId] = [];
+    cambiarEstado(mesaId, 'libre');
+    showPosToast('Mesa cerrada ✓');
+  }
 }
 
 // ── Estado de mesa ───────────────────────────────────────────────
@@ -346,8 +533,13 @@ export async function cambiarEstado(id, nuevoEstado) {
   const m = mesas.find(x => x.id === id);
   if (m) m.estado = nuevoEstado;
   if (mesaSelected?.id === id) mesaSelected.estado = nuevoEstado;
-  const plano = document.getElementById('pos-plano');
-  renderPlano(plano);
+  if (['libre', 'reservada'].includes(nuevoEstado)) {
+    // Si se cierra la mesa, limpiar hora de apertura
+    if (nuevoEstado === 'libre') delete _mesaHora[id];
+  } else if (nuevoEstado === 'ocupada' && !_mesaHora[id]) {
+    _mesaHora[id] = new Date();
+  }
+  renderPlano(document.getElementById('pos-plano'));
   renderRightPanel(document.getElementById('pos-right-panel'));
 }
 
@@ -384,7 +576,9 @@ export async function eliminarMesa(id) {
 // ── Edit mode ────────────────────────────────────────────────────
 export function toggleEditMode(btnEl) {
   editMode = !editMode;
-  btnEl.textContent = editMode ? '✓ Guardar posiciones' : '✎ Editar plano';
+  btnEl.innerHTML = editMode
+    ? '<i class="ti ti-check"></i> Guardar posiciones'
+    : '<i class="ti ti-pencil"></i> Editar plano';
   btnEl.style.background = editMode ? '#22c55e' : '';
   btnEl.style.color = editMode ? '#fff' : '';
   document.getElementById('pos-add-mesa-btn').style.display = editMode ? 'flex' : 'none';
