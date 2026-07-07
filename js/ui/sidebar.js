@@ -71,6 +71,15 @@ export async function initShell(activeSlug, pageTitle) {
         ${soonItems}
       </div>
 
+      <div class="topnav-links">
+        <a href="/talleres/" target="_blank" class="topnav-ext-link" title="Ver vitrina de talleres">
+          <i class="ti ti-school"></i>
+        </a>
+        <a href="/" target="_blank" class="topnav-ext-link" title="Ver menú público">
+          <i class="ti ti-menu-2"></i>
+        </a>
+      </div>
+
       <div class="topnav-user">
         <div class="topnav-avatar">${displayName.charAt(0).toUpperCase()}</div>
         <div class="topnav-user-info">
@@ -84,16 +93,6 @@ export async function initShell(activeSlug, pageTitle) {
     </nav>
 
     <div class="platform-main">
-      <header class="platform-header">
-        <h1 class="platform-page-title">${pageTitle}</h1>
-        <div class="header-spacer"></div>
-        <a href="/talleres/" target="_blank" class="header-view-menu" style="margin-right:4px">
-          <i class="ti ti-external-link"></i> Talleres
-        </a>
-        <a href="/" target="_blank" class="header-view-menu">
-          <i class="ti ti-external-link"></i> Ver menú
-        </a>
-      </header>
       <main class="platform-content" id="platform-content"></main>
     </div>
   `;
