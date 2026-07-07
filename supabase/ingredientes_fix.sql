@@ -1,6 +1,5 @@
 ﻿-- Limpiar duplicados y reinsertar solo los 120 ingredientes correctos
-TRUNCATE TABLE public.recetas;
-TRUNCATE TABLE public.ingredientes;
+TRUNCATE TABLE public.ingredientes CASCADE;
 
 INSERT INTO public.ingredientes (id_fudo, nombre, categoria, unidad, costo, proveedor, controlar_stock, merma) VALUES
 (25, 'Masa de pizza 28cms', 'Bases Panadería - Dulces', 'unid.', 2100, 'Panadería San Juan', true, 0),
