@@ -291,6 +291,62 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .carta-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 .carta-toast.error { background: #7f1d1d; }
+
+/* ── Cocina label en sidebar ── */
+.carta-cat-group { color: #333 !important; }
+
+/* ── Form header action buttons ── */
+.carta-form-action-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 13px; border-radius: 8px; font-family: inherit;
+  font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border);
+  transition: background .12s;
+}
+.carta-form-action-btn.save {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.carta-form-action-btn.save:hover { background: var(--accent-h); }
+.carta-form-action-btn.discard {
+  background: none; color: var(--muted);
+}
+.carta-form-action-btn.discard:hover { background: var(--bg); color: var(--text); }
+
+/* ── Toggle inactivos ── */
+.carta-toggle-label {
+  display: flex; align-items: center; gap: 7px; font-size: 13px;
+  cursor: pointer; user-select: none; color: var(--muted);
+}
+.carta-toggle-label input { accent-color: var(--accent); width: 14px; height: 14px; }
+
+/* ── Receta ── */
+.cf-receta-lista { display: flex; flex-direction: column; gap: 4px; }
+.cf-receta-row {
+  display: grid; grid-template-columns: 1fr 140px 100px 70px 28px;
+  align-items: center; gap: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 7px; padding: 6px 10px; font-size: 12px;
+}
+.cf-receta-ing { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cf-receta-cant { display: flex; gap: 4px; }
+.cf-receta-merma { display: flex; align-items: center; gap: 4px; }
+.cf-receta-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.cf-receta-input { padding: 5px 7px !important; font-size: 12px !important; }
+.cf-receta-sel { padding: 5px 4px !important; font-size: 12px !important; }
+.cf-receta-costo { text-align: right; font-weight: 600; font-size: 12px; white-space: nowrap; }
+.cf-receta-del {
+  width: 24px; height: 24px; border-radius: 5px; border: none;
+  background: none; color: var(--muted); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.cf-receta-del:hover { background: #fef2f2; color: var(--danger); }
+
+/* ── Picker ingredientes ── */
+.carta-ing-picker {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 380px;
+  background: var(--surface); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; z-index: 50;
+  box-shadow: -4px 0 20px rgba(0,0,0,.1);
+}
 </style>
 </head>
 <body>
@@ -301,15 +357,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 import { requireAuth }  from '/js/core/auth.js';
 import { initShell }    from '/js/ui/sidebar.js';
 import {
-  state, cargarCocinas, cargarCategorias, cargarModificadores, cargarProductos, showToast,
+  state, cargarCocinas, cargarCategorias, cargarModificadores,
+  cargarProductos, cargarIngredientes, showToast,
 } from '/js/carta/utils.js';
 import {
-  renderListaProductos, onBusqueda, abrirProducto, cerrarForm,
-  guardarProducto, eliminarProducto, abrirPickerMod, cerrarPickerMod, confirmarMods, quitarMod,
+  renderListaProductos, onBusqueda, toggleInactivos,
+  abrirProducto, cerrarForm, guardarProducto, eliminarProducto,
+  abrirPickerMod, cerrarPickerMod, confirmarMods, quitarMod,
+  abrirIngPicker, cerrarIngPicker, filtrarIng, selIng, confirmarIng,
+  quitarRecetaLinea, actualizarRecetaLinea, actualizarCostos,
 } from '/js/carta/productos.js';
 import {
   renderSidebarCategorias, renderTabCategorias,
-  abrirFormCat, cerrarModalCat, guardarCat,
+  abrirFormCat, cerrarModalCat, guardarCat, toggleCatActiva,
 } from '/js/carta/categorias.js';
 import {
   renderTabModificadores, abrirFormMod, cerrarModalMod, guardarMod,
@@ -346,7 +406,7 @@ document.getElementById('platform-content').innerHTML = `
 `;
 
 // ── Carga inicial ────────────────────────────────────────────────
-await Promise.all([cargarCocinas(), cargarCategorias(), cargarModificadores()]);
+await Promise.all([cargarCocinas(), cargarCategorias(), cargarModificadores(), cargarIngredientes()]);
 await cargarProductos(null);
 
 renderSidebarCategorias();
@@ -371,6 +431,10 @@ function _renderTabProductos() {
           placeholder="Buscar producto…"
           oninput="cartaBusqueda(this.value)" />
       </div>
+      <label class="carta-toggle-label">
+        <input type="checkbox" onchange="cartaToggleInactivos(this.checked)" />
+        Ver inactivos
+      </label>
       <span class="carta-count" id="carta-count"></span>
     </div>
     <table class="carta-table">
@@ -418,25 +482,37 @@ window.cartaSelCat = async (catId) => {
   renderListaProductos();
 };
 
-window.cartaBusqueda        = (v)   => onBusqueda(v);
-window.cartaAbrirProducto   = (id)  => abrirProducto(id);
-window.cartaCerrarForm      = ()    => cerrarForm();
-window.cartaGuardarProducto = ()    => guardarProducto();
-window.cartaEliminarProducto= (id)  => eliminarProducto(id);
-window.cartaAbrirPickerMod  = ()    => abrirPickerMod();
-window.cartaCerrarPickerMod = ()    => cerrarPickerMod();
-window.cartaConfirmarMods   = ()    => confirmarMods();
-window.cartaQuitarMod       = (id)  => quitarMod(id);
+window.cartaBusqueda          = (v)      => onBusqueda(v);
+window.cartaToggleInactivos   = (c)      => toggleInactivos(c);
+window.cartaAbrirProducto     = (id)     => abrirProducto(id);
+window.cartaCerrarForm        = ()       => cerrarForm();
+window.cartaGuardarProducto   = ()       => guardarProducto();
+window.cartaEliminarProducto  = (id)     => eliminarProducto(id);
+window.cartaActualizarCostos  = ()       => actualizarCostos();
 
-window.cartaAbrirFormCat    = ()    => abrirFormCat();
-window.cartaEditarCat       = (id)  => abrirFormCat(id);
-window.cartaCerrarModalCat  = ()    => cerrarModalCat();
-window.cartaGuardarCat      = ()    => guardarCat();
+window.cartaAbrirPickerMod    = ()       => abrirPickerMod();
+window.cartaCerrarPickerMod   = ()       => cerrarPickerMod();
+window.cartaConfirmarMods     = ()       => confirmarMods();
+window.cartaQuitarMod         = (id)     => quitarMod(id);
 
-window.cartaAbrirFormMod    = ()    => abrirFormMod();
-window.cartaEditarMod       = (id)  => abrirFormMod(id);
-window.cartaCerrarModalMod  = ()    => cerrarModalMod();
-window.cartaGuardarMod      = ()    => guardarMod();
+window.cartaAbrirIngPicker    = ()       => abrirIngPicker();
+window.cartaCerrarIngPicker   = ()       => cerrarIngPicker();
+window.cartaFiltrarIng        = (v)      => filtrarIng(v);
+window.cartaSelIng            = (id,n,u) => selIng(id,n,u);
+window.cartaConfirmarIng      = ()       => confirmarIng();
+window.cartaQuitarRecetaLinea = (i)      => quitarRecetaLinea(i);
+window.cartaActualizarRecetaLinea = (i,c,v) => actualizarRecetaLinea(i,c,v);
+
+window.cartaAbrirFormCat      = ()           => abrirFormCat();
+window.cartaEditarCat         = (id)         => abrirFormCat(id);
+window.cartaCerrarModalCat    = ()           => cerrarModalCat();
+window.cartaGuardarCat        = ()           => guardarCat();
+window.cartaToggleCatActiva   = (id, activa) => toggleCatActiva(id, activa);
+
+window.cartaAbrirFormMod      = ()       => abrirFormMod();
+window.cartaEditarMod         = (id)     => abrirFormMod(id);
+window.cartaCerrarModalMod    = ()       => cerrarModalMod();
+window.cartaGuardarMod        = ()       => guardarMod();
 
 </script>
 </body>

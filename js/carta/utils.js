@@ -5,7 +5,9 @@ export const state = {
   categorias:   [],
   cocinas:      [],
   modificadores:[],
-  categoriaActual: null,  // null = todas
+  ingredientes: [],
+  categoriaActual: null,
+  mostrarInactivos: false,
 };
 
 export function fmtPesos(n) {
@@ -45,14 +47,30 @@ export async function cargarCocinas() {
   return state.cocinas;
 }
 
-export async function cargarCategorias() {
-  const { data } = await supabase
-    .from('categorias_productos')
-    .select('*, cocinas(nombre)')
-    .eq('activa', true)
-    .order('orden');
+export async function cargarCategorias(soloActivas = false) {
+  let q = supabase.from('categorias_productos').select('*, cocinas(nombre)').order('orden');
+  if (soloActivas) q = q.eq('activa', true);
+  const { data } = await q;
   state.categorias = data || [];
   return state.categorias;
+}
+
+export async function cargarIngredientes() {
+  const { data } = await supabase
+    .from('ingredientes')
+    .select('id, nombre, categoria, unidad, costo, proveedor')
+    .eq('activo', true)
+    .order('nombre');
+  state.ingredientes = data || [];
+  return state.ingredientes;
+}
+
+export async function cargarReceta(productoId) {
+  const { data } = await supabase
+    .from('recetas')
+    .select('*, ingredientes(id, nombre, unidad, costo)')
+    .eq('producto_id', productoId);
+  return data || [];
 }
 
 export async function cargarModificadores() {

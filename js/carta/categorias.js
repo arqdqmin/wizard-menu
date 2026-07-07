@@ -21,7 +21,7 @@ export function renderSidebarCategorias(onSelect) {
 
   const orden = ['Barra/Pastelería', 'Cocina', 'General'];
   orden.forEach(cocina => {
-    const cats = byCocina[cocina];
+    const cats = (byCocina[cocina] || []).filter(c => c.activa !== false);
     if (!cats?.length) return;
     html += `<div class="carta-cat-group">${cocina}</div>`;
     cats.forEach(c => {
@@ -66,7 +66,13 @@ export function renderTabCategorias() {
           <td>${c.nombre}</td>
           <td>${c.cocinas?.nombre || '<span style="color:#888">Sin cocina</span>'}</td>
           <td>${c.orden}</td>
-          <td><span class="carta-badge-${c.activa ? 'ok' : 'off'}">${c.activa ? 'Activa' : 'Inactiva'}</span></td>
+          <td>
+            <button class="carta-badge-${c.activa ? 'ok' : 'off'}"
+              style="border:none;cursor:pointer;font-size:11px;font-weight:600;padding:2px 8px;border-radius:5px;background:${c.activa ? '#f0fdf4' : '#fef2f2'};color:${c.activa ? '#16a34a' : '#dc2626'}"
+              onclick="cartaToggleCatActiva('${c.id}',${!c.activa})" title="${c.activa ? 'Ocultar categoría' : 'Mostrar categoría'}">
+              ${c.activa ? 'Visible' : 'Oculta'}
+            </button>
+          </td>
           <td>
             <button class="carta-icon-btn" onclick="cartaEditarCat('${c.id}')">
               <i class="ti ti-pencil"></i>
@@ -117,6 +123,14 @@ export function abrirFormCat(id = null) {
 
 export function cerrarModalCat() {
   document.getElementById('modal-cat').style.display = 'none';
+}
+
+export async function toggleCatActiva(id, activa) {
+  const { error } = await supabase.from('categorias_productos').update({ activa }).eq('id', id);
+  if (error) { showToast('Error: ' + error.message, 'error'); return; }
+  await cargarCategorias();
+  renderTabCategorias();
+  renderSidebarCategorias();
 }
 
 export async function guardarCat() {
