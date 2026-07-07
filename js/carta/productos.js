@@ -248,22 +248,14 @@ function _renderRecetaLineas() {
     return `
     <div class="cf-receta-row">
       <div class="cf-receta-ing">${r.ingredientes?.nombre || '?'}</div>
-      <div class="cf-receta-cant">
-        <input class="carta-input cf-receta-input" type="number" min="0" step="0.01"
-          value="${r.cantidad_neta}"
-          onchange="cartaActualizarRecetaLinea(${i}, 'cantidad_neta', this.value)" />
-        <select class="carta-select cf-receta-sel"
-          onchange="cartaActualizarRecetaLinea(${i}, 'unidad', this.value)">
-          ${['unid.','g','kg','ml','l','cc','tbsp','tsp','pizca'].map(u =>
-            `<option ${r.unidad === u ? 'selected' : ''}>${u}</option>`).join('')}
-        </select>
-      </div>
-      <div class="cf-receta-merma">
-        <input class="carta-input cf-receta-input" type="number" min="0" step="0.1"
-          value="${merma}" placeholder="0"
-          onchange="cartaActualizarRecetaLinea(${i}, 'merma', this.value)" />
-        <span class="cf-receta-label">% merma</span>
-      </div>
+      <input class="carta-input cf-receta-input" type="number" min="0" step="0.01"
+        value="${r.cantidad_neta}"
+        onchange="cartaActualizarRecetaLinea(${i}, 'cantidad_neta', this.value)" />
+      <select class="carta-select cf-receta-sel"
+        onchange="cartaActualizarRecetaLinea(${i}, 'unidad', this.value)">
+        ${['unid.','g','kg','ml','l','cc','tbsp','tsp','pizca'].map(u =>
+          `<option ${r.unidad === u ? 'selected' : ''}>${u}</option>`).join('')}
+      </select>
       <div class="cf-receta-costo">${fmtPesos(costo)}</div>
       <button class="cf-receta-del" onclick="cartaQuitarRecetaLinea(${i})">
         <i class="ti ti-x"></i>
