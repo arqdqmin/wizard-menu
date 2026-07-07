@@ -401,11 +401,10 @@ function _actualizarCostCard() {
 
 function _renderCostCard(precio, costoReceta, rrhh = 0) {
   const totalCostos = costoReceta + rrhh;
-  const precioNeto  = precio / 1.19;            // precio sin IVA
-  const iva         = precio - precioNeto;       // IVA incluido en precio
-  const margenBruto = precio - totalCostos;      // margen sobre precio con IVA
+  const iva         = precio * 0.19;             // 19% del precio de venta
+  const margenBruto = precio - totalCostos;
   const margenPct   = precio > 0 ? (margenBruto / precio * 100) : 0;
-  const utilidad    = precioNeto - totalCostos;  // utilidad real (neta de IVA)
+  const utilidad    = precio - totalCostos - iva; // precio - costos - IVA
 
   const row = (label, valor, cls = '') =>
     `<div class="carta-cost-row${cls ? ' ' + cls : ''}">
