@@ -14,6 +14,16 @@ let dragging = null;
 let dragOffX = 0;
 let dragOffY = 0;
 
+// Contexto de usuario y garzonas
+let _garzonesData  = [];  // [{ id, nombre, apellido }]
+let _currentUser   = null;
+let _canEdit       = false;
+let _mesaPersonas  = {};  // { mesaId: número }
+let _mesaGarzon    = {};  // { mesaId: nombre }
+
+export function setUserContext(user, canEdit) { _currentUser = user; _canEdit = canEdit; }
+export function setGarzonesData(data) { _garzonesData = data || []; }
+
 function snapVal(v) {
   return snapToGrid ? Math.round(v / GRID_SIZE) * GRID_SIZE : v;
 }
@@ -58,34 +68,39 @@ async function switchZona(id, tabsEl, onSwitch) {
 const ESTADO_COLOR = {
   libre:    { bg: '#22c55e', text: '#fff' },
   ocupada:  { bg: '#f97316', text: '#fff' },
-  cuenta:   { bg: '#ef4444', text: '#fff' },
+  cuenta:   { bg: '#06b6d4', text: '#fff' },
   reservada:{ bg: '#a855f7', text: '#fff' },
 };
+const MESA_SIZE = 90; // px
 
 export function renderPlano(planoEl) {
-  // Limpiar mesas previas (mantener overlay si existe)
   planoEl.querySelectorAll('.pos-mesa').forEach(el => el.remove());
 
   mesas.forEach(mesa => {
     const c = ESTADO_COLOR[mesa.estado] || ESTADO_COLOR.libre;
+    const personas = _mesaPersonas[mesa.id] || '';
     const el = document.createElement('div');
     el.className = 'pos-mesa';
     el.dataset.id = mesa.id;
     el.style.cssText = `
       position:absolute;
       left:${mesa.pos_x}px; top:${mesa.pos_y}px;
-      width:80px; height:80px;
+      width:${MESA_SIZE}px; height:${MESA_SIZE}px;
       background:${c.bg}; color:${c.text};
-      border-radius:${mesa.forma === 'redondo' ? '50%' : '10px'};
-      display:flex; align-items:center; justify-content:center;
-      font-size:22px; font-weight:700;
+      border-radius:${mesa.forma === 'redondo' ? '50%' : '12px'};
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:2px;
+      font-size:26px; font-weight:700;
       cursor:${editMode ? 'grab' : 'pointer'};
       user-select:none;
-      box-shadow:0 2px 8px rgba(0,0,0,.18);
+      box-shadow:0 2px 10px rgba(0,0,0,.22);
       transition:box-shadow .15s, transform .1s;
       border: ${mesaSelected?.id === mesa.id ? '3px solid #fff' : '3px solid transparent'};
     `;
-    el.textContent = mesa.numero;
+    el.innerHTML = `
+      <span>${mesa.numero}</span>
+      ${personas ? `<span style="font-size:11px;font-weight:500;opacity:.85"><i class="ti ti-users" style="font-size:10px"></i> ${personas}</span>` : ''}
+    `;
     el.title = `Mesa ${mesa.numero} · ${mesa.estado}`;
 
     // Hover
@@ -120,8 +135,8 @@ function onPointerDown(e, mesa, el, planoEl) {
     const r   = planoEl.getBoundingClientRect();
     const rawX = ev.clientX - r.left - dragOffX;
     const rawY = ev.clientY - r.top  - dragOffY;
-    const x = snapVal(Math.max(0, Math.min(rawX, r.width  - GRID_SIZE)));
-    const y = snapVal(Math.max(0, Math.min(rawY, r.height - GRID_SIZE)));
+    const x = snapVal(Math.max(0, Math.min(rawX, r.width  - MESA_SIZE)));
+    const y = snapVal(Math.max(0, Math.min(rawY, r.height - MESA_SIZE)));
     el.style.left = x + 'px';
     el.style.top  = y + 'px';
     dragging.newX = x;
@@ -178,33 +193,96 @@ export function renderRightPanel(panelEl) {
     panelEl.innerHTML = `<div class="pos-right-empty"><i class="ti ti-layout-grid" style="font-size:36px;color:var(--pos-muted)"></i><p>Selecciona una mesa</p></div>`;
     return;
   }
-  const m = mesaSelected;
-  const c = ESTADO_COLOR[m.estado] || ESTADO_COLOR.libre;
+  const m  = mesaSelected;
+  const c  = ESTADO_COLOR[m.estado] || ESTADO_COLOR.libre;
+  const personas = _mesaPersonas[m.id] || 1;
+  const garzonActual = _mesaGarzon[m.id] || '';
+
+  // Si no es admin/super_admin → forzar garzón al usuario actual
+  const esAdmin = _canEdit;
+  const nombreUsuario = _currentUser ? (_currentUser.email || '').split('@')[0] : '';
+
+  const garzonesOpts = _garzonesData.map(g => {
+    const nombre = `${g.nombre} ${g.apellido || ''}`.trim();
+    return `<option value="${nombre}" ${garzonActual === nombre ? 'selected' : ''}>${nombre}</option>`;
+  }).join('');
+
   panelEl.innerHTML = `
     <div class="pos-mesa-detail">
-      <div class="pos-mesa-badge" style="background:${c.bg}">${m.numero}</div>
-      <div class="pos-detail-nombre">Mesa ${m.numero}</div>
-      <div class="pos-detail-meta">${m.capacidad} personas · ${m.forma}</div>
-      <div class="pos-estado-label" style="color:${c.bg};font-weight:600;margin-top:4px;text-transform:capitalize">${m.estado}</div>
+      <!-- Cabecera -->
+      <div class="pos-mesa-header" style="background:${c.bg}">
+        <div class="pos-mesa-badge-lg">${m.numero}</div>
+        <div>
+          <div style="font-size:17px;font-weight:700">Mesa ${m.numero}</div>
+          <div style="font-size:12px;opacity:.85;text-transform:capitalize">${m.estado} · cap. ${m.capacidad}</div>
+        </div>
+      </div>
 
+      <!-- Estado rápido -->
       <div class="pos-detail-section">Estado</div>
       <div class="pos-estado-btns">
         ${['libre','ocupada','cuenta','reservada'].map(s =>
-          `<button class="pos-estado-btn ${m.estado===s?'active':''}" style="${m.estado===s?`background:${ESTADO_COLOR[s].bg};color:#fff`:''}"
-           onclick="posCambiarEstado('${m.id}','${s}')">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`
+          `<button class="pos-estado-btn ${m.estado===s?'active':''}"
+            style="${m.estado===s?`background:${ESTADO_COLOR[s].bg};color:#fff`:''}"
+            onclick="posCambiarEstado('${m.id}','${s}')">
+            ${s.charAt(0).toUpperCase()+s.slice(1)}
+           </button>`
         ).join('')}
       </div>
 
-      <div class="pos-detail-section">Acciones</div>
-      <button class="pos-action-btn" onclick="posAbrirComanda('${m.id}')">
-        <i class="ti ti-clipboard-list"></i> Abrir comanda
-      </button>
-      ${editMode ? `
-      <button class="pos-action-btn danger" onclick="posEliminarMesa('${m.id}')">
-        <i class="ti ti-trash"></i> Eliminar mesa
-      </button>` : ''}
+      <!-- Personas -->
+      <div class="pos-detail-section">Personas</div>
+      <div class="pos-personas-row">
+        <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',-1)"><i class="ti ti-minus"></i></button>
+        <span id="pos-personas-val" class="pos-qty-val">${personas}</span>
+        <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',1)"><i class="ti ti-plus"></i></button>
+      </div>
+
+      <!-- Garzón -->
+      <div class="pos-detail-section">Garzón</div>
+      ${esAdmin ? `
+        <select class="pos-garzon-select" onchange="posSetGarzon('${m.id}',this.value)">
+          <option value="">— Sin asignar —</option>
+          ${garzonesOpts}
+        </select>
+      ` : `
+        <div class="pos-garzon-name">${nombreUsuario}</div>
+      `}
+
+      <!-- Acciones -->
+      <div style="margin-top:auto;padding-top:16px;display:flex;flex-direction:column;gap:8px">
+        ${m.estado === 'libre' ? `
+        <button class="pos-action-btn primary" onclick="posAbrirMesa('${m.id}')">
+          <i class="ti ti-door-enter"></i> Abrir mesa
+        </button>` : `
+        <button class="pos-action-btn" onclick="posAbrirComanda('${m.id}')">
+          <i class="ti ti-clipboard-list"></i> Ver comanda
+        </button>`}
+        ${editMode ? `
+        <button class="pos-action-btn danger" onclick="posEliminarMesa('${m.id}')">
+          <i class="ti ti-trash"></i> Eliminar mesa
+        </button>` : ''}
+      </div>
     </div>
   `;
+}
+
+export function changePersonas(mesaId, delta) {
+  const current = _mesaPersonas[mesaId] || 1;
+  const next = Math.max(1, Math.min(current + delta, 20));
+  _mesaPersonas[mesaId] = next;
+  const el = document.getElementById('pos-personas-val');
+  if (el) el.textContent = next;
+  // actualizar badge en plano
+  renderPlano(document.getElementById('pos-plano'));
+}
+
+export function setGarzon(mesaId, nombre) {
+  _mesaGarzon[mesaId] = nombre;
+}
+
+export async function abrirMesa(id) {
+  await cambiarEstado(id, 'ocupada');
 }
 
 // ── Estado de mesa ───────────────────────────────────────────────

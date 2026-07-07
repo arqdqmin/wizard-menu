@@ -155,7 +155,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
 
 /* ── Panel derecho ───────────────────────────────────────────── */
 .pos-right-panel {
-  width: 240px; background: var(--pos-surface);
+  width: 260px; background: var(--pos-surface);
   border-left: 1px solid var(--pos-border);
   flex-shrink: 0; overflow-y: auto;
 }
@@ -164,32 +164,70 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
   align-items: center; justify-content: center;
   gap: 10px; color: var(--pos-muted); font-size: 13px;
 }
-.pos-mesa-detail { padding: 20px 16px; }
-.pos-mesa-badge {
-  width: 64px; height: 64px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 26px; font-weight: 700; color: #fff;
-  margin: 0 auto 12px;
+.pos-mesa-detail {
+  display: flex; flex-direction: column;
+  padding: 0 0 20px; min-height: 100%;
 }
-.pos-detail-nombre { text-align: center; font-size: 16px; font-weight: 700; }
-.pos-detail-meta { text-align: center; font-size: 12px; color: var(--pos-muted); margin-top: 2px; }
+.pos-mesa-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 16px; color: #fff;
+  border-radius: 0;
+}
+.pos-mesa-badge-lg {
+  width: 56px; height: 56px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; background: rgba(0,0,0,.18);
+  flex-shrink: 0;
+}
 .pos-detail-section {
   font-size: 10px; font-weight: 600; text-transform: uppercase;
   letter-spacing: .07em; color: var(--pos-muted);
-  margin: 16px 0 8px;
+  margin: 16px 16px 8px;
 }
-.pos-estado-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pos-estado-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 16px; }
 .pos-estado-btn {
-  padding: 7px 4px; border-radius: 7px; border: 1px solid var(--pos-border);
+  padding: 8px 4px; border-radius: 7px; border: 1px solid var(--pos-border);
   background: none; color: var(--pos-muted); cursor: pointer;
   font-size: 11px; font-weight: 500; font-family: inherit;
   transition: all .12s;
 }
 .pos-estado-btn:hover { border-color: #666; color: var(--pos-text); }
 .pos-estado-btn.active { border-color: transparent; }
-.pos-estado-label { text-align: center; font-size: 13px; }
+
+/* Contador personas */
+.pos-personas-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px;
+}
+.pos-qty-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid var(--pos-border); background: none;
+  color: var(--pos-text); cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s; flex-shrink: 0;
+}
+.pos-qty-btn:hover { background: rgba(255,255,255,.1); }
+.pos-qty-val {
+  flex: 1; text-align: center; font-size: 22px; font-weight: 700;
+}
+
+/* Garzón */
+.pos-garzon-select {
+  width: calc(100% - 32px); margin: 0 16px;
+  padding: 9px 11px; border: 1px solid var(--pos-border);
+  border-radius: 8px; background: var(--pos-bg); color: var(--pos-text);
+  font-family: inherit; font-size: 13px; outline: none; display: block;
+}
+.pos-garzon-select:focus { border-color: var(--pos-accent); }
+.pos-garzon-name {
+  margin: 0 16px; padding: 9px 11px;
+  border: 1px solid var(--pos-border); border-radius: 8px;
+  font-size: 13px; color: var(--pos-text); background: rgba(255,255,255,.04);
+}
+
+/* Botones de acción */
 .pos-action-btn {
-  width: 100%; padding: 10px; border-radius: 8px; margin-top: 6px;
+  margin: 0 16px; padding: 11px; border-radius: 8px;
   border: 1px solid var(--pos-border); background: none;
   color: var(--pos-text); cursor: pointer; font-size: 13px;
   font-weight: 500; font-family: inherit;
@@ -197,6 +235,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
   transition: background .12s;
 }
 .pos-action-btn:hover { background: rgba(255,255,255,.07); }
+.pos-action-btn.primary { background: var(--pos-green); color: #fff; border-color: var(--pos-green); }
+.pos-action-btn.primary:hover { background: #16a34a; }
 .pos-action-btn.danger { color: #ef4444; border-color: #ef444440; }
 .pos-action-btn.danger:hover { background: rgba(239,68,68,.1); }
 
@@ -416,6 +456,7 @@ import {
   loadZonas, loadMesas, renderZonaTabs, renderPlano, renderRightPanel,
   cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona, getZonas,
   toggleSnapToGrid, initGrid,
+  setUserContext, setGarzonesData, changePersonas, setGarzon, abrirMesa,
 } from '/js/pos/mesas.js';
 
 // Auth
@@ -427,9 +468,20 @@ document.getElementById('pos-username').textContent = user.email.split('@')[0];
 const roles = await getUserRoles(user.id);
 const canEdit = roles.some(r => r === 'super_admin' || r === 'administrador');
 if (!canEdit) {
-  document.getElementById('pos-edit-btn').style.display   = 'none';
+  document.getElementById('pos-edit-btn').style.display    = 'none';
   document.getElementById('pos-add-zona-btn').style.display = 'none';
 }
+
+// Contexto de usuario para el panel de mesas
+setUserContext(user, canEdit);
+
+// Cargar garzonas desde trabajadores
+const { data: garzonesRaw } = await supabase
+  .from('trabajadores')
+  .select('id, nombre, apellido')
+  .eq('archivado', false)
+  .order('nombre');
+setGarzonesData(garzonesRaw || []);
 
 // Reloj
 function updateClock() {
@@ -498,6 +550,9 @@ window.posToggleSnap     = (btn) => toggleSnapToGrid(btn);
 window.posCambiarEstado  = (id, estado) => cambiarEstado(id, estado);
 window.posEliminarMesa   = (id) => eliminarMesa(id);
 window.posAbrirComanda   = (id) => document.getElementById('modal-comanda').classList.add('open');
+window.posChangePersonas = (id, delta) => changePersonas(id, delta);
+window.posSetGarzon      = (id, nombre) => setGarzon(id, nombre);
+window.posAbrirMesa      = (id) => abrirMesa(id);
 
 // Cerrar modales al click en backdrop
 document.querySelectorAll('.pos-modal-backdrop').forEach(el => {
