@@ -20,6 +20,14 @@ let _currentUser   = null;
 let _canEdit       = false;
 let _mesaPersonas  = {};  // { mesaId: número }
 let _mesaGarzon    = {};  // { mesaId: nombre }
+let _mesaCasa      = {};  // { mesaId: 'gryffindor'|'hufflepuff'|'ravenclaw'|'slytherin'|null }
+
+const CASAS = [
+  { id: 'gryffindor', nombre: 'Gryffindor', emoji: '🦁', color: '#ae0001', text: '#ffd700' },
+  { id: 'hufflepuff',  nombre: 'Hufflepuff',  emoji: '🦡', color: '#ecb939', text: '#372e29' },
+  { id: 'ravenclaw',  nombre: 'Ravenclaw',  emoji: '🦅', color: '#0e1a40', text: '#946b2d' },
+  { id: 'slytherin',  nombre: 'Slytherin',  emoji: '🐍', color: '#1a472a', text: '#aaaaaa' },
+];
 
 export function setUserContext(user, canEdit) { _currentUser = user; _canEdit = canEdit; }
 export function setGarzonesData(data) { _garzonesData = data || []; }
@@ -268,6 +276,27 @@ export function renderRightPanel(panelEl) {
         <div class="pos-garzon-name">${nombreUsuario}</div>
       `}
 
+      <!-- Casa Harry Potter -->
+      <div class="pos-detail-section">Casa</div>
+      <div class="pos-casas-row">
+        ${CASAS.map(casa => {
+          const activa = (_mesaCasa[m.id] === casa.id);
+          return `<button
+            class="pos-casa-btn ${activa ? 'active' : ''}"
+            title="${casa.nombre}"
+            style="${activa
+              ? `background:${casa.color};color:${casa.text};border-color:${casa.color};`
+              : ''}"
+            onclick="posToggleCasa('${m.id}','${casa.id}')">
+            ${casa.emoji}
+          </button>`;
+        }).join('')}
+      </div>
+      ${_mesaCasa[m.id] ? (() => {
+        const c = CASAS.find(x => x.id === _mesaCasa[m.id]);
+        return `<div class="pos-casa-label" style="background:${c.color};color:${c.text}">${c.emoji} ${c.nombre}</div>`;
+      })() : ''}
+
       <!-- Acciones -->
       <div style="margin-top:auto;padding-top:16px;display:flex;flex-direction:column;gap:8px">
         ${m.estado === 'libre' ? `
@@ -298,6 +327,12 @@ export function changePersonas(mesaId, delta) {
 
 export function setGarzon(mesaId, nombre) {
   _mesaGarzon[mesaId] = nombre;
+}
+
+export function toggleCasa(mesaId, casaId) {
+  _mesaCasa[mesaId] = (_mesaCasa[mesaId] === casaId) ? null : casaId;
+  renderRightPanel(document.getElementById('pos-right-panel'));
+  renderPlano(document.getElementById('pos-plano'));
 }
 
 export async function abrirMesa(id) {

@@ -228,6 +228,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
   font-size: 13px; color: var(--pos-text); background: rgba(255,255,255,.04);
 }
 
+/* Casas Harry Potter */
+.pos-casas-row {
+  display: flex; gap: 8px; padding: 0 16px; flex-wrap: wrap;
+}
+.pos-casa-btn {
+  width: 52px; height: 52px; border-radius: 10px;
+  border: 2px solid var(--pos-border);
+  background: rgba(255,255,255,.04); font-size: 24px;
+  cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pos-casa-btn:hover { border-color: #666; transform: scale(1.08); }
+.pos-casa-btn.active { transform: scale(1.05); }
+.pos-casa-label {
+  margin: 8px 16px 0; padding: 6px 12px; border-radius: 8px;
+  font-size: 12px; font-weight: 700; text-align: center; letter-spacing: .04em;
+}
+
 /* Botones de acción */
 .pos-action-btn {
   margin: 0 16px; padding: 11px; border-radius: 8px;
@@ -580,7 +598,7 @@ import {
   loadZonas, loadMesas, renderZonaTabs, renderPlano, renderRightPanel,
   cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona, getZonas,
   toggleSnapToGrid, initGrid,
-  setUserContext, setGarzonesData, changePersonas, setGarzon, abrirMesa,
+  setUserContext, setGarzonesData, changePersonas, setGarzon, abrirMesa, toggleCasa,
 } from '/js/pos/mesas.js';
 
 // Auth
@@ -693,6 +711,7 @@ window.posEliminarMesa   = (id) => eliminarMesa(id);
 window.posAbrirComanda   = (id) => document.getElementById('modal-comanda').classList.add('open');
 window.posChangePersonas = (id, delta) => changePersonas(id, delta);
 window.posSetGarzon      = (id, nombre) => setGarzon(id, nombre);
+window.posToggleCasa     = (id, casa)   => toggleCasa(id, casa);
 window.posAbrirMesa      = (id) => abrirMesa(id);
 
 // Cerrar modales al click en backdrop
