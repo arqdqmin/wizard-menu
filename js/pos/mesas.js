@@ -36,6 +36,12 @@ let _co    = null;   // { mesaId, propinas:[{metodo,monto}], pagos:[{metodo,mont
 let _coIdx = 0;
 const CO_METODOS = ['Efectivo', 'Tarj. Débito', 'Tarj. Crédito', 'Transferencia'];
 
+// Precio unitario incluyendo precio_adicional de modificadores seleccionados
+function _precioItem(item) {
+  const adicional = (item.grupos||[]).reduce((s,g) => s + (Number(g.precio_adicional)||0), 0);
+  return (Number(item.precio)||0) + adicional;
+}
+
 const CASAS = [
   { id: 'gryffindor', nombre: 'Gryffindor', emoji: '🦁', color: '#ae0001', text: '#ffd700' },
   { id: 'hufflepuff',  nombre: 'Hufflepuff',  emoji: '🦡', color: '#ecb939', text: '#372e29' },
@@ -275,8 +281,8 @@ function _renderComandaPanel(panelEl, m) {
   const horaStr  = hora ? hora.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
   const confirmed = _confirmedItems[m.id] || [];
   const pending   = _pendingItems[m.id]   || [];
-  const subtotalConfirmed = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
-  const pendingTotal      = pending.reduce  ((s,i) => s + i.precio*i.cantidad, 0);
+  const subtotalConfirmed = confirmed.reduce((s,i) => s + _precioItem(i)*i.cantidad, 0);
+  const pendingTotal      = pending.reduce  ((s,i) => s + _precioItem(i)*i.cantidad, 0);
   const desc = _descuentos[m.id];
   const descMonto = desc?.valor ? (desc.tipo === '%' ? Math.round(subtotalConfirmed * desc.valor / 100) : Math.min(desc.valor, subtotalConfirmed)) : 0;
   const confirmedTotal = subtotalConfirmed - descMonto;
@@ -412,7 +418,7 @@ function _renderConfirmedItems(mesaId) {
           <span style="min-width:18px;text-align:center;font-size:13px;font-weight:600">${item.cantidad}</span>
           <button style="${_qtyBtnStyle()}" onmousedown="posChangeConfirmedQty('${mesaId}',${idx},1)">+</button>
         </div>
-        <div style="min-width:56px;text-align:right;font-size:13px;font-weight:600">${_fmtPesos(item.precio*item.cantidad)}</div>
+        <div style="min-width:56px;text-align:right;font-size:13px;font-weight:600">${_fmtPesos(_precioItem(item)*item.cantidad)}</div>
         <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:var(--pos-muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center"
           onmousedown="posToggleCommentC('${mesaId}',${idx})"><i class="ti ti-message"></i></button>
         <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:#ef4444;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center"
@@ -438,7 +444,7 @@ function _renderPendingItems(mesaId) {
           <span style="min-width:18px;text-align:center;font-size:13px;font-weight:600">${item.cantidad}</span>
           <button style="${_qtyBtnStyle()}" onmousedown="posChangePendingQty('${mesaId}',${idx},1)">+</button>
         </div>
-        <div style="min-width:56px;text-align:right;font-size:13px;font-weight:600;color:var(--pos-accent)">${_fmtPesos(item.precio*item.cantidad)}</div>
+        <div style="min-width:56px;text-align:right;font-size:13px;font-weight:600;color:var(--pos-accent)">${_fmtPesos(_precioItem(item)*item.cantidad)}</div>
         <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:var(--pos-muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center"
           onmousedown="posToggleCommentP('${mesaId}',${idx})"><i class="ti ti-message"></i></button>
         <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:#ef4444;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center"
@@ -659,7 +665,7 @@ export async function confirmarPedidos(mesaId) {
           comanda_id:   comanda.id,
           producto_id:  item.id,
           nombre:       item.nombre,
-          precio:       item.precio,
+          precio:       _precioItem(item),
           cantidad:     1,
           comentario:   item.comentario || null,
           modificadores: item.grupos.filter(g => g.opcion_id)
@@ -780,7 +786,7 @@ export async function cerrarMesa(mesaId) {
 
   // Init checkout state
   const desc = _descuentos[mesaId];
-  const subtotal = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const subtotal = confirmed.reduce((s,i) => s + _precioItem(i)*i.cantidad, 0);
   const descMonto = desc?.valor ? (desc.tipo==='%' ? Math.round(subtotal*desc.valor/100) : Math.min(desc.valor,subtotal)) : 0;
   const totalSinPropina = subtotal - descMonto;
   const propinaSugerida = Math.round(totalSinPropina * 0.10);
@@ -807,7 +813,7 @@ function _renderCheckoutModal(mesaId) {
   const mesa     = mesas.find(m => m.id === mesaId);
   const confirmed = _confirmedItems[mesaId] || [];
   const desc = _descuentos[mesaId];
-  const subtotal  = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const subtotal  = confirmed.reduce((s,i) => s + _precioItem(i)*i.cantidad, 0);
   const descMonto = desc?.valor ? (desc.tipo==='%' ? Math.round(subtotal*desc.valor/100) : Math.min(desc.valor,subtotal)) : 0;
   const totalBase = subtotal - descMonto;
   const propinaMonto = (_co.propinas||[]).reduce((s,p)=>s+Number(p.monto||0),0);
@@ -842,7 +848,7 @@ function _renderCheckoutModal(mesaId) {
   const adicionesHtml = confirmed.map(i=>`
     <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)">
       <span>${i.cantidad}x ${i.nombre}</span>
-      <span>${_fmtPesos(i.precio*i.cantidad)}</span>
+      <span>${_fmtPesos(_precioItem(i)*i.cantidad)}</span>
     </div>`).join('');
 
   el.innerHTML = `
@@ -943,7 +949,7 @@ export async function ejecutarCierre(mesaId) {
   if (!_co) return;
   const confirmed = _confirmedItems[mesaId] || [];
   const desc = _descuentos[mesaId];
-  const subtotal  = confirmed.reduce((s,i)=>s+i.precio*i.cantidad,0);
+  const subtotal  = confirmed.reduce((s,i)=>s+_precioItem(i)*i.cantidad,0);
   const descMonto = desc?.valor ? (desc.tipo==='%' ? Math.round(subtotal*desc.valor/100) : Math.min(desc.valor,subtotal)) : 0;
   const propinaMonto = _co.propinas.reduce((s,p)=>s+Number(p.monto||0),0);
   const total = subtotal - descMonto + propinaMonto;
@@ -1050,7 +1056,7 @@ export function verPreCuenta(mesaId) {
   const confirmed = _confirmedItems[mesaId] || [];
   const pending   = _pendingItems[mesaId]   || [];
   const all       = [...confirmed, ...pending];
-  const total     = all.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const total     = all.reduce((s,i) => s + _precioItem(i)*i.cantidad, 0);
   const personas  = _mesaPersonas[mesaId] || 1;
 
   let el = document.getElementById('modal-precuenta');
@@ -1072,7 +1078,7 @@ export function verPreCuenta(mesaId) {
         ${all.map(i => `
           <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px">
             <div>${i.cantidad > 1 ? i.cantidad+'× ':''}<span style="font-weight:500">${i.nombre}</span></div>
-            <div style="font-weight:600">${_fmtPesos(i.precio*i.cantidad)}</div>
+            <div style="font-weight:600">${_fmtPesos(_precioItem(i)*i.cantidad)}</div>
           </div>`).join('')}
         <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:16px;font-weight:700;border-top:2px solid var(--pos-border);margin-top:4px">
           <div>Total</div>
