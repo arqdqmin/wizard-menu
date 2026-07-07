@@ -61,11 +61,23 @@ ALTER TABLE public.categorias_productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.grupos_modificadores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.producto_modificadores ENABLE ROW LEVEL SECURITY;
-CREATE POLICY IF NOT EXISTS auth_cocinas ON public.cocinas FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY IF NOT EXISTS auth_cat_prod ON public.categorias_productos FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY IF NOT EXISTS auth_productos ON public.productos FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY IF NOT EXISTS auth_grupos_mod ON public.grupos_modificadores FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY IF NOT EXISTS auth_prod_mod ON public.producto_modificadores FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='auth_cocinas' AND tablename='cocinas') THEN
+    CREATE POLICY auth_cocinas ON public.cocinas FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='auth_cat_prod' AND tablename='categorias_productos') THEN
+    CREATE POLICY auth_cat_prod ON public.categorias_productos FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='auth_productos' AND tablename='productos') THEN
+    CREATE POLICY auth_productos ON public.productos FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='auth_grupos_mod' AND tablename='grupos_modificadores') THEN
+    CREATE POLICY auth_grupos_mod ON public.grupos_modificadores FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='auth_prod_mod' AND tablename='producto_modificadores') THEN
+    CREATE POLICY auth_prod_mod ON public.producto_modificadores FOR ALL TO authenticated USING (true) WITH CHECK (true);
+  END IF;
+END $$;
 
 -- ── Cocinas ──────────────────────────────────────────────────
 INSERT INTO public.cocinas (nombre) VALUES
