@@ -1,16 +1,22 @@
 import { supabase } from '/js/core/supabase.js';
 
 // ── Estado ───────────────────────────────────────────────────────
-let zonas       = [];
-let mesas       = [];
-let zonaActual  = null;
-let editMode    = false;
+let zonas        = [];
+let mesas        = [];
+let zonaActual   = null;
+let editMode     = false;
 let mesaSelected = null;
+let snapToGrid   = true;
+const GRID_SIZE  = 100;
 
 // Drag state
-let dragging    = null;
-let dragOffX    = 0;
-let dragOffY    = 0;
+let dragging = null;
+let dragOffX = 0;
+let dragOffY = 0;
+
+function snapVal(v) {
+  return snapToGrid ? Math.round(v / GRID_SIZE) * GRID_SIZE : v;
+}
 
 // ── Carga ────────────────────────────────────────────────────────
 export async function loadZonas() {
@@ -104,20 +110,22 @@ function onPointerDown(e, mesa, el, planoEl) {
   dragOffY = e.clientY - rect.top  - mesa.pos_y;
   dragging = { mesa, el };
   el.style.cursor = 'grabbing';
-  el.style.zIndex  = 100;
+  el.style.zIndex = 100;
   el.setPointerCapture(e.pointerId);
 
   el.addEventListener('pointermove', onPointerMove);
   el.addEventListener('pointerup',   onPointerUp);
 
   function onPointerMove(ev) {
-    const r = planoEl.getBoundingClientRect();
-    const x = Math.max(0, Math.min(ev.clientX - r.left - dragOffX, r.width  - 80));
-    const y = Math.max(0, Math.min(ev.clientY - r.top  - dragOffY, r.height - 80));
+    const r   = planoEl.getBoundingClientRect();
+    const rawX = ev.clientX - r.left - dragOffX;
+    const rawY = ev.clientY - r.top  - dragOffY;
+    const x = snapVal(Math.max(0, Math.min(rawX, r.width  - GRID_SIZE)));
+    const y = snapVal(Math.max(0, Math.min(rawY, r.height - GRID_SIZE)));
     el.style.left = x + 'px';
     el.style.top  = y + 'px';
-    dragging.newX = Math.round(x);
-    dragging.newY = Math.round(y);
+    dragging.newX = x;
+    dragging.newY = y;
   }
 
   async function onPointerUp() {
@@ -132,6 +140,25 @@ function onPointerDown(e, mesa, el, planoEl) {
     }
     dragging = null;
   }
+}
+
+// ── Snap to grid toggle ──────────────────────────────────────────
+export function toggleSnapToGrid(btnEl) {
+  snapToGrid = !snapToGrid;
+  const plano = document.getElementById('pos-plano');
+  if (snapToGrid) {
+    plano.classList.add('grid-visible');
+    btnEl.classList.add('active');
+    btnEl.title = 'Snap to grid: ON';
+  } else {
+    plano.classList.remove('grid-visible');
+    btnEl.classList.remove('active');
+    btnEl.title = 'Snap to grid: OFF';
+  }
+}
+
+export function initGrid(planoEl) {
+  if (snapToGrid) planoEl.classList.add('grid-visible');
 }
 
 async function saveMesaPosition(id, x, y) {

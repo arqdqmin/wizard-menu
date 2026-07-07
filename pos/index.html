@@ -130,6 +130,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
     radial-gradient(circle, rgba(255,255,255,.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+/* Grilla snap visible */
+#pos-plano.grid-visible {
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 100px 100px;
+}
+/* Botón snap activo */
+#pos-snap-btn.active {
+  background: rgba(184,152,42,.15);
+  color: var(--pos-accent);
+  border-color: var(--pos-accent);
+}
 .pos-plano-empty {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center;
@@ -305,6 +318,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
       <button class="pos-ctrl-btn" id="pos-add-zona-btn" onclick="posOpenAddZona()">
         <i class="ti ti-folder-plus"></i> Nueva zona
       </button>
+      <button class="pos-ctrl-btn active" id="pos-snap-btn" onclick="posToggleSnap(this)" title="Snap to grid: ON">
+        <i class="ti ti-grid-dots"></i> Snap to grid
+      </button>
     </div>
   </div>
 
@@ -399,6 +415,7 @@ import { getUserRoles } from '/js/core/permissions.js';
 import {
   loadZonas, loadMesas, renderZonaTabs, renderPlano, renderRightPanel,
   cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona, getZonas,
+  toggleSnapToGrid, initGrid,
 } from '/js/pos/mesas.js';
 
 // Auth
@@ -422,6 +439,9 @@ function updateClock() {
 }
 updateClock();
 setInterval(updateClock, 10000);
+
+// Inicializar grilla
+initGrid(document.getElementById('pos-plano'));
 
 // Carga inicial
 const zonas = await loadZonas();
@@ -474,6 +494,7 @@ window.posConfirmAddZona = async () => {
   }
 };
 
+window.posToggleSnap     = (btn) => toggleSnapToGrid(btn);
 window.posCambiarEstado  = (id, estado) => cambiarEstado(id, estado);
 window.posEliminarMesa   = (id) => eliminarMesa(id);
 window.posAbrirComanda   = (id) => document.getElementById('modal-comanda').classList.add('open');
