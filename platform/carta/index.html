@@ -23,8 +23,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-/* ── Shell ── */
-#shell-root { display: flex; flex: 1; overflow: hidden; }
+/* ── Shell (platform-shell es el div real que crea initShell) ── */
+#platform-shell { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+.platform-main  { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+.platform-content { flex: 1; min-height: 0; overflow: hidden; }
 
 /* ── Sidebar categorías ── */
 .carta-sidebar {
@@ -68,8 +70,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .carta-tab:hover { color: var(--text); }
 .carta-tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
 
-/* ── Content area ── */
-.carta-content { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
+/* (carta-content redefinida abajo junto al form panel) */
 
 /* ── Tab header ── */
 .carta-tab-header {
@@ -125,14 +126,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .carta-badge-ok  { display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:#f0fdf4;color:#16a34a; }
 .carta-badge-off { display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:#fef2f2;color:#dc2626; }
 
-/* ── Form panel (slide-in) ── */
+/* ── Content area ── */
+.carta-content { flex: 1; overflow: hidden; padding: 0; position: relative; min-height: 0; }
+
+/* ── Tab content (scrollable) ── */
+#carta-tab-content { height: 100%; overflow-y: auto; padding: 24px; box-sizing: border-box; }
+
+/* ── Form panel (slide-in, cubre carta-content) ── */
 .carta-form-panel {
   position: absolute; inset: 0; background: var(--bg);
   transform: translateX(100%); transition: transform .25s cubic-bezier(.4,0,.2,1);
-  overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column;
-  min-height: 0;
+  overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column;
 }
-.carta-form-body { min-height: 0; }
 .carta-form-panel.open { transform: translateX(0); }
 .carta-form-header {
   display: flex; align-items: center; gap: 12px;
@@ -385,9 +391,9 @@ const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
 await initShell('carta', 'Carta');
 
-// Inyectar layout en #platform-content (igual que wcontrol)
+// Inyectar layout en #platform-content
 document.getElementById('platform-content').innerHTML = `
-  <div style="display:flex;height:100%;overflow:hidden">
+  <div style="display:flex;width:100%;height:100%;min-height:0;overflow:hidden">
 
     <!-- Sidebar categorías -->
     <div class="carta-sidebar">
@@ -458,7 +464,6 @@ function _renderTabProductos() {
       </thead>
       <tbody id="carta-tbody"></tbody>
     </table>
-    <div class="carta-form-panel" id="carta-form-panel"></div>
   `;
   renderListaProductos();
 }
