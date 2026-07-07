@@ -788,7 +788,7 @@ export async function cerrarMesa(mesaId) {
   _co = {
     mesaId,
     propinas: [{ metodo: 'Efectivo', monto: propinaSugerida }],
-    pagos: [],
+    pagos: [{ metodo: 'Efectivo', monto: totalSinPropina }],
     parcial: false,
   };
   _coIdx = 0;
