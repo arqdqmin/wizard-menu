@@ -11,6 +11,7 @@ const MODULE_URLS = {
   marketing:    '/platform/marketing.html',
   configuracion:'/platform/settings.html',
   wcontrol:     '/platform/wcontrol/index.html',
+  carta:        '/platform/carta/index.html',
 };
 
 /**

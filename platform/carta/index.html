@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Carta — Wizard Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+:root {
+  --bg:       #f5f5f7;
+  --surface:  #fff;
+  --border:   #e4e4e7;
+  --text:     #111;
+  --muted:    #888;
+  --accent:   #b8982a;
+  --accent-h: #9a7e22;
+  --danger:   #dc2626;
+  --green:    #16a34a;
+  --radius:   10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Shell ── */
+#shell-root { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar categorías ── */
+.carta-sidebar {
+  width: 200px; background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+}
+.carta-sidebar-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 16px 14px 8px;
+}
+.carta-cat-group {
+  font-size: 10px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 12px 14px 4px;
+}
+.carta-cat-item {
+  padding: 9px 14px; font-size: 13px; font-weight: 500;
+  color: var(--muted); cursor: pointer; border-radius: 0;
+  transition: background .12s, color .12s;
+  display: flex; align-items: center; gap: 7px;
+}
+.carta-cat-item:hover { background: rgba(0,0,0,.04); color: var(--text); }
+.carta-cat-item.active { background: rgba(184,152,42,.1); color: var(--accent); font-weight: 600; }
+
+/* ── Main area ── */
+.carta-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Top tabs ── */
+.carta-tabs {
+  display: flex; align-items: center; gap: 0;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 20px; flex-shrink: 0;
+}
+.carta-tab {
+  padding: 14px 16px; font-size: 13px; font-weight: 500;
+  color: var(--muted); cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .14s, border-color .14s; font-family: inherit;
+}
+.carta-tab:hover { color: var(--text); }
+.carta-tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* ── Content area ── */
+.carta-content { flex: 1; overflow-y: auto; padding: 24px; position: relative; }
+
+/* ── Tab header ── */
+.carta-tab-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+}
+.carta-tab-title { font-size: 18px; font-weight: 700; }
+
+/* ── Search bar ── */
+.carta-search-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.carta-search-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; flex: 1; max-width: 400px;
+}
+.carta-search-wrap i { color: var(--muted); font-size: 16px; }
+.carta-search-input {
+  border: none; outline: none; font-family: inherit;
+  font-size: 13px; width: 100%; background: none; color: var(--text);
+}
+.carta-count { font-size: 13px; color: var(--muted); }
+
+/* ── Tabla productos ── */
+.carta-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  background: var(--surface); border-radius: var(--radius);
+  overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.carta-table th {
+  padding: 10px 14px; text-align: left; font-size: 11px;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--muted); border-bottom: 1px solid var(--border);
+  background: #fafafa;
+}
+.carta-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.carta-table tr:last-child td { border-bottom: none; }
+.carta-row { cursor: pointer; transition: background .1s; }
+.carta-row:hover td { background: rgba(184,152,42,.05); }
+.carta-row-inactivo td { opacity: .45; }
+.carta-empty-row { text-align: center; padding: 32px; color: var(--muted); }
+.carta-td-cod   { width: 80px; color: var(--muted); font-size: 12px; }
+.carta-td-num   { text-align: right; white-space: nowrap; }
+.carta-td-cat   { color: var(--muted); font-size: 12px; }
+.carta-td-nombre { font-weight: 500; }
+.carta-badge-inactivo {
+  display: inline-block; font-size: 10px; font-weight: 600;
+  background: #fef2f2; color: #dc2626; padding: 1px 6px;
+  border-radius: 4px; margin-left: 6px;
+}
+.carta-badge-ok  { display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:#f0fdf4;color:#16a34a; }
+.carta-badge-off { display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;background:#fef2f2;color:#dc2626; }
+
+/* ── Form panel (slide-in) ── */
+.carta-form-panel {
+  position: absolute; inset: 0; background: var(--bg);
+  transform: translateX(100%); transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow-y: auto; display: flex; flex-direction: column;
+}
+.carta-form-panel.open { transform: translateX(0); }
+.carta-form-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 24px; background: var(--surface);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+  position: sticky; top: 0; z-index: 10;
+}
+.carta-form-back {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid var(--border); background: none; cursor: pointer;
+  font-size: 18px; color: var(--text); transition: background .12s;
+}
+.carta-form-back:hover { background: var(--bg); }
+.carta-form-title { font-size: 16px; font-weight: 700; flex: 1; }
+.carta-form-del {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid #fecaca; background: none; cursor: pointer;
+  font-size: 16px; color: var(--danger); transition: background .12s;
+}
+.carta-form-del:hover { background: #fef2f2; }
+
+.carta-form-body {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+  padding: 28px 24px; flex: 1;
+}
+@media (max-width: 800px) { .carta-form-body { grid-template-columns: 1fr; } }
+
+.carta-form-col { display: flex; flex-direction: column; gap: 16px; }
+.carta-form-section {
+  font-size: 12px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.carta-field-group { display: flex; flex-direction: column; gap: 5px; }
+.carta-field-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.carta-label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.carta-req   { color: var(--danger); }
+.carta-input, .carta-select, .carta-textarea {
+  padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 13px; color: var(--text); background: var(--surface);
+  outline: none; transition: border-color .14s;
+}
+.carta-input:focus, .carta-select:focus, .carta-textarea:focus { border-color: var(--accent); }
+.carta-textarea { resize: vertical; }
+.carta-check-row { display: flex; flex-wrap: wrap; gap: 16px; }
+.carta-check {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; cursor: pointer; user-select: none;
+}
+.carta-check input { width: 15px; height: 15px; accent-color: var(--accent); }
+
+/* Modificadores */
+.carta-mods-lista { display: flex; flex-direction: column; gap: 6px; }
+.carta-mods-empty { font-size: 12px; color: var(--muted); padding: 8px 0; }
+.carta-mods-loading { font-size: 12px; color: var(--muted); }
+.carta-mod-tag {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 7px; padding: 7px 10px; font-size: 13px;
+}
+.carta-add-mod-btn {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 8px 12px; border-radius: 8px;
+  border: 1px dashed var(--border); background: none;
+  color: var(--muted); cursor: pointer; font-size: 13px; font-family: inherit;
+  transition: background .12s, color .12s;
+}
+.carta-add-mod-btn:hover { background: var(--bg); color: var(--text); border-color: #aaa; }
+
+/* Picker modificadores */
+.carta-mod-picker {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 340px;
+  background: var(--surface); border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; z-index: 50;
+  box-shadow: -4px 0 20px rgba(0,0,0,.1);
+}
+.carta-mod-picker-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.carta-mod-picker-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+.carta-mod-pick-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px; cursor: pointer; font-size: 13px;
+  transition: background .1s;
+}
+.carta-mod-pick-item:hover { background: var(--bg); }
+.carta-mod-pick-item input { accent-color: var(--accent); }
+
+/* Costos card */
+.carta-cost-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; display: flex;
+  flex-direction: column; gap: 10px;
+}
+.carta-cost-row { display: flex; justify-content: space-between; font-size: 13px; }
+.carta-cost-row.highlight { border-top: 1px solid var(--border); padding-top: 10px; color: var(--green); font-weight: 700; }
+
+.carta-form-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; background: var(--surface);
+  border-top: 1px solid var(--border); flex-shrink: 0;
+  position: sticky; bottom: 0;
+}
+
+/* ── Modal ── */
+.carta-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  display: flex; align-items: center; justify-content: center; z-index: 99;
+}
+.carta-modal {
+  background: var(--surface); border-radius: 14px; padding: 28px;
+  width: 400px; display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+.carta-modal-title { font-size: 16px; font-weight: 700; }
+.carta-modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+/* ── Botones ── */
+.carta-btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: 8px;
+  background: var(--accent); color: #fff; border: none;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .13s;
+}
+.carta-btn-primary:hover { background: var(--accent-h); }
+.carta-btn-save {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 8px;
+  background: var(--accent); color: #fff; border: none;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .13s;
+}
+.carta-btn-save:hover { background: var(--accent-h); }
+.carta-btn-cancel {
+  padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border);
+  background: none; color: var(--text); font-family: inherit;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: background .13s;
+}
+.carta-btn-cancel:hover { background: var(--bg); }
+.carta-icon-btn {
+  width: 32px; height: 32px; border-radius: 7px; border: 1px solid var(--border);
+  background: none; cursor: pointer; color: var(--muted); font-size: 15px;
+  display: flex; align-items: center; justify-content: center; transition: background .12s;
+}
+.carta-icon-btn:hover { background: var(--bg); color: var(--text); }
+
+/* ── Toast ── */
+.carta-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #1f2937; color: #fff; padding: 10px 22px; border-radius: 8px;
+  font-size: 13px; opacity: 0; transition: opacity .2s, transform .2s;
+  pointer-events: none; z-index: 9999;
+}
+.carta-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.carta-toast.error { background: #7f1d1d; }
+</style>
+</head>
+<body>
+<div id="shell-root"></div>
+<div id="carta-toast" class="carta-toast"></div>
+
+<script type="module">
+import { initShell } from '/js/ui/shell.js';
+import {
+  state, cargarCocinas, cargarCategorias, cargarModificadores, cargarProductos, showToast,
+} from '/js/carta/utils.js';
+import {
+  renderListaProductos, onBusqueda, abrirProducto, cerrarForm,
+  guardarProducto, eliminarProducto, abrirPickerMod, cerrarPickerMod, confirmarMods, quitarMod,
+} from '/js/carta/productos.js';
+import {
+  renderSidebarCategorias, renderTabCategorias,
+  abrirFormCat, cerrarModalCat, guardarCat,
+} from '/js/carta/categorias.js';
+import {
+  renderTabModificadores, abrirFormMod, cerrarModalMod, guardarMod,
+} from '/js/carta/modificadores.js';
+
+// ── Shell ────────────────────────────────────────────────────────
+await initShell('carta', 'Carta');
+
+// Construir layout dentro del main del shell
+const main = document.querySelector('.module-main') || document.getElementById('shell-root');
+main.style.cssText = 'display:flex;flex:1;overflow:hidden;height:100%';
+main.innerHTML = `
+  <!-- Sidebar categorías -->
+  <div class="carta-sidebar">
+    <div class="carta-sidebar-title">Categorías</div>
+    <div id="carta-cats"></div>
+  </div>
+
+  <!-- Main -->
+  <div class="carta-main">
+    <!-- Tabs -->
+    <div class="carta-tabs">
+      <button class="carta-tab active" id="tab-productos" onclick="cartaSetTab('productos',this)">Productos</button>
+      <button class="carta-tab" id="tab-categorias" onclick="cartaSetTab('categorias',this)">Categorías</button>
+      <button class="carta-tab" id="tab-modificadores" onclick="cartaSetTab('modificadores',this)">Grupos modificadores</button>
+    </div>
+
+    <!-- Content -->
+    <div class="carta-content" id="carta-content">
+      <div id="carta-tab-content"></div>
+      <!-- Form panel (slide-in encima del content) -->
+      <div class="carta-form-panel" id="carta-form-panel"></div>
+    </div>
+  </div>
+`;
+
+// ── Carga inicial ────────────────────────────────────────────────
+await Promise.all([cargarCocinas(), cargarCategorias(), cargarModificadores()]);
+await cargarProductos(null);
+
+renderSidebarCategorias();
+_renderTabProductos();
+
+// ── Tab actual ───────────────────────────────────────────────────
+let _tabActual = 'productos';
+
+function _renderTabProductos() {
+  const el = document.getElementById('carta-tab-content');
+  el.innerHTML = `
+    <div class="carta-tab-header">
+      <h2 class="carta-tab-title" id="carta-tab-titulo">Todos los productos</h2>
+      <button class="carta-btn-primary" onclick="cartaAbrirProducto('nuevo')">
+        <i class="ti ti-plus"></i> Nuevo producto
+      </button>
+    </div>
+    <div class="carta-search-bar">
+      <div class="carta-search-wrap">
+        <i class="ti ti-search"></i>
+        <input class="carta-search-input" type="text"
+          placeholder="Buscar producto…"
+          oninput="cartaBusqueda(this.value)" />
+      </div>
+      <span class="carta-count" id="carta-count"></span>
+    </div>
+    <table class="carta-table">
+      <thead>
+        <tr>
+          <th>Cód.</th>
+          <th>Producto</th>
+          <th style="text-align:right">Costo</th>
+          <th style="text-align:right">Margen $</th>
+          <th style="text-align:right">Margen %</th>
+          <th style="text-align:right">Precio</th>
+          <th>Categoría</th>
+        </tr>
+      </thead>
+      <tbody id="carta-tbody"></tbody>
+    </table>
+    <div class="carta-form-panel" id="carta-form-panel"></div>
+  `;
+  renderListaProductos();
+}
+
+// ── Globales ─────────────────────────────────────────────────────
+window.cartaSetTab = async (tab, btn) => {
+  _tabActual = tab;
+  document.querySelectorAll('.carta-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Sidebar solo visible en productos
+  document.querySelector('.carta-sidebar').style.display = tab === 'productos' ? '' : 'none';
+
+  if (tab === 'productos')     { _renderTabProductos(); }
+  if (tab === 'categorias')    { renderTabCategorias(); }
+  if (tab === 'modificadores') { renderTabModificadores(); }
+};
+
+window.cartaSelCat = async (catId) => {
+  state.categoriaActual = catId;
+  renderSidebarCategorias();
+  await cargarProductos(catId);
+  const titulo = document.getElementById('carta-tab-titulo');
+  if (titulo) {
+    titulo.textContent = catId
+      ? state.categorias.find(c => c.id === catId)?.nombre || 'Categoría'
+      : 'Todos los productos';
+  }
+  renderListaProductos();
+};
+
+window.cartaBusqueda        = (v)   => onBusqueda(v);
+window.cartaAbrirProducto   = (id)  => abrirProducto(id);
+window.cartaCerrarForm      = ()    => cerrarForm();
+window.cartaGuardarProducto = ()    => guardarProducto();
+window.cartaEliminarProducto= (id)  => eliminarProducto(id);
+window.cartaAbrirPickerMod  = ()    => abrirPickerMod();
+window.cartaCerrarPickerMod = ()    => cerrarPickerMod();
+window.cartaConfirmarMods   = ()    => confirmarMods();
+window.cartaQuitarMod       = (id)  => quitarMod(id);
+
+window.cartaAbrirFormCat    = ()    => abrirFormCat();
+window.cartaEditarCat       = (id)  => abrirFormCat(id);
+window.cartaCerrarModalCat  = ()    => cerrarModalCat();
+window.cartaGuardarCat      = ()    => guardarCat();
+
+window.cartaAbrirFormMod    = ()    => abrirFormMod();
+window.cartaEditarMod       = (id)  => abrirFormMod(id);
+window.cartaCerrarModalMod  = ()    => cerrarModalMod();
+window.cartaGuardarMod      = ()    => guardarMod();
+</script>
+</body>
+</html>
