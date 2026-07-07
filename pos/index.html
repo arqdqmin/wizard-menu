@@ -158,10 +158,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
 
 /* ── Panel derecho ───────────────────────────────────────────── */
 .pos-right-panel {
-  width: 400px; background: var(--pos-surface);
+  width: 480px; background: var(--pos-surface);
   border-left: 1px solid var(--pos-border);
   flex-shrink: 0; overflow-y: auto;
+  display: flex; flex-direction: column;
 }
+/* Botones del header de comanda */
+.pos-hdr-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.15);
+  color: #fff; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s;
+}
+.pos-hdr-btn:hover { background: rgba(0,0,0,.3); }
 .pos-right-empty {
   height: 100%; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
@@ -404,7 +414,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
     <i class="ti ti-package"></i>Productos
   </button>
   <button class="pos-nav-icon" id="nav-cocina" onclick="posSetView('cocina',this)" title="Monitor de cocina">
-    <i class="ti ti-tools-kitchen-2"></i>Cocina
+    <i class="ti ti-tools-kitchen-2"></i>Monitor
   </button>
   <button class="pos-nav-icon" id="nav-config" onclick="posSetView('config',this)" title="Configuración">
     <i class="ti ti-settings"></i>Config
@@ -540,10 +550,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
 
 <!-- ── View: Monitor cocina ───────────────────────────────────── -->
 <div class="pos-view" id="view-cocina">
-  <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#555">
-    <i class="ti ti-tools-kitchen-2" style="font-size:48px"></i>
-    <div style="font-size:16px;font-weight:600">Monitor de Cocina</div>
-    <div style="font-size:13px">Módulo en construcción</div>
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f3f4f6">
+    <div style="padding:16px 20px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-size:16px;font-weight:700;color:#111">Monitor de Cocina</div>
+      <button onclick="posMonitorRefresh()" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:1px solid #e5e7eb;background:#fff;color:#374151;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500">
+        <i class="ti ti-refresh"></i> Actualizar
+      </button>
+    </div>
+    <div id="monitor-content" style="flex:1;overflow-y:auto;display:flex;flex-wrap:wrap;gap:16px;padding:20px;align-content:flex-start">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#9ca3af">
+        <i class="ti ti-chef-hat" style="font-size:48px"></i>
+        <div style="font-size:16px;font-weight:600">Sin comandas pendientes</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -618,10 +637,19 @@ import { supabase }    from '/js/core/supabase.js';
 import { getUserRoles } from '/js/core/permissions.js';
 import {
   loadZonas, loadMesas, loadProductos, renderZonaTabs, renderPlano, renderRightPanel,
-  cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona, getZonas,
+  cambiarEstado, addMesa, eliminarMesa, toggleEditMode, addZona,
   toggleSnapToGrid, initGrid,
   setUserContext, setGarzonesData, changePersonas, setGarzon, abrirMesa, toggleCasa,
-  filtrarProductos, agregarAComanda, changeItemQty, cobrarMesa,
+  filtrarProductos, agregarAComanda,
+  confirmarPedidos, cancelarPendientes,
+  eliminarPendiente, eliminarConfirmado,
+  changePendingQty, changeConfirmedQty,
+  toggleCommentP, toggleCommentC, setCommentP, setCommentC,
+  setGrupoOpcion,
+  cerrarMesa, confirmarCierre,
+  editarVenta, volverComanda, moverMesa,
+  verPreCuenta,
+  loadMonitor, prepararComanda, terminarComanda, refreshMonitor, renderMonitorCards,
 } from '/js/pos/mesas.js';
 
 // Auth
@@ -731,17 +759,42 @@ window.posNuevoPedido = () => {
   alert('Módulo de pedidos mostrador en desarrollo.');
 };
 
-window.posToggleSnap       = (btn)         => toggleSnapToGrid(btn);
-window.posCambiarEstado    = (id, estado)  => cambiarEstado(id, estado);
-window.posEliminarMesa     = (id)          => eliminarMesa(id);
-window.posChangePersonas   = (id, delta)   => changePersonas(id, delta);
-window.posSetGarzon        = (id, nombre)  => setGarzon(id, nombre);
-window.posToggleCasa       = (id, casa)    => toggleCasa(id, casa);
-window.posAbrirMesa        = (id)          => abrirMesa(id);
-window.posFiltrarProductos = (mid, val)    => filtrarProductos(mid, val);
-window.posAgregarAComanda  = (mid, pid)    => agregarAComanda(mid, pid);
-window.posChangeItemQty    = (mid, i, d)   => changeItemQty(mid, i, d);
-window.posCobrarMesa       = (mid)         => cobrarMesa(mid);
+window.posToggleSnap             = (btn)           => toggleSnapToGrid(btn);
+window.posCambiarEstado          = (id, estado)    => cambiarEstado(id, estado);
+window.posEliminarMesa           = (id)            => eliminarMesa(id);
+window.posChangePersonas         = (id, delta)     => changePersonas(id, delta);
+window.posSetGarzon              = (id, nombre)    => setGarzon(id, nombre);
+window.posToggleCasa             = (id, casa)      => toggleCasa(id, casa);
+window.posAbrirMesa              = (id)            => abrirMesa(id);
+window.posFiltrarProductos       = (mid, val)      => filtrarProductos(mid, val);
+window.posAgregarAComanda        = (mid, pid)      => agregarAComanda(mid, pid);
+window.posConfirmarPedidos       = (mid)           => confirmarPedidos(mid);
+window.posCancelarPendientes     = (mid)           => cancelarPendientes(mid);
+window.posEliminarPendiente      = (mid, idx)      => eliminarPendiente(mid, idx);
+window.posEliminarConfirmado     = (mid, idx)      => eliminarConfirmado(mid, idx);
+window.posChangePendingQty       = (mid, idx, d)   => changePendingQty(mid, idx, d);
+window.posChangeConfirmedQty     = (mid, idx, d)   => changeConfirmedQty(mid, idx, d);
+window.posToggleCommentP         = (mid, idx)      => toggleCommentP(mid, idx);
+window.posToggleCommentC         = (mid, idx)      => toggleCommentC(mid, idx);
+window.posSetCommentP            = (mid, idx, v)   => setCommentP(mid, idx, v);
+window.posSetCommentC            = (mid, idx, v)   => setCommentC(mid, idx, v);
+window.posSetGrupoOpcion         = (mid, pi, gi, oid, otxt) => setGrupoOpcion(mid, pi, gi, oid, otxt);
+window.posCerrarMesa             = (mid)           => cerrarMesa(mid);
+window.posConfirmarCierre        = (mid)           => confirmarCierre(mid);
+window.posEditarVenta            = (mid)           => editarVenta(mid);
+window.posVolverComanda          = (mid)           => volverComanda(mid);
+window.posMoverMesa              = (desde, hasta)  => moverMesa(desde, hasta);
+window.posVerPreCuenta           = (mid)           => verPreCuenta(mid);
+window.posMonitorPreparar        = (cid)           => prepararComanda(cid);
+window.posMonitorTerminar        = (cid)           => terminarComanda(cid);
+window.posMonitorRefresh         = ()              => refreshMonitor();
+
+// Cargar monitor cuando se activa esa vista
+const _origSetView = window.posSetView;
+window.posSetView = (view, btn) => {
+  _origSetView(view, btn);
+  if (view === 'cocina') refreshMonitor();
+};
 
 // Cerrar modales al click en backdrop
 document.querySelectorAll('.pos-modal-backdrop').forEach(el => {

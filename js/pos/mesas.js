@@ -1,6 +1,6 @@
 import { supabase } from '/js/core/supabase.js';
 
-// ── Estado ───────────────────────────────────────────────────────
+// ── Estado principal ─────────────────────────────────────────────
 let zonas        = [];
 let mesas        = [];
 let zonaActual   = null;
@@ -8,24 +8,24 @@ let editMode     = false;
 let mesaSelected = null;
 let snapToGrid   = true;
 const GRID_SIZE  = 100;
+let dragging = null, dragOffX = 0, dragOffY = 0;
 
-// Drag state
-let dragging = null;
-let dragOffX = 0;
-let dragOffY = 0;
+// Contexto de usuario
+let _garzonesData = [], _currentUser = null, _canEdit = false;
+let _mesaPersonas = {}, _mesaGarzon  = {}, _mesaCasa = {}, _mesaHora = {};
 
-// Contexto de usuario y garzonas
-let _garzonesData  = [];
-let _currentUser   = null;
-let _canEdit       = false;
-let _mesaPersonas  = {};
-let _mesaGarzon    = {};
-let _mesaCasa      = {};
-let _mesaHora      = {};  // mesaId → Date de apertura
+// Catálogo de productos + grupos modificadores
+let _productos      = [];
+let _productoGrupos = {};  // productoId → [{id, nombre, min, max, opciones:[]}]
 
-// Comanda por mesa
-let _comandas  = {};   // mesaId → [{id, nombre, precio, cantidad}]
-let _productos = [];   // catálogo completo cargado de Supabase
+// Comanda por mesa (dos cubetas: pending y confirmed)
+let _pendingItems   = {};  // mesaId → [ item ]
+let _confirmedItems = {};  // mesaId → [ item ]
+//  item: { localId, id(productoId), nombre, precio, cantidad, grupos:[{grupo_id, nombre, opcion_id, opcion_nombre, precio_adicional, opciones:[]}], comentario, showComment }
+let _localId = 0;
+
+// Panel "Editar venta" activo
+let _editingMesaId = null;
 
 const CASAS = [
   { id: 'gryffindor', nombre: 'Gryffindor', emoji: '🦁', color: '#ae0001', text: '#ffd700' },
@@ -34,28 +34,25 @@ const CASAS = [
   { id: 'slytherin',  nombre: 'Slytherin',  emoji: '🐍', color: '#1a472a', text: '#aaaaaa' },
 ];
 
-export function setUserContext(user, canEdit) { _currentUser = user; _canEdit = canEdit; }
-export function setGarzonesData(data) { _garzonesData = data || []; }
+export const ESTADO_COLOR = {
+  libre:    { bg: '#22c55e', text: '#fff' },
+  ocupada:  { bg: '#f97316', text: '#fff' },
+  cuenta:   { bg: '#06b6d4', text: '#fff' },
+  reservada:{ bg: '#a855f7', text: '#fff' },
+};
+const MESA_SIZE = 90;
 
-function snapVal(v) {
-  return snapToGrid ? Math.round(v / GRID_SIZE) * GRID_SIZE : v;
-}
-
+// ── Helpers ──────────────────────────────────────────────────────
 function _fmtPesos(n) {
   return '$' + Math.round(Number(n) || 0).toLocaleString('es-CL');
 }
-
-// ── Cargar catálogo de productos ─────────────────────────────────
-export async function loadProductos() {
-  const { data } = await supabase
-    .from('productos')
-    .select('id, nombre, precio, categoria_id, categorias_productos(nombre)')
-    .eq('activo', true)
-    .order('nombre');
-  _productos = data || [];
+function _esc(s) {
+  return String(s || '').replace(/'/g, "\\'");
 }
+export function setUserContext(user, canEdit) { _currentUser = user; _canEdit = canEdit; }
+export function setGarzonesData(data)         { _garzonesData = data || []; }
 
-// ── Carga de zonas/mesas ─────────────────────────────────────────
+// ── Carga de datos ───────────────────────────────────────────────
 export async function loadZonas() {
   const { data, error } = await supabase.from('zonas').select('*').eq('activa', true).order('orden');
   if (error) { showPosToast('Error al cargar zonas', 'error'); return []; }
@@ -71,18 +68,55 @@ export async function loadMesas(zonaId) {
   return mesas;
 }
 
-// ── Render tabs de zona ──────────────────────────────────────────
+export async function loadProductos() {
+  const { data } = await supabase
+    .from('productos')
+    .select('id, nombre, precio, activo, categoria_id, categorias_productos(id, nombre, cocinas(id, nombre))')
+    .eq('activo', true)
+    .order('nombre');
+  _productos = data || [];
+}
+
+async function _loadGruposForProducto(productoId) {
+  if (_productoGrupos[productoId] !== undefined) return _productoGrupos[productoId];
+  const { data } = await supabase
+    .from('producto_grupos_modificadores')
+    .select('orden, grupos_modificadores(id, nombre, cantidad_min, cantidad_max, grupo_modificador_opciones(id, nombre, precio_adicional, activo, orden))')
+    .eq('producto_id', productoId)
+    .order('orden');
+  _productoGrupos[productoId] = (data || [])
+    .map(r => r.grupos_modificadores)
+    .filter(Boolean)
+    .map(g => ({
+      id: g.id, nombre: g.nombre, min: g.cantidad_min, max: g.cantidad_max,
+      opciones: (g.grupo_modificador_opciones || []).filter(o => o.activo !== false).sort((a, b) => a.orden - b.orden),
+    }));
+  return _productoGrupos[productoId];
+}
+
+// ── Snap / grid ──────────────────────────────────────────────────
+function snapVal(v) { return snapToGrid ? Math.round(v / GRID_SIZE) * GRID_SIZE : v; }
+
+export function toggleSnapToGrid(btnEl) {
+  snapToGrid = !snapToGrid;
+  const plano = document.getElementById('pos-plano');
+  plano.classList.toggle('grid-visible', snapToGrid);
+  btnEl.classList.toggle('active', snapToGrid);
+  btnEl.title = 'Snap to grid: ' + (snapToGrid ? 'ON' : 'OFF');
+}
+export function initGrid(planoEl) { if (snapToGrid) planoEl.classList.add('grid-visible'); }
+
+// ── Tabs de zona ─────────────────────────────────────────────────
 export function renderZonaTabs(containerEl, onSwitch) {
   containerEl.innerHTML = zonas.map(z =>
-    `<button class="pos-zone-tab ${zonaActual?.id === z.id ? 'active' : ''}"
-             data-id="${z.id}">${z.nombre}</button>`
+    `<button class="pos-zone-tab ${zonaActual?.id === z.id ? 'active' : ''}" data-id="${z.id}">${z.nombre}</button>`
   ).join('');
   containerEl.querySelectorAll('.pos-zone-tab').forEach(btn => {
-    btn.addEventListener('click', () => switchZona(btn.dataset.id, containerEl, onSwitch));
+    btn.addEventListener('click', () => _switchZona(btn.dataset.id, containerEl, onSwitch));
   });
 }
 
-async function switchZona(id, tabsEl, onSwitch) {
+async function _switchZona(id, tabsEl, onSwitch) {
   zonaActual = zonas.find(z => z.id === id) || null;
   tabsEl.querySelectorAll('.pos-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.id === id));
   await loadMesas(id);
@@ -91,68 +125,48 @@ async function switchZona(id, tabsEl, onSwitch) {
   onSwitch();
 }
 
-// ── Render plano ─────────────────────────────────────────────────
-const ESTADO_COLOR = {
-  libre:    { bg: '#22c55e', text: '#fff' },
-  ocupada:  { bg: '#f97316', text: '#fff' },
-  cuenta:   { bg: '#06b6d4', text: '#fff' },
-  reservada:{ bg: '#a855f7', text: '#fff' },
-};
-const MESA_SIZE = 90;
-
+// ── Plano ────────────────────────────────────────────────────────
 export function renderPlano(planoEl) {
   planoEl.querySelectorAll('.pos-mesa').forEach(el => el.remove());
-
   mesas.forEach(mesa => {
-    const c = ESTADO_COLOR[mesa.estado] || ESTADO_COLOR.libre;
+    const c        = ESTADO_COLOR[mesa.estado] || ESTADO_COLOR.libre;
     const personas = _mesaPersonas[mesa.id] || '';
-    const nItems   = (_comandas[mesa.id] || []).reduce((s, i) => s + i.cantidad, 0);
+    const nPending = (_pendingItems[mesa.id]   || []).reduce((s, i) => s + i.cantidad, 0);
+    const nConfirm = (_confirmedItems[mesa.id] || []).reduce((s, i) => s + i.cantidad, 0);
     const el = document.createElement('div');
     el.className = 'pos-mesa';
     el.dataset.id = mesa.id;
-    el.style.cssText = `
-      position:absolute;
-      left:${mesa.pos_x}px; top:${mesa.pos_y}px;
-      width:${MESA_SIZE}px; height:${MESA_SIZE}px;
-      background:${c.bg}; color:${c.text};
-      border-radius:${mesa.forma === 'redondo' ? '50%' : '12px'};
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      gap:2px;
-      font-size:26px; font-weight:700;
-      cursor:${editMode ? 'grab' : 'pointer'};
-      user-select:none;
-      box-shadow:0 2px 10px rgba(0,0,0,.22);
-      transition:box-shadow .15s, transform .1s;
-      border: ${mesaSelected?.id === mesa.id ? '3px solid #fff' : '3px solid transparent'};
-    `;
-    el.innerHTML = `
-      <span>${mesa.numero}</span>
+    el.style.cssText = `position:absolute;left:${mesa.pos_x}px;top:${mesa.pos_y}px;
+      width:${MESA_SIZE}px;height:${MESA_SIZE}px;
+      background:${c.bg};color:${c.text};
+      border-radius:${mesa.forma==='redondo'?'50%':'12px'};
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+      font-size:26px;font-weight:700;
+      cursor:${editMode?'grab':'pointer'};user-select:none;
+      box-shadow:0 2px 10px rgba(0,0,0,.22);transition:box-shadow .15s,transform .1s;
+      border:${mesaSelected?.id===mesa.id?'3px solid #fff':'3px solid transparent'};`;
+    el.innerHTML = `<span>${mesa.numero}</span>
       ${personas ? `<span style="font-size:11px;font-weight:500;opacity:.85"><i class="ti ti-users" style="font-size:10px"></i> ${personas}</span>` : ''}
-      ${nItems ? `<span style="font-size:10px;font-weight:600;background:rgba(0,0,0,.25);padding:1px 6px;border-radius:10px">${nItems} ítem${nItems!==1?'s':''}</span>` : ''}
-    `;
+      ${nConfirm ? `<span style="font-size:10px;font-weight:600;background:rgba(0,0,0,.25);padding:1px 6px;border-radius:10px">${nConfirm}</span>` : ''}
+      ${nPending ? `<span style="font-size:9px;font-weight:600;background:rgba(255,255,255,.25);padding:1px 5px;border-radius:8px">+${nPending}</span>` : ''}`;
     el.title = `Mesa ${mesa.numero} · ${mesa.estado}`;
-
-    el.addEventListener('mouseenter', () => { if(!dragging) el.style.transform = 'scale(1.07)'; });
-    el.addEventListener('mouseleave', () => { if(!dragging) el.style.transform = ''; });
-    el.addEventListener('pointerdown', e => onPointerDown(e, mesa, el, planoEl));
+    el.addEventListener('mouseenter', () => { if (!dragging) el.style.transform = 'scale(1.07)'; });
+    el.addEventListener('mouseleave', () => { if (!dragging) el.style.transform = ''; });
+    el.addEventListener('pointerdown', e => _onPointerDown(e, mesa, el, planoEl));
     planoEl.appendChild(el);
   });
 }
 
-// ── Drag & Drop ──────────────────────────────────────────────────
-const DRAG_THRESHOLD = 6;
-
-function onPointerDown(e, mesa, el, planoEl) {
+function _onPointerDown(e, mesa, el, planoEl) {
   e.preventDefault();
-  const startX = e.clientX;
-  const startY = e.clientY;
+  const startX = e.clientX, startY = e.clientY;
   let moved = false;
 
   if (!editMode) {
     el.setPointerCapture(e.pointerId);
     el.addEventListener('pointerup', function up() {
       el.removeEventListener('pointerup', up);
-      selectMesa(mesa, planoEl);
+      _selectMesa(mesa, planoEl);
     });
     return;
   }
@@ -162,76 +176,39 @@ function onPointerDown(e, mesa, el, planoEl) {
   dragOffY = e.clientY - rect.top  - mesa.pos_y;
   dragging = { mesa, el };
   el.setPointerCapture(e.pointerId);
+  el.addEventListener('pointermove', onMove);
+  el.addEventListener('pointerup',   onUp);
 
-  el.addEventListener('pointermove', onPointerMove);
-  el.addEventListener('pointerup',   onPointerUp);
-
-  function onPointerMove(ev) {
-    if (!moved) {
-      if (Math.abs(ev.clientX - startX) < DRAG_THRESHOLD &&
-          Math.abs(ev.clientY - startY) < DRAG_THRESHOLD) return;
-      moved = true;
-      el.style.cursor = 'grabbing';
-      el.style.zIndex = 100;
+  function onMove(ev) {
+    if (!moved && Math.abs(ev.clientX-startX) < 6 && Math.abs(ev.clientY-startY) < 6) return;
+    moved = true; el.style.cursor='grabbing'; el.style.zIndex=100;
+    const r=planoEl.getBoundingClientRect();
+    const x=snapVal(Math.max(0,Math.min(ev.clientX-r.left-dragOffX, r.width-MESA_SIZE)));
+    const y=snapVal(Math.max(0,Math.min(ev.clientY-r.top-dragOffY,  r.height-MESA_SIZE)));
+    el.style.left=x+'px'; el.style.top=y+'px';
+    dragging.newX=x; dragging.newY=y;
+  }
+  async function onUp() {
+    el.removeEventListener('pointermove', onMove);
+    el.removeEventListener('pointerup',   onUp);
+    el.style.cursor='grab'; el.style.zIndex='';
+    if (!moved) _selectMesa(mesa, planoEl);
+    else if (dragging?.newX !== undefined) {
+      await supabase.from('mesas').update({ pos_x:dragging.newX, pos_y:dragging.newY }).eq('id', mesa.id);
+      mesa.pos_x=dragging.newX; mesa.pos_y=dragging.newY;
     }
-    const r    = planoEl.getBoundingClientRect();
-    const rawX = ev.clientX - r.left - dragOffX;
-    const rawY = ev.clientY - r.top  - dragOffY;
-    const x = snapVal(Math.max(0, Math.min(rawX, r.width  - MESA_SIZE)));
-    const y = snapVal(Math.max(0, Math.min(rawY, r.height - MESA_SIZE)));
-    el.style.left = x + 'px';
-    el.style.top  = y + 'px';
-    dragging.newX = x;
-    dragging.newY = y;
-  }
-
-  async function onPointerUp() {
-    el.removeEventListener('pointermove', onPointerMove);
-    el.removeEventListener('pointerup',   onPointerUp);
-    el.style.cursor = 'grab';
-    el.style.zIndex = '';
-    if (!moved) {
-      selectMesa(mesa, planoEl);
-    } else if (dragging?.newX !== undefined) {
-      await saveMesaPosition(mesa.id, dragging.newX, dragging.newY);
-      mesa.pos_x = dragging.newX;
-      mesa.pos_y = dragging.newY;
-    }
-    dragging = null;
+    dragging=null;
   }
 }
 
-// ── Snap to grid toggle ──────────────────────────────────────────
-export function toggleSnapToGrid(btnEl) {
-  snapToGrid = !snapToGrid;
-  const plano = document.getElementById('pos-plano');
-  if (snapToGrid) {
-    plano.classList.add('grid-visible');
-    btnEl.classList.add('active');
-    btnEl.title = 'Snap to grid: ON';
-  } else {
-    plano.classList.remove('grid-visible');
-    btnEl.classList.remove('active');
-    btnEl.title = 'Snap to grid: OFF';
-  }
-}
-
-export function initGrid(planoEl) {
-  if (snapToGrid) planoEl.classList.add('grid-visible');
-}
-
-async function saveMesaPosition(id, x, y) {
-  await supabase.from('mesas').update({ pos_x: x, pos_y: y, updated_at: new Date().toISOString() }).eq('id', id);
-}
-
-// ── Selección de mesa ────────────────────────────────────────────
-function selectMesa(mesa, planoEl) {
+function _selectMesa(mesa, planoEl) {
   mesaSelected = mesa;
+  _editingMesaId = null;
   renderPlano(planoEl);
   renderRightPanel(document.getElementById('pos-right-panel'));
 }
 
-// ── Panel derecho ─────────────────────────────────────────────────
+// ── Panel derecho ────────────────────────────────────────────────
 export function renderRightPanel(panelEl) {
   if (!panelEl) return;
   if (!mesaSelected) {
@@ -240,136 +217,192 @@ export function renderRightPanel(panelEl) {
   }
   const m = mesaSelected;
   const isOcupada = ['ocupada', 'cuenta'].includes(m.estado);
-  if (isOcupada) {
-    _renderComandaPanel(panelEl, m);
-  } else {
-    _renderInfoPanel(panelEl, m);
-  }
+  if (isOcupada) _renderComandaPanel(panelEl, m);
+  else           _renderInfoPanel(panelEl, m);
 }
 
-// ── Panel comanda (mesa ocupada / cuenta) ────────────────────────
+// ── Panel comanda ────────────────────────────────────────────────
 function _renderComandaPanel(panelEl, m) {
+  if (_editingMesaId === m.id) { _renderEditarVenta(panelEl, m); return; }
+
   const c        = ESTADO_COLOR[m.estado] || ESTADO_COLOR.ocupada;
   const personas = _mesaPersonas[m.id] || 1;
   const hora     = _mesaHora[m.id];
-  const horaStr  = hora
-    ? hora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false })
-    : '';
-  const items    = _comandas[m.id] || [];
-  const total    = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  const horaStr  = hora ? hora.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
+  const confirmed = _confirmedItems[m.id] || [];
+  const pending   = _pendingItems[m.id]   || [];
+  const confirmedTotal = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const pendingTotal   = pending.reduce  ((s,i) => s + i.precio*i.cantidad, 0);
 
   panelEl.innerHTML = `
     <div class="pos-mesa-detail">
       <!-- Cabecera -->
       <div class="pos-mesa-header" style="background:${c.bg}">
         <div class="pos-mesa-badge-lg">${m.numero}</div>
-        <div>
+        <div style="flex:1;min-width:0">
           <div style="font-size:17px;font-weight:700">Mesa ${m.numero}</div>
-          <div style="font-size:12px;opacity:.85">${personas} persona${personas !== 1 ? 's' : ''}${horaStr ? ' · ' + horaStr : ''}</div>
+          <div style="font-size:12px;opacity:.85">${personas} persona${personas!==1?'s':''}${horaStr?' · '+horaStr:''}</div>
         </div>
-        <div style="margin-left:auto;display:flex;gap:4px">
-          <button style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px"
-            onclick="posCambiarEstado('${m.id}','libre')" title="Cerrar mesa sin cobrar">
-            <i class="ti ti-x"></i>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="pos-hdr-btn" onclick="posVerPreCuenta('${m.id}')" title="Pre-cuenta">
+            <i class="ti ti-receipt"></i>
+          </button>
+          <button class="pos-hdr-btn" onclick="posEditarVenta('${m.id}')" title="Editar venta">
+            <i class="ti ti-transfer"></i>
           </button>
         </div>
       </div>
 
-      <!-- Estado rápido mini -->
-      <div style="display:flex;gap:4px;padding:8px 14px;border-bottom:1px solid var(--pos-border)">
-        ${['ocupada','cuenta'].map(s => `
-          <button style="flex:1;padding:5px 4px;border-radius:6px;border:1px solid ${m.estado===s?'transparent':'var(--pos-border)'};
-            background:${m.estado===s?ESTADO_COLOR[s].bg:'none'};
-            color:${m.estado===s?'#fff':'var(--pos-muted)'};cursor:pointer;font-size:11px;font-weight:500;font-family:inherit"
-            onclick="posCambiarEstado('${m.id}','${s}')">
-            ${s.charAt(0).toUpperCase()+s.slice(1)}
-          </button>`).join('')}
+      <!-- Estado mini -->
+      <div style="display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--pos-border)">
+        <button style="flex:1;padding:5px;border-radius:6px;border:1px solid ${m.estado==='ocupada'?'transparent':'var(--pos-border)'};
+          background:${m.estado==='ocupada'?ESTADO_COLOR.ocupada.bg:'none'};
+          color:${m.estado==='ocupada'?'#fff':'var(--pos-muted)'};cursor:pointer;font-size:11px;font-weight:500;font-family:inherit"
+          onclick="posCambiarEstado('${m.id}','ocupada')">Ocupada</button>
+        <button style="flex:1;padding:5px;border-radius:6px;border:1px solid ${m.estado==='cuenta'?'transparent':'var(--pos-border)'};
+          background:${m.estado==='cuenta'?ESTADO_COLOR.cuenta.bg:'none'};
+          color:${m.estado==='cuenta'?'#fff':'var(--pos-muted)'};cursor:pointer;font-size:11px;font-weight:500;font-family:inherit"
+          onclick="posCambiarEstado('${m.id}','cuenta')">Pre-cuenta</button>
       </div>
 
-      <!-- Lista de ítems -->
-      <div style="flex:1;overflow-y:auto;min-height:0" id="comanda-list-${m.id}">
-        ${_renderComandaItems(m.id)}
+      <!-- Ítems confirmados -->
+      <div style="flex:1;overflow-y:auto;min-height:0">
+        <div id="confirmed-list-${m.id}">${_renderConfirmedItems(m.id)}</div>
+
+        <!-- Ítems pendientes -->
+        ${pending.length ? `
+          <div style="padding:6px 12px 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--pos-accent);border-top:1px dashed var(--pos-border)">
+            Pendiente de confirmar
+          </div>
+          <div id="pending-list-${m.id}">${_renderPendingItems(m.id)}</div>
+        ` : `<div id="pending-list-${m.id}"></div>`}
       </div>
 
-      <!-- Buscador de productos -->
-      <div style="padding:10px 14px;border-top:1px solid var(--pos-border)">
-        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--pos-muted);margin-bottom:7px">Agregar ítem</div>
+      <!-- Buscador -->
+      <div style="padding:10px 12px;border-top:1px solid var(--pos-border)">
         <div style="position:relative">
           <input type="text" id="cmd-search-${m.id}" autocomplete="off"
-            style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:13px;outline:none"
+            style="width:100%;padding:8px 12px;border-radius:7px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:13px;outline:none"
             placeholder="Buscar producto…"
             oninput="posFiltrarProductos('${m.id}',this.value)"
             onfocus="posFiltrarProductos('${m.id}',this.value)"
             onblur="setTimeout(()=>{const d=document.getElementById('cmd-drop-${m.id}');if(d)d.style.display='none'},150)" />
           <div id="cmd-drop-${m.id}"
-            style="display:none;position:absolute;bottom:100%;left:0;right:0;
-              background:var(--pos-surface);border:1px solid var(--pos-border);
-              border-radius:8px;max-height:200px;overflow-y:auto;z-index:50;
-              margin-bottom:4px;box-shadow:0 -4px 16px rgba(0,0,0,.4)"></div>
+            style="display:none;position:absolute;bottom:100%;left:0;right:0;background:var(--pos-surface);
+              border:1px solid var(--pos-border);border-radius:8px;max-height:200px;overflow-y:auto;
+              z-index:50;margin-bottom:4px;box-shadow:0 -4px 16px rgba(0,0,0,.4)"></div>
         </div>
       </div>
 
-      <!-- Footer total + cobro -->
-      <div style="padding:12px 14px;border-top:2px solid var(--pos-border);background:rgba(0,0,0,.15);flex-shrink:0">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+      <!-- Botones confirmar (solo si hay pending) -->
+      ${pending.length ? `
+        <div style="padding:10px 12px;border-top:1px dashed var(--pos-border);background:rgba(184,152,42,.08)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+            <span style="font-size:12px;color:var(--pos-muted)">Total a confirmar</span>
+            <span style="font-size:16px;font-weight:700;color:var(--pos-accent)">${_fmtPesos(pendingTotal)}</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button style="flex:1;padding:9px;border-radius:7px;border:1px solid var(--pos-border);background:none;color:var(--pos-muted);cursor:pointer;font-family:inherit;font-size:13px;font-weight:500"
+              onclick="posCancelarPendientes('${m.id}')">Cancelar</button>
+            <button style="flex:2;padding:9px;border-radius:7px;border:none;background:var(--pos-accent);color:#111;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700"
+              onclick="posConfirmarPedidos('${m.id}')">Confirmar</button>
+          </div>
+        </div>` : ''}
+
+      <!-- Footer total + cerrar -->
+      <div style="padding:12px;border-top:2px solid var(--pos-border);background:rgba(0,0,0,.15);flex-shrink:0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
           <span style="font-size:13px;color:var(--pos-muted)">Total</span>
-          <span id="comanda-total-${m.id}" style="font-size:22px;font-weight:700">${_fmtPesos(total)}</span>
+          <span id="comanda-total-${m.id}" style="font-size:20px;font-weight:700">${_fmtPesos(confirmedTotal)}</span>
         </div>
-        <button id="cobrar-btn-${m.id}" class="pos-action-btn primary" style="margin-bottom:6px" onclick="posCobrarMesa('${m.id}')">
-          <i class="ti ti-cash"></i> Cobrar${total ? ' — ' + _fmtPesos(total) : ''}
+        <button class="pos-action-btn danger" onclick="posCerrarMesa('${m.id}')">
+          <i class="ti ti-door-exit"></i> Cerrar mesa ${m.numero}
         </button>
       </div>
     </div>`;
 }
 
-function _renderComandaItems(mesaId) {
-  const items = _comandas[mesaId] || [];
+function _renderConfirmedItems(mesaId) {
+  const items = _confirmedItems[mesaId] || [];
   if (!items.length) {
-    return `<div style="text-align:center;padding:32px 16px;color:var(--pos-muted);font-size:13px">
-      <i class="ti ti-clipboard-list" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>
-      Comanda vacía — busca productos arriba
+    return `<div style="text-align:center;padding:20px 16px;color:var(--pos-muted);font-size:12px;opacity:.5">
+      <i class="ti ti-clipboard-list" style="font-size:28px;display:block;margin-bottom:6px"></i>Comanda vacía
     </div>`;
   }
-  return `<div>` + items.map((item, idx) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.04)">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nombre}</div>
-        <div style="font-size:11px;color:var(--pos-muted)">${_fmtPesos(item.precio)} c/u</div>
+  return items.map((item, idx) => {
+    const mods = item.grupos?.filter(g => g.opcion_nombre) || [];
+    return `<div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.nombre}</div>
+          ${mods.length ? `<div style="font-size:11px;color:var(--pos-muted)">${mods.map(g=>g.opcion_nombre).join(' · ')}</div>` : ''}
+          ${item.comentario ? `<div style="font-size:11px;color:var(--pos-accent);font-style:italic">💬 ${item.comentario}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <button style="${_qtyBtnStyle()}" onmousedown="posChangeConfirmedQty('${mesaId}',${idx},-1)">−</button>
+          <span style="min-width:18px;text-align:center;font-size:13px;font-weight:600">${item.cantidad}</span>
+          <button style="${_qtyBtnStyle()}" onmousedown="posChangeConfirmedQty('${mesaId}',${idx},1)">+</button>
+        </div>
+        <div style="min-width:56px;text-align:right;font-size:13px;font-weight:600">${_fmtPesos(item.precio*item.cantidad)}</div>
+        <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:var(--pos-muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center"
+          onmousedown="posToggleCommentC('${mesaId}',${idx})"><i class="ti ti-message"></i></button>
+        <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:#ef4444;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center"
+          onmousedown="posEliminarConfirmado('${mesaId}',${idx})"><i class="ti ti-x"></i></button>
       </div>
-      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-        <button style="width:22px;height:22px;border-radius:5px;border:1px solid var(--pos-border);background:none;color:var(--pos-text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1"
-          onmousedown="posChangeItemQty('${mesaId}',${idx},-1)">−</button>
-        <span style="min-width:20px;text-align:center;font-weight:600;font-size:13px">${item.cantidad}</span>
-        <button style="width:22px;height:22px;border-radius:5px;border:1px solid var(--pos-border);background:none;color:var(--pos-text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1"
-          onmousedown="posChangeItemQty('${mesaId}',${idx},1)">+</button>
-      </div>
-      <div style="min-width:60px;text-align:right;font-weight:600;font-size:13px">${_fmtPesos(item.precio * item.cantidad)}</div>
-    </div>`).join('') + `</div>`;
+      ${item.showComment ? `<textarea
+        style="width:100%;margin-top:6px;padding:6px 8px;border-radius:6px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:12px;resize:none;height:52px;outline:none"
+        placeholder="Comentario…"
+        oninput="posSetCommentC('${mesaId}',${idx},this.value)">${item.comentario || ''}</textarea>` : ''}
+    </div>`;
+  }).join('');
 }
 
-function _updateComandaUI(mesaId) {
-  const listEl = document.getElementById(`comanda-list-${mesaId}`);
-  if (listEl) listEl.innerHTML = _renderComandaItems(mesaId);
-  const total = (_comandas[mesaId] || []).reduce((s, i) => s + i.precio * i.cantidad, 0);
-  const totalEl = document.getElementById(`comanda-total-${mesaId}`);
-  if (totalEl) totalEl.textContent = _fmtPesos(total);
-  const cobrarBtn = document.getElementById(`cobrar-btn-${mesaId}`);
-  if (cobrarBtn) cobrarBtn.innerHTML = `<i class="ti ti-cash"></i> Cobrar${total ? ' — ' + _fmtPesos(total) : ''}`;
-  // Actualizar badge de ítems en el plano
-  renderPlano(document.getElementById('pos-plano'));
+function _renderPendingItems(mesaId) {
+  const items = _pendingItems[mesaId] || [];
+  return items.map((item, idx) => {
+    const mods = item.grupos || [];
+    return `<div style="padding:8px 12px;border-bottom:1px solid rgba(184,152,42,.15);background:rgba(184,152,42,.05)">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="flex:1;font-size:13px;font-weight:500">${item.nombre}</div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <button style="${_qtyBtnStyle()}" onmousedown="posChangePendingQty('${mesaId}',${idx},-1)">−</button>
+          <span style="min-width:18px;text-align:center;font-size:13px;font-weight:600">${item.cantidad}</span>
+          <button style="${_qtyBtnStyle()}" onmousedown="posChangePendingQty('${mesaId}',${idx},1)">+</button>
+        </div>
+        <div style="min-width:56px;text-align:right;font-size:13px;font-weight:600;color:var(--pos-accent)">${_fmtPesos(item.precio*item.cantidad)}</div>
+        <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:var(--pos-muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center"
+          onmousedown="posToggleCommentP('${mesaId}',${idx})"><i class="ti ti-message"></i></button>
+        <button style="width:22px;height:22px;border-radius:5px;border:none;background:none;color:#ef4444;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center"
+          onmousedown="posEliminarPendiente('${mesaId}',${idx})"><i class="ti ti-x"></i></button>
+      </div>
+      ${mods.length ? `<div style="display:flex;flex-direction:column;gap:5px;margin-top:7px">
+        ${mods.map((g, gi) => `
+          <select style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--pos-border);background:var(--pos-bg);color:${g.opcion_id?'var(--pos-text)':'var(--pos-muted)'};font-family:inherit;font-size:12px;outline:none"
+            onchange="posSetGrupoOpcion('${mesaId}',${idx},${gi},this.value,this.options[this.selectedIndex].text)">
+            <option value="">--- ${g.nombre} ---</option>
+            ${g.opciones.map(o => `<option value="${o.id}" ${g.opcion_id===o.id?'selected':''}>${o.nombre}${o.precio_adicional?` (+${_fmtPesos(o.precio_adicional)})`:''}</option>`).join('')}
+          </select>`).join('')}
+      </div>` : ''}
+      ${item.showComment ? `<textarea
+        style="width:100%;margin-top:6px;padding:6px 8px;border-radius:6px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:12px;resize:none;height:52px;outline:none"
+        placeholder="Comentario…"
+        oninput="posSetCommentP('${mesaId}',${idx},this.value)">${item.comentario || ''}</textarea>` : ''}
+    </div>`;
+  }).join('');
 }
 
-// ── Panel info (mesa libre / reservada) ──────────────────────────
+function _qtyBtnStyle() {
+  return 'width:22px;height:22px;border-radius:5px;border:1px solid var(--pos-border);background:none;color:var(--pos-text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1';
+}
+
+// ── Panel info (mesa libre/reservada) ────────────────────────────
 function _renderInfoPanel(panelEl, m) {
   const c  = ESTADO_COLOR[m.estado] || ESTADO_COLOR.libre;
   const personas = _mesaPersonas[m.id] || 1;
   const garzonActual = _mesaGarzon[m.id] || '';
-  const esAdmin = _canEdit;
-  const nombreUsuario = _currentUser ? (_currentUser.email || '').split('@')[0] : '';
-
   const garzonesOpts = _garzonesData.map(g => {
-    const nombre = `${g.nombre} ${g.apellido || ''}`.trim();
-    return `<option value="${nombre}" ${garzonActual === nombre ? 'selected' : ''}>${nombre}</option>`;
+    const nombre = `${g.nombre} ${g.apellido||''}`.trim();
+    return `<option value="${nombre}" ${garzonActual===nombre?'selected':''}>${nombre}</option>`;
   }).join('');
 
   panelEl.innerHTML = `
@@ -381,191 +414,436 @@ function _renderInfoPanel(panelEl, m) {
           <div style="font-size:12px;opacity:.85;text-transform:capitalize">${m.estado} · cap. ${m.capacidad}</div>
         </div>
       </div>
-
       <div class="pos-detail-section">Estado</div>
       <div class="pos-estado-btns">
         ${['libre','ocupada','cuenta','reservada'].map(s =>
           `<button class="pos-estado-btn ${m.estado===s?'active':''}"
             style="${m.estado===s?`background:${ESTADO_COLOR[s].bg};color:#fff`:''}"
             onclick="posCambiarEstado('${m.id}','${s}')">
-            ${s.charAt(0).toUpperCase()+s.slice(1)}
-           </button>`
-        ).join('')}
+            ${s==='cuenta'?'Pre-cuenta':s.charAt(0).toUpperCase()+s.slice(1)}
+           </button>`).join('')}
       </div>
-
       <div class="pos-detail-section">Personas</div>
       <div class="pos-personas-row">
         <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',-1)"><i class="ti ti-minus"></i></button>
         <span id="pos-personas-val" class="pos-qty-val">${personas}</span>
         <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',1)"><i class="ti ti-plus"></i></button>
       </div>
-
       <div class="pos-detail-section">Garzón</div>
-      ${esAdmin ? `
+      ${_canEdit ? `
         <select class="pos-garzon-select" onchange="posSetGarzon('${m.id}',this.value)">
-          <option value="">— Sin asignar —</option>
-          ${garzonesOpts}
-        </select>` : `
-        <div class="pos-garzon-name">${nombreUsuario}</div>`}
-
+          <option value="">— Sin asignar —</option>${garzonesOpts}
+        </select>` : `<div class="pos-garzon-name">${_currentUser?.email?.split('@')[0]||''}</div>`}
       <div class="pos-detail-section">Casa</div>
       <div class="pos-casas-row">
         ${CASAS.map(casa => {
-          const activa = (_mesaCasa[m.id] === casa.id);
-          return `<button class="pos-casa-btn ${activa ? 'active' : ''}" title="${casa.nombre}"
-            style="${activa ? `background:${casa.color};color:${casa.text};border-color:${casa.color};` : ''}"
+          const activa = _mesaCasa[m.id]===casa.id;
+          return `<button class="pos-casa-btn ${activa?'active':''}" title="${casa.nombre}"
+            style="${activa?`background:${casa.color};color:${casa.text};border-color:${casa.color};`:''}"
             onclick="posToggleCasa('${m.id}','${casa.id}')">${casa.emoji}</button>`;
         }).join('')}
       </div>
       ${_mesaCasa[m.id] ? (() => {
-        const casa = CASAS.find(x => x.id === _mesaCasa[m.id]);
+        const casa=CASAS.find(x=>x.id===_mesaCasa[m.id]);
         return `<div class="pos-casa-label" style="background:${casa.color};color:${casa.text}">${casa.emoji} ${casa.nombre}</div>`;
       })() : ''}
-
       <div style="margin-top:auto;padding-top:16px;display:flex;flex-direction:column;gap:8px">
-        ${m.estado === 'libre' ? `
-          <button class="pos-action-btn primary" onclick="posAbrirMesa('${m.id}')">
-            <i class="ti ti-door-enter"></i> Abrir mesa
-          </button>` : `
-          <button class="pos-action-btn primary" onclick="posAbrirMesa('${m.id}')">
-            <i class="ti ti-clipboard-list"></i> Ver comanda
-          </button>`}
-        ${editMode ? `
-          <button class="pos-action-btn danger" onclick="posEliminarMesa('${m.id}')">
-            <i class="ti ti-trash"></i> Eliminar mesa
-          </button>` : ''}
+        <button class="pos-action-btn primary" onclick="posAbrirMesa('${m.id}')">
+          <i class="ti ti-door-enter"></i> Abrir mesa
+        </button>
+        ${editMode ? `<button class="pos-action-btn danger" onclick="posEliminarMesa('${m.id}')">
+          <i class="ti ti-trash"></i> Eliminar mesa
+        </button>` : ''}
       </div>
     </div>`;
 }
 
-// ── Comanda: filtrar productos ───────────────────────────────────
+// ── Panel "Editar venta" ─────────────────────────────────────────
+function _renderEditarVenta(panelEl, m) {
+  const personas = _mesaPersonas[m.id] || 1;
+  const mesasDisponibles = mesas.filter(x => x.id !== m.id && x.estado === 'libre');
+  const c = ESTADO_COLOR[m.estado] || ESTADO_COLOR.ocupada;
+
+  panelEl.innerHTML = `
+    <div class="pos-mesa-detail">
+      <div class="pos-mesa-header" style="background:${c.bg}">
+        <button style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.15);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;margin-right:10px"
+          onclick="posVolverComanda('${m.id}')"><i class="ti ti-arrow-left"></i></button>
+        <div>
+          <div style="font-size:15px;font-weight:700">Editar venta — Mesa ${m.numero}</div>
+        </div>
+      </div>
+
+      <div style="padding:20px;display:flex;flex-direction:column;gap:20px">
+        <!-- Personas -->
+        <div>
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--pos-muted);margin-bottom:10px">Personas</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',-1)"><i class="ti ti-minus"></i></button>
+            <span id="pos-personas-val" class="pos-qty-val" style="font-size:28px;font-weight:700;min-width:40px;text-align:center">${personas}</span>
+            <button class="pos-qty-btn" onclick="posChangePersonas('${m.id}',1)"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+
+        <!-- Mover mesa -->
+        <div>
+          <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--pos-muted);margin-bottom:10px">Mover venta a otra mesa</div>
+          ${mesasDisponibles.length ? `
+            <select id="mover-mesa-select" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:13px;outline:none">
+              <option value="">— Selecciona mesa destino —</option>
+              ${mesasDisponibles.map(x => `<option value="${x.id}">Mesa ${x.numero} (libre)</option>`).join('')}
+            </select>
+            <button class="pos-action-btn primary" style="margin-top:10px" onclick="posMoverMesa('${m.id}', document.getElementById('mover-mesa-select').value)">
+              <i class="ti ti-arrows-exchange"></i> Mover a esta mesa
+            </button>` : `
+            <div style="font-size:13px;color:var(--pos-muted);padding:12px;background:rgba(255,255,255,.04);border-radius:8px;text-align:center">
+              No hay mesas libres disponibles
+            </div>`}
+        </div>
+      </div>
+
+      <div style="padding:12px;border-top:1px solid var(--pos-border);margin-top:auto">
+        <button class="pos-action-btn" onclick="posVolverComanda('${m.id}')">
+          <i class="ti ti-arrow-left"></i> Volver a comanda
+        </button>
+      </div>
+    </div>`;
+}
+
+// ── Comanda: búsqueda de productos ───────────────────────────────
 export function filtrarProductos(mesaId, val) {
   const drop = document.getElementById(`cmd-drop-${mesaId}`);
   if (!drop) return;
   const f = val.toLowerCase().trim();
-  const lista = f
-    ? _productos.filter(p => p.nombre.toLowerCase().includes(f)).slice(0, 25)
-    : _productos.slice(0, 25);
-  if (!lista.length) { drop.style.display = 'none'; return; }
+  const lista = f ? _productos.filter(p => p.nombre.toLowerCase().includes(f)).slice(0, 25) : _productos.slice(0, 25);
+  if (!lista.length) { drop.style.display='none'; return; }
   drop.innerHTML = lista.map(p => `
-    <div style="padding:9px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);
-      display:flex;justify-content:space-between;align-items:center;font-size:13px"
+    <div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center;font-size:13px"
       onmousedown="posAgregarAComanda('${mesaId}','${p.id}')">
       <div>
         <div style="font-weight:500">${p.nombre}</div>
-        <div style="font-size:11px;color:var(--pos-muted)">${p.categorias_productos?.nombre || ''}</div>
+        <div style="font-size:11px;color:var(--pos-muted)">${p.categorias_productos?.nombre||''}</div>
       </div>
       <div style="font-weight:600;color:var(--pos-accent);margin-left:12px">${_fmtPesos(p.precio)}</div>
     </div>`).join('');
-  drop.style.display = 'block';
+  drop.style.display='block';
 }
 
-// ── Comanda: agregar ítem ────────────────────────────────────────
-export function agregarAComanda(mesaId, productoId) {
-  const producto = _productos.find(p => p.id === productoId);
-  if (!producto) return;
-  if (!_comandas[mesaId]) _comandas[mesaId] = [];
-  const existing = _comandas[mesaId].find(i => i.id === productoId);
-  if (existing) {
-    existing.cantidad++;
-  } else {
-    _comandas[mesaId].push({ id: productoId, nombre: producto.nombre, precio: producto.precio || 0, cantidad: 1 });
-  }
+// ── Comanda: agregar producto (va a pending) ─────────────────────
+export async function agregarAComanda(mesaId, productoId) {
+  const prod = _productos.find(p => p.id === productoId);
+  if (!prod) return;
+  const grupos = await _loadGruposForProducto(productoId);
+  if (!_pendingItems[mesaId]) _pendingItems[mesaId] = [];
+  _pendingItems[mesaId].push({
+    localId: ++_localId,
+    id: productoId,
+    nombre: prod.nombre,
+    precio: prod.precio || 0,
+    cantidad: 1,
+    grupos: grupos.map(g => ({ grupo_id: g.id, nombre: g.nombre, min: g.min, max: g.max,
+      opcion_id: null, opcion_nombre: null, precio_adicional: 0, opciones: g.opciones })),
+    comentario: '',
+    showComment: false,
+    _cocina: prod.categorias_productos?.cocinas || null,
+  });
   const inp = document.getElementById(`cmd-search-${mesaId}`);
-  if (inp) inp.value = '';
+  if (inp) inp.value='';
   const drop = document.getElementById(`cmd-drop-${mesaId}`);
-  if (drop) drop.style.display = 'none';
+  if (drop) drop.style.display='none';
   _updateComandaUI(mesaId);
 }
 
-// ── Comanda: cambiar cantidad ────────────────────────────────────
-export function changeItemQty(mesaId, idx, delta) {
-  const items = _comandas[mesaId];
-  if (!items || !items[idx]) return;
+// ── Comanda: confirmar pedidos → enviar a cocina ─────────────────
+export async function confirmarPedidos(mesaId) {
+  const pending = _pendingItems[mesaId] || [];
+  if (!pending.length) return;
+
+  const mesa    = mesas.find(m => m.id === mesaId);
+  const zona    = zonas.find(z => z.id === mesa?.zona_id);
+  const personas = _mesaPersonas[mesaId] || 1;
+
+  // Agrupar por cocina
+  const byCocina = {};
+  for (const item of pending) {
+    const cocina   = item._cocina;
+    const cKey     = cocina?.id || '__sin__';
+    const cNombre  = cocina?.nombre || 'General';
+    if (!byCocina[cKey]) byCocina[cKey] = { cocinaId: cocina?.id || null, cocinaNombre: cNombre, items: [] };
+    byCocina[cKey].items.push(item);
+  }
+
+  for (const [, group] of Object.entries(byCocina)) {
+    const { data: comanda, error } = await supabase.from('pos_comandas').insert({
+      mesa_id:      mesaId,
+      mesa_numero:  mesa?.numero || '',
+      zona_nombre:  zona?.nombre || '',
+      cocina_id:    group.cocinaId,
+      cocina_nombre: group.cocinaNombre,
+      estado:       'pendiente',
+      personas,
+    }).select().single();
+
+    if (!error && comanda) {
+      await supabase.from('pos_comanda_items').insert(
+        group.items.flatMap(item => Array.from({ length: item.cantidad }, () => ({
+          comanda_id:   comanda.id,
+          producto_id:  item.id,
+          nombre:       item.nombre,
+          precio:       item.precio,
+          cantidad:     1,
+          comentario:   item.comentario || null,
+          modificadores: item.grupos.filter(g => g.opcion_id)
+            .map(g => ({ grupo: g.nombre, opcion: g.opcion_nombre, precio_adicional: g.precio_adicional })),
+        })))
+      );
+    }
+  }
+
+  // Mover a confirmed
+  if (!_confirmedItems[mesaId]) _confirmedItems[mesaId] = [];
+  for (const item of pending) {
+    _confirmedItems[mesaId].push({ ...item, localId: ++_localId });
+  }
+  _pendingItems[mesaId] = [];
+  showPosToast('Pedido enviado a cocina ✓');
+  _updateComandaUI(mesaId);
+}
+
+export function cancelarPendientes(mesaId) {
+  _pendingItems[mesaId] = [];
+  _updateComandaUI(mesaId);
+}
+
+// ── Comanda: operaciones sobre ítems ────────────────────────────
+export function eliminarPendiente(mesaId, idx) {
+  (_pendingItems[mesaId]||[]).splice(idx, 1);
+  _updateComandaUI(mesaId);
+}
+export function eliminarConfirmado(mesaId, idx) {
+  (_confirmedItems[mesaId]||[]).splice(idx, 1);
+  _updateComandaUI(mesaId);
+}
+export function changePendingQty(mesaId, idx, delta) {
+  const items = _pendingItems[mesaId];
+  if (!items?.[idx]) return;
+  items[idx].cantidad = Math.max(1, items[idx].cantidad + delta);
+  _updateComandaUI(mesaId);
+}
+export function changeConfirmedQty(mesaId, idx, delta) {
+  const items = _confirmedItems[mesaId];
+  if (!items?.[idx]) return;
   items[idx].cantidad += delta;
   if (items[idx].cantidad <= 0) items.splice(idx, 1);
   _updateComandaUI(mesaId);
 }
-
-// ── Personas ─────────────────────────────────────────────────────
-export function changePersonas(mesaId, delta) {
-  const current = _mesaPersonas[mesaId] || 1;
-  const next = Math.max(1, Math.min(current + delta, 20));
-  _mesaPersonas[mesaId] = next;
-  const el = document.getElementById('pos-personas-val');
-  if (el) el.textContent = next;
-  renderPlano(document.getElementById('pos-plano'));
+export function toggleCommentP(mesaId, idx) {
+  const item = (_pendingItems[mesaId]||[])[idx];
+  if (item) { item.showComment = !item.showComment; _updateComandaUI(mesaId); }
+}
+export function toggleCommentC(mesaId, idx) {
+  const item = (_confirmedItems[mesaId]||[])[idx];
+  if (item) { item.showComment = !item.showComment; _updateComandaUI(mesaId); }
+}
+export function setCommentP(mesaId, idx, val) {
+  const item = (_pendingItems[mesaId]||[])[idx];
+  if (item) item.comentario = val;
+}
+export function setCommentC(mesaId, idx, val) {
+  const item = (_confirmedItems[mesaId]||[])[idx];
+  if (item) item.comentario = val;
+}
+export function setGrupoOpcion(mesaId, pendingIdx, grupoIdx, opcionId, opcionText) {
+  const item = (_pendingItems[mesaId]||[])[pendingIdx];
+  if (!item?.grupos?.[grupoIdx]) return;
+  const g = item.grupos[grupoIdx];
+  const opc = g.opciones.find(o => o.id === opcionId);
+  g.opcion_id      = opcionId  || null;
+  g.opcion_nombre  = opcionId  ? (opc?.nombre || opcionText.replace(/\s*\(\+.*\)$/,'')) : null;
+  g.precio_adicional = opc?.precio_adicional || 0;
 }
 
-export function setGarzon(mesaId, nombre) {
-  _mesaGarzon[mesaId] = nombre;
+// ── Cerrar mesa ──────────────────────────────────────────────────
+export function cerrarMesa(mesaId) {
+  const confirmed = _confirmedItems[mesaId] || [];
+  const pending   = _pendingItems[mesaId]   || [];
+  const mesa      = mesas.find(m => m.id === mesaId);
+  const total     = confirmed.reduce((s,i) => s + i.precio*i.cantidad, 0);
+
+  // Mostrar modal de confirmación
+  let modalEl = document.getElementById('modal-cerrar-mesa');
+  if (!modalEl) {
+    modalEl = document.createElement('div');
+    modalEl.id = 'modal-cerrar-mesa';
+    modalEl.className = 'pos-modal-backdrop';
+    document.body.appendChild(modalEl);
+    modalEl.addEventListener('click', e => { if (e.target===modalEl) modalEl.classList.remove('open'); });
+  }
+  const noItems = !confirmed.length && !pending.length;
+  modalEl.innerHTML = `
+    <div class="pos-modal">
+      <div class="pos-modal-title">CERRAR MESA ${mesa?.numero||''}</div>
+      ${noItems
+        ? `<div style="color:#f87171;font-style:italic;font-size:13px">La mesa no contiene adiciones.</div>`
+        : `<div style="font-size:13px;color:var(--pos-muted)">Total: <strong>${_fmtPesos(total)}</strong> — se marcará como libre.</div>`}
+      <div class="pos-modal-footer">
+        <button class="pos-modal-btn" onclick="document.getElementById('modal-cerrar-mesa').classList.remove('open')">Cancelar</button>
+        <button class="pos-modal-btn primary" onclick="posConfirmarCierre('${mesaId}')">Cerrar mesa ${mesa?.numero||''}</button>
+      </div>
+    </div>`;
+  modalEl.classList.add('open');
 }
 
-export function toggleCasa(mesaId, casaId) {
-  _mesaCasa[mesaId] = (_mesaCasa[mesaId] === casaId) ? null : casaId;
+export async function confirmarCierre(mesaId) {
+  document.getElementById('modal-cerrar-mesa')?.classList.remove('open');
+  _confirmedItems[mesaId] = [];
+  _pendingItems[mesaId]   = [];
+  delete _mesaHora[mesaId];
+  await cambiarEstado(mesaId, 'libre');
+  showPosToast('Mesa cerrada ✓');
+}
+
+// ── Editar venta ─────────────────────────────────────────────────
+export function editarVenta(mesaId) {
+  _editingMesaId = mesaId;
   renderRightPanel(document.getElementById('pos-right-panel'));
+}
+export function volverComanda(mesaId) {
+  _editingMesaId = null;
+  renderRightPanel(document.getElementById('pos-right-panel'));
+}
+
+export function moverMesa(desdeMesaId, hastaMesaId) {
+  if (!hastaMesaId) { showPosToast('Selecciona una mesa destino', 'error'); return; }
+  const hasta = mesas.find(m => m.id === hastaMesaId);
+  if (!hasta || hasta.estado !== 'libre') { showPosToast('La mesa destino no está libre', 'error'); return; }
+
+  // Mover datos
+  _confirmedItems[hastaMesaId] = [...(_confirmedItems[desdeMesaId]||[])];
+  _pendingItems[hastaMesaId]   = [...(_pendingItems[desdeMesaId]||[])];
+  _mesaPersonas[hastaMesaId]   = _mesaPersonas[desdeMesaId] || 1;
+  _mesaHora[hastaMesaId]       = _mesaHora[desdeMesaId];
+
+  _confirmedItems[desdeMesaId] = [];
+  _pendingItems[desdeMesaId]   = [];
+  delete _mesaHora[desdeMesaId];
+
+  // Cambiar estados en DB
+  supabase.from('mesas').update({ estado: 'ocupada' }).eq('id', hastaMesaId).then(() => {});
+  supabase.from('mesas').update({ estado: 'libre'   }).eq('id', desdeMesaId).then(() => {});
+
+  const mDesde = mesas.find(m => m.id === desdeMesaId);
+  const mHasta = mesas.find(m => m.id === hastaMesaId);
+  if (mDesde) mDesde.estado = 'libre';
+  if (mHasta) mHasta.estado = 'ocupada';
+
+  mesaSelected = mHasta || null;
+  _editingMesaId = null;
+
+  renderPlano(document.getElementById('pos-plano'));
+  renderRightPanel(document.getElementById('pos-right-panel'));
+  showPosToast(`Venta movida a Mesa ${mHasta?.numero||''} ✓`);
+}
+
+// ── Pre-cuenta (modal simple) ────────────────────────────────────
+export function verPreCuenta(mesaId) {
+  const mesa      = mesas.find(m => m.id === mesaId);
+  const confirmed = _confirmedItems[mesaId] || [];
+  const pending   = _pendingItems[mesaId]   || [];
+  const all       = [...confirmed, ...pending];
+  const total     = all.reduce((s,i) => s + i.precio*i.cantidad, 0);
+  const personas  = _mesaPersonas[mesaId] || 1;
+
+  let el = document.getElementById('modal-precuenta');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'modal-precuenta';
+    el.className = 'pos-modal-backdrop';
+    document.body.appendChild(el);
+    el.addEventListener('click', e => { if (e.target===el) el.classList.remove('open'); });
+  }
+  el.innerHTML = `
+    <div class="pos-modal" style="width:380px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="pos-modal-title">Pre-cuenta — Mesa ${mesa?.numero||''}</div>
+        <button onclick="document.getElementById('modal-precuenta').classList.remove('open')" style="border:none;background:none;color:var(--pos-muted);cursor:pointer;font-size:18px">×</button>
+      </div>
+      <div style="font-size:12px;color:var(--pos-muted);margin-bottom:12px">${personas} persona${personas!==1?'s':''}</div>
+      <div style="border-top:1px solid var(--pos-border)">
+        ${all.map(i => `
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px">
+            <div>${i.cantidad > 1 ? i.cantidad+'× ':''}<span style="font-weight:500">${i.nombre}</span></div>
+            <div style="font-weight:600">${_fmtPesos(i.precio*i.cantidad)}</div>
+          </div>`).join('')}
+        <div style="display:flex;justify-content:space-between;padding:12px 0;font-size:16px;font-weight:700;border-top:2px solid var(--pos-border);margin-top:4px">
+          <div>Total</div>
+          <div>${_fmtPesos(total)}</div>
+        </div>
+      </div>
+    </div>`;
+  el.classList.add('open');
+}
+
+// ── Update UI comanda ────────────────────────────────────────────
+function _updateComandaUI(mesaId) {
+  const panel = document.getElementById('pos-right-panel');
+  if (mesaSelected?.id === mesaId && panel) {
+    renderRightPanel(panel);
+  }
   renderPlano(document.getElementById('pos-plano'));
 }
 
-// ── Abrir mesa ───────────────────────────────────────────────────
+// ── Estado de mesa ───────────────────────────────────────────────
+export async function cambiarEstado(id, nuevoEstado) {
+  const { error } = await supabase.from('mesas').update({ estado: nuevoEstado }).eq('id', id);
+  if (error) { showPosToast('Error al actualizar estado', 'error'); return; }
+  const m = mesas.find(x => x.id === id);
+  if (m) m.estado = nuevoEstado;
+  if (mesaSelected?.id === id) mesaSelected.estado = nuevoEstado;
+  if (nuevoEstado === 'ocupada' && !_mesaHora[id]) _mesaHora[id] = new Date();
+  renderPlano(document.getElementById('pos-plano'));
+  renderRightPanel(document.getElementById('pos-right-panel'));
+}
+
 export async function abrirMesa(id) {
   if (!_mesaHora[id]) _mesaHora[id] = new Date();
   await cambiarEstado(id, 'ocupada');
 }
 
-// ── Cobrar (placeholder — próxima etapa) ─────────────────────────
-export function cobrarMesa(mesaId) {
-  const items = _comandas[mesaId] || [];
-  const total = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
-  if (!items.length) { showPosToast('La comanda está vacía', 'error'); return; }
-  // TODO: implementar flujo de cobro (efectivo, tarjeta, etc.)
-  if (confirm(`Cobrar mesa ${mesaSelected?.numero} — Total ${_fmtPesos(total)}\n¿Confirmar cierre?`)) {
-    _comandas[mesaId] = [];
-    cambiarEstado(mesaId, 'libre');
-    showPosToast('Mesa cerrada ✓');
-  }
-}
-
-// ── Estado de mesa ───────────────────────────────────────────────
-export async function cambiarEstado(id, nuevoEstado) {
-  const { error } = await supabase.from('mesas').update({ estado: nuevoEstado, updated_at: new Date().toISOString() }).eq('id', id);
-  if (error) { showPosToast('Error al actualizar estado', 'error'); return; }
-  const m = mesas.find(x => x.id === id);
-  if (m) m.estado = nuevoEstado;
-  if (mesaSelected?.id === id) mesaSelected.estado = nuevoEstado;
-  if (['libre', 'reservada'].includes(nuevoEstado)) {
-    // Si se cierra la mesa, limpiar hora de apertura
-    if (nuevoEstado === 'libre') delete _mesaHora[id];
-  } else if (nuevoEstado === 'ocupada' && !_mesaHora[id]) {
-    _mesaHora[id] = new Date();
-  }
+// ── Personas / Garzón / Casa ─────────────────────────────────────
+export function changePersonas(mesaId, delta) {
+  const next = Math.max(1, Math.min((_mesaPersonas[mesaId]||1) + delta, 20));
+  _mesaPersonas[mesaId] = next;
+  const el = document.getElementById('pos-personas-val');
+  if (el) el.textContent = next;
   renderPlano(document.getElementById('pos-plano'));
+}
+export function setGarzon(mesaId, nombre) { _mesaGarzon[mesaId] = nombre; }
+export function toggleCasa(mesaId, casaId) {
+  _mesaCasa[mesaId] = _mesaCasa[mesaId]===casaId ? null : casaId;
   renderRightPanel(document.getElementById('pos-right-panel'));
+  renderPlano(document.getElementById('pos-plano'));
 }
 
-// ── Agregar mesa ─────────────────────────────────────────────────
+// ── Agregar mesa / zona ──────────────────────────────────────────
 export async function addMesa(numero, capacidad, forma) {
   if (!zonaActual) { showPosToast('Selecciona una zona primero', 'error'); return; }
   if (!numero.trim()) { showPosToast('El número de mesa es obligatorio', 'error'); return; }
   const { data, error } = await supabase.from('mesas').insert({
     numero: numero.trim(), zona_id: zonaActual.id,
-    capacidad: Number(capacidad) || 4,
-    forma: forma || 'cuadrado',
-    pos_x: 50 + (mesas.length % 8) * 100,
-    pos_y: 50 + Math.floor(mesas.length / 8) * 120,
+    capacidad: Number(capacidad)||4, forma: forma||'cuadrado',
+    pos_x: 50+(mesas.length%8)*100, pos_y: 50+Math.floor(mesas.length/8)*120,
     estado: 'libre', activa: true,
   }).select().single();
-  if (error) { showPosToast('Error al agregar mesa: ' + error.message, 'error'); return; }
+  if (error) { showPosToast('Error: '+error.message, 'error'); return; }
   mesas.push(data);
   renderPlano(document.getElementById('pos-plano'));
   showPosToast('Mesa agregada ✓');
 }
 
-// ── Eliminar mesa ────────────────────────────────────────────────
 export async function eliminarMesa(id) {
-  if (!confirm('¿Eliminar esta mesa? Se perderá su posición en el plano.')) return;
-  const { error } = await supabase.from('mesas').update({ activa: false }).eq('id', id);
-  if (error) { showPosToast('Error al eliminar', 'error'); return; }
+  if (!confirm('¿Eliminar esta mesa?')) return;
+  await supabase.from('mesas').update({ activa: false }).eq('id', id);
   mesas = mesas.filter(m => m.id !== id);
   if (mesaSelected?.id === id) mesaSelected = null;
   renderPlano(document.getElementById('pos-plano'));
@@ -573,7 +851,6 @@ export async function eliminarMesa(id) {
   showPosToast('Mesa eliminada');
 }
 
-// ── Edit mode ────────────────────────────────────────────────────
 export function toggleEditMode(btnEl) {
   editMode = !editMode;
   btnEl.innerHTML = editMode
@@ -586,16 +863,115 @@ export function toggleEditMode(btnEl) {
   renderRightPanel(document.getElementById('pos-right-panel'));
 }
 
-// ── Zonas — agregar ──────────────────────────────────────────────
 export async function addZona(nombre) {
   if (!nombre.trim()) return;
   const { data, error } = await supabase.from('zonas').insert({
-    nombre: nombre.trim(), orden: zonas.length + 1,
+    nombre: nombre.trim(), orden: zonas.length+1,
   }).select().single();
   if (error) { showPosToast('Error al agregar zona', 'error'); return; }
   zonas.push(data);
   showPosToast('Zona agregada ✓');
   return data;
+}
+
+// ── Monitor de cocina ────────────────────────────────────────────
+export async function loadMonitor() {
+  const { data } = await supabase
+    .from('pos_comandas')
+    .select('*, pos_comanda_items(*)')
+    .in('estado', ['pendiente', 'preparando'])
+    .order('hora_inicio');
+  return data || [];
+}
+
+export async function prepararComanda(comandaId) {
+  await supabase.from('pos_comandas').update({ estado: 'preparando', hora_preparando: new Date().toISOString() }).eq('id', comandaId);
+  refreshMonitor();
+}
+
+export async function terminarComanda(comandaId) {
+  await supabase.from('pos_comandas').update({ estado: 'listo', hora_listo: new Date().toISOString() }).eq('id', comandaId);
+  refreshMonitor();
+}
+
+export async function refreshMonitor() {
+  const monitorEl = document.getElementById('monitor-content');
+  if (!monitorEl) return;
+  const comandas = await loadMonitor();
+  renderMonitorCards(monitorEl, comandas);
+}
+
+export function renderMonitorCards(containerEl, comandas) {
+  if (!comandas.length) {
+    containerEl.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#555">
+      <i class="ti ti-chef-hat" style="font-size:48px"></i>
+      <div style="font-size:16px;font-weight:600">Sin comandas pendientes</div>
+    </div>`;
+    return;
+  }
+
+  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  containerEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:16px;padding:20px;align-content:flex-start">` +
+    comandas.map(cmd => {
+      const inicio = new Date(cmd.hora_inicio);
+      const horaStr = inicio.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',hour12:false});
+      const isPendiente  = cmd.estado === 'pendiente';
+      const isPreparando = cmd.estado === 'preparando';
+      const items = cmd.pos_comanda_items || [];
+
+      // Timer
+      const refTime = isPreparando ? new Date(cmd.hora_preparando) : inicio;
+      const diffMs  = Date.now() - refTime.getTime();
+      const mm = Math.floor(diffMs/60000).toString().padStart(2,'0');
+      const ss = Math.floor((diffMs%60000)/1000).toString().padStart(2,'0');
+
+      return `<div style="background:#fff;border-radius:12px;padding:16px;min-width:280px;max-width:320px;flex:1;
+          box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #e5e7eb;font-family:'DM Sans',sans-serif">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#111">#${cmd.numero}</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:2px">${cmd.zona_nombre||''}</div>
+          </div>
+          <div style="background:${isPreparando?'#fef3c7':'#fee2e2'};color:${isPreparando?'#92400e':'#991b1b'};
+            padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${mm}:${ss}</div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:10px;font-size:12px;color:#6b7280">
+          <span>⏱ ${horaStr}</span>
+          <span>· Mesa ${cmd.mesa_numero||''}</span>
+          <span>· ${cmd.personas} persona${cmd.personas!==1?'s':''}</span>
+        </div>
+
+        <div style="background:#f9fafb;border-radius:8px;padding:4px 0;margin-bottom:12px;font-size:13px;color:#111">
+          ${items.map(i => {
+            const mods = i.modificadores || [];
+            return `<div style="padding:6px 10px;border-bottom:1px solid #f3f4f6">
+              <span style="font-weight:600">${i.cantidad}</span> ${i.nombre}
+              ${mods.map(m => `<div style="padding-left:14px;font-size:11px;color:#6b7280">${m.cantidad||1} ${m.opcion}</div>`).join('')}
+              ${i.comentario ? `<div style="padding-left:14px;font-size:11px;color:#9ca3af;font-style:italic">💬 ${i.comentario}</div>` : ''}
+            </div>`;
+          }).join('')}
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.04em">${cmd.cocina_nombre}</div>
+          <div style="font-size:11px;color:${isPendiente?'#6b7280':'#d97706'}">${isPendiente?'Pendiente':'Preparando…'}</div>
+        </div>
+
+        ${isPendiente ? `
+          <button onclick="posMonitorPreparar('${cmd.id}')"
+            style="width:100%;padding:10px;border-radius:8px;border:none;background:#ef4444;color:#fff;
+              font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">
+            Preparar todo
+          </button>` : `
+          <button onclick="posMonitorTerminar('${cmd.id}')"
+            style="width:100%;padding:10px;border-radius:8px;border:none;background:#22c55e;color:#fff;
+              font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">
+            Terminar comanda
+          </button>`}
+      </div>`;
+    }).join('') + `</div>`;
 }
 
 // ── Toast ────────────────────────────────────────────────────────
@@ -604,9 +980,9 @@ function showPosToast(msg, type) {
   const el = document.getElementById('pos-toast');
   if (!el) return;
   el.textContent = msg;
-  el.className = 'pos-toast visible' + (type === 'error' ? ' error' : '');
+  el.className = 'pos-toast visible' + (type==='error'?' error':'');
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => el.classList.remove('visible'), type === 'error' ? 5000 : 2500);
+  _toastTimer = setTimeout(() => el.classList.remove('visible'), type==='error'?5000:2500);
 }
 
 export function getZonas() { return zonas; }
