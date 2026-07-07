@@ -374,6 +374,10 @@ import {
 import {
   renderTabModificadores, abrirFormMod, cerrarModalMod, guardarMod,
 } from '/js/carta/modificadores.js';
+import {
+  renderTabIngredientes, abrirIngForm, cerrarIngForm,
+  guardarIng, eliminarIng, filtrarIngTab,
+} from '/js/carta/ingredientes.js';
 
 const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
@@ -393,6 +397,7 @@ document.getElementById('platform-content').innerHTML = `
     <div class="carta-main">
       <div class="carta-tabs">
         <button class="carta-tab active" id="tab-productos" onclick="cartaSetTab('productos',this)">Productos</button>
+        <button class="carta-tab" id="tab-ingredientes" onclick="cartaSetTab('ingredientes',this)">Ingredientes</button>
         <button class="carta-tab" id="tab-categorias" onclick="cartaSetTab('categorias',this)">Categorías</button>
         <button class="carta-tab" id="tab-modificadores" onclick="cartaSetTab('modificadores',this)">Grupos modificadores</button>
       </div>
@@ -465,6 +470,7 @@ window.cartaSetTab = async (tab, btn) => {
   document.querySelector('.carta-sidebar').style.display = tab === 'productos' ? '' : 'none';
 
   if (tab === 'productos')     { _renderTabProductos(); }
+  if (tab === 'ingredientes')  { renderTabIngredientes(); }
   if (tab === 'categorias')    { renderTabCategorias(); }
   if (tab === 'modificadores') { renderTabModificadores(); }
 };
@@ -502,6 +508,12 @@ window.cartaSelIng            = (id,n,u) => selIng(id,n,u);
 window.cartaConfirmarIng      = ()       => confirmarIng();
 window.cartaQuitarRecetaLinea = (i)      => quitarRecetaLinea(i);
 window.cartaActualizarRecetaLinea = (i,c,v) => actualizarRecetaLinea(i,c,v);
+
+window.cartaAbrirIngForm      = (id)         => abrirIngForm(id);
+window.cartaCerrarIngForm     = ()           => cerrarIngForm();
+window.cartaGuardarIng        = ()           => guardarIng();
+window.cartaEliminarIng       = (id)         => eliminarIng(id);
+window.cartaFiltrarIngTab     = (v)          => filtrarIngTab(v);
 
 window.cartaAbrirFormCat      = ()           => abrirFormCat();
 window.cartaEditarCat         = (id)         => abrirFormCat(id);
