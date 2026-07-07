@@ -23,10 +23,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-/* ── Shell (platform-shell es el div real que crea initShell) ── */
-#platform-shell { display: flex; flex: 1; min-height: 0; overflow: hidden; }
-.platform-main  { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
-.platform-content { flex: 1; min-height: 0; overflow: hidden; }
+/* carta override: sin padding en platform-content */
+.platform-content { padding: 0; overflow: hidden; }
 
 /* ── Sidebar categorías ── */
 .carta-sidebar {
