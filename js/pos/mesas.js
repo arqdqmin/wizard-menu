@@ -201,11 +201,41 @@ function _onPointerDown(e, mesa, el, planoEl) {
   }
 }
 
-function _selectMesa(mesa, planoEl) {
+async function _selectMesa(mesa, planoEl) {
   mesaSelected = mesa;
   _editingMesaId = null;
   renderPlano(planoEl);
-  renderRightPanel(document.getElementById('pos-right-panel'));
+  const panel = document.getElementById('pos-right-panel');
+  // Si es mesa ocupada y aún no tiene ítems en memoria, cargar desde DB
+  if (['ocupada', 'cuenta'].includes(mesa.estado)) {
+    await _syncConfirmedFromDB(mesa.id);
+  }
+  renderRightPanel(panel);
+}
+
+// Carga ítems confirmados desde pos_comandas para que persistan entre sesiones
+async function _syncConfirmedFromDB(mesaId) {
+  // Solo carga si la cubeta está vacía (evita duplicar ítems ya en memoria)
+  if (_confirmedItems[mesaId]?.length) return;
+  const { data: comandas } = await supabase
+    .from('pos_comandas')
+    .select('id, pos_comanda_items(id, nombre, precio, cantidad, comentario, modificadores, estado)')
+    .eq('mesa_id', mesaId)
+    .in('estado', ['pendiente', 'preparando', 'listo']);
+  if (!comandas?.length) return;
+  _confirmedItems[mesaId] = comandas.flatMap(c =>
+    (c.pos_comanda_items || []).map(i => ({
+      localId: ++_localId,
+      id:       null,
+      nombre:   i.nombre,
+      precio:   Number(i.precio) || 0,
+      cantidad: i.cantidad,
+      grupos:   (i.modificadores || []).map(m => ({ opcion_nombre: m.opcion || m.nombre || '' })),
+      comentario:  i.comentario || '',
+      showComment: false,
+    }))
+  );
+  if (!_mesaHora[mesaId]) _mesaHora[mesaId] = new Date();
 }
 
 // ── Panel derecho ────────────────────────────────────────────────
