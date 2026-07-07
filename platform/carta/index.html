@@ -298,6 +298,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <div id="carta-toast" class="carta-toast"></div>
 
 <script type="module">
+// Mostrar errores en pantalla para diagnóstico
+window.addEventListener('unhandledrejection', e => {
+  document.body.innerHTML = `<div style="padding:40px;font-family:monospace;background:#fef2f2;color:#991b1b;white-space:pre-wrap">
+<b>Error en Carta:</b>\n${e.reason?.stack || e.reason}</div>`;
+});
+
 import { requireAuth }  from '/js/core/auth.js';
 import { initShell }    from '/js/ui/sidebar.js';
 import {
@@ -315,6 +321,7 @@ import {
   renderTabModificadores, abrirFormMod, cerrarModalMod, guardarMod,
 } from '/js/carta/modificadores.js';
 
+try {
 const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
 await initShell('carta', 'Carta');
@@ -437,6 +444,10 @@ window.cartaAbrirFormMod    = ()    => abrirFormMod();
 window.cartaEditarMod       = (id)  => abrirFormMod(id);
 window.cartaCerrarModalMod  = ()    => cerrarModalMod();
 window.cartaGuardarMod      = ()    => guardarMod();
+} catch(err) {
+  document.body.innerHTML = `<div style="padding:40px;font-family:monospace;background:#fef2f2;color:#991b1b;white-space:pre-wrap">
+<b>Error al cargar Carta:</b>\n${err.stack || err.message || err}</div>`;
+}
 </script>
 </body>
 </html>
