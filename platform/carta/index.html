@@ -381,6 +381,8 @@ import {
 } from '/js/carta/categorias.js';
 import {
   renderTabModificadores, abrirFormMod, cerrarModalMod, guardarMod,
+  abrirDetalleMod, cerrarDetalleMod,
+  abrirFormOpcion, cerrarModalOpcion, guardarOpcion, eliminarOpcion,
 } from '/js/carta/modificadores.js';
 import {
   renderTabIngredientes, abrirIngForm, cerrarIngForm,
@@ -412,6 +414,7 @@ document.getElementById('platform-content').innerHTML = `
       <div class="carta-content" id="carta-content">
         <div id="carta-tab-content"></div>
         <div class="carta-form-panel" id="carta-form-panel"></div>
+        <div class="carta-form-panel" id="mod-detalle-panel"></div>
       </div>
     </div>
 
@@ -527,10 +530,17 @@ window.cartaCerrarModalCat    = ()           => cerrarModalCat();
 window.cartaGuardarCat        = ()           => guardarCat();
 window.cartaToggleCatActiva   = (id, activa) => toggleCatActiva(id, activa);
 
-window.cartaAbrirFormMod      = ()       => abrirFormMod();
-window.cartaEditarMod         = (id)     => abrirFormMod(id);
-window.cartaCerrarModalMod    = ()       => cerrarModalMod();
-window.cartaGuardarMod        = ()       => guardarMod();
+window.cartaAbrirFormMod       = ()   => abrirFormMod();
+window.cartaEditarMod          = (id) => abrirFormMod(id);
+window.cartaCerrarModalMod     = ()   => cerrarModalMod();
+window.cartaGuardarMod         = ()   => guardarMod();
+window.cartaAbrirDetalleMod    = (id) => abrirDetalleMod(id);
+window.cartaCerrarDetalleMod   = ()   => cerrarDetalleMod();
+window.cartaAbrirFormOpcion    = (id) => abrirFormOpcion(id || null);
+window.cartaEditarOpcion       = (id) => abrirFormOpcion(id);
+window.cartaCerrarModalOpcion  = ()   => cerrarModalOpcion();
+window.cartaGuardarOpcion      = ()   => guardarOpcion();
+window.cartaEliminarOpcion     = (id) => eliminarOpcion(id);
 
 </script>
 </body>
