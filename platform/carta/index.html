@@ -491,6 +491,9 @@ window.cartaSetTab = async (tab, btn) => {
   _tabActual = tab;
   document.querySelectorAll('.carta-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  // Cerrar cualquier panel slide-in abierto
+  document.getElementById('carta-form-panel')?.classList.remove('open');
+  document.getElementById('mod-detalle-panel')?.classList.remove('open');
   // Sidebar solo visible en productos
   document.querySelector('.carta-sidebar').style.display = tab === 'productos' ? '' : 'none';
 
