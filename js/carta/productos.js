@@ -190,10 +190,19 @@ function _renderForm(p) {
           <i class="ti ti-plus"></i> Grupos modificadores
         </button>
 
+        <div class="carta-form-section" style="margin-top:24px">Otros costos</div>
+        <div class="carta-field-row">
+          <div class="carta-field-group">
+            <label class="carta-label">RRHH (mano de obra)</label>
+            <input id="cf-rrhh" class="carta-input" type="number" min="0" step="1"
+              value="${p?.costo_rrhh || ''}" placeholder="0" oninput="cartaActualizarCostos()" />
+          </div>
+        </div>
+
         <!-- Card costos (se actualiza dinámicamente) -->
         <div class="carta-form-section" style="margin-top:24px">Costos</div>
         <div class="carta-cost-card" id="cf-cost-card">
-          ${_renderCostCard(p?.precio || 0, costoReceta || p?.costo || 0)}
+          ${_renderCostCard(p?.precio || 0, costoReceta || p?.costo || 0, p?.costo_rrhh || 0)}
         </div>
 
       </div><!-- /col der -->
@@ -381,35 +390,37 @@ export function actualizarCostos() {
 }
 
 function _actualizarCostCard() {
-  const precio = parseFloat(document.getElementById('cf-precio')?.value) || 0;
-  const costoManual = parseFloat(document.getElementById('cf-costo')?.value) || 0;
-  const costoReceta = _costoRecetaActual();
-  const costoFinal  = costoReceta > 0 ? costoReceta : costoManual;
+  const precio     = parseFloat(document.getElementById('cf-precio')?.value) || 0;
+  const costoManual= parseFloat(document.getElementById('cf-costo')?.value) || 0;
+  const rrhh       = parseFloat(document.getElementById('cf-rrhh')?.value) || 0;
+  const receta     = _costoRecetaActual();
+  const costoFinal = receta > 0 ? receta : costoManual;
   const card = document.getElementById('cf-cost-card');
-  if (card) card.innerHTML = _renderCostCard(precio, costoFinal);
+  if (card) card.innerHTML = _renderCostCard(precio, costoFinal, rrhh);
 }
 
-function _renderCostCard(precio, costo) {
-  const margen = calcMargen(precio, costo);
-  const markup = calcMarkup(precio, costo);
-  const recetaTotal = _costoRecetaActual();
-  return `
-    ${recetaTotal > 0 ? `
-    <div class="carta-cost-row">
-      <span>Costo receta</span><strong>${fmtPesos(recetaTotal)}</strong>
-    </div>` : ''}
-    <div class="carta-cost-row">
-      <span>Precio venta</span><strong>${precio ? fmtPesos(precio) : '—'}</strong>
-    </div>
-    <div class="carta-cost-row">
-      <span>Costo ${recetaTotal > 0 ? '(receta)' : 'referencia'}</span><strong>${costo ? fmtPesos(costo) : '—'}</strong>
-    </div>
-    <div class="carta-cost-row highlight">
-      <span>Margen</span><strong>${precio && costo ? margen.toFixed(1) + '%' : '—'}</strong>
-    </div>
-    <div class="carta-cost-row">
-      <span>Markup</span><strong>${precio && costo ? markup.toFixed(1) + '%' : '—'}</strong>
+function _renderCostCard(precio, costoReceta, rrhh = 0) {
+  const totalCostos = costoReceta + rrhh;
+  const precioNeto  = precio / 1.19;            // precio sin IVA
+  const iva         = precio - precioNeto;       // IVA incluido en precio
+  const margenBruto = precio - totalCostos;      // margen sobre precio con IVA
+  const margenPct   = precio > 0 ? (margenBruto / precio * 100) : 0;
+  const utilidad    = precioNeto - totalCostos;  // utilidad real (neta de IVA)
+
+  const row = (label, valor, cls = '') =>
+    `<div class="carta-cost-row${cls ? ' ' + cls : ''}">
+      <span>${label}</span><strong>${valor}</strong>
     </div>`;
+
+  return `
+    ${row('Costo receta', costoReceta ? fmtPesos(costoReceta) : '—')}
+    ${rrhh ? row('RRHH', fmtPesos(rrhh)) : ''}
+    ${row('Margen bruto', precio && totalCostos ? margenPct.toFixed(1) + '%  (' + fmtPesos(margenBruto) + ')' : '—', 'highlight')}
+    <div class="carta-cost-divider"></div>
+    ${row('Precio de venta', precio ? fmtPesos(precio) : '—')}
+    ${row('IVA a pagar (19%)', precio ? fmtPesos(iva) : '—', 'muted')}
+    ${row('Utilidad neta', precio && totalCostos ? fmtPesos(utilidad) : '—', utilidad > 0 ? 'highlight' : 'danger')}
+  `;
 }
 
 // ── Modificadores ─────────────────────────────────────────────────
@@ -466,6 +477,7 @@ export async function guardarProducto() {
   const catId    = document.getElementById('cf-categoria')?.value;
   const precio   = parseFloat(document.getElementById('cf-precio')?.value) || 0;
   const costoManual = parseFloat(document.getElementById('cf-costo')?.value) || 0;
+  const costoRrhh   = parseFloat(document.getElementById('cf-rrhh')?.value)  || 0;
   const costoReceta = _costoRecetaActual();
   const costo    = costoReceta > 0 ? Math.round(costoReceta * 100) / 100 : costoManual;
   const codigo   = document.getElementById('cf-codigo')?.value?.trim();
@@ -479,7 +491,7 @@ export async function guardarProducto() {
   if (!catId)  { showToast('Selecciona una categoría', 'error'); return; }
 
   const payload = {
-    nombre, categoria_id: catId, precio, costo,
+    nombre, categoria_id: catId, precio, costo, costo_rrhh: costoRrhh,
     codigo: codigo || null, activo, permitir_vender_solo: solo,
     controlar_stock: stock, vender_sin_stock: sinstock,
     descripcion: desc || null,

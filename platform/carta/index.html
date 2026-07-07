@@ -129,8 +129,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .carta-form-panel {
   position: absolute; inset: 0; background: var(--bg);
   transform: translateX(100%); transition: transform .25s cubic-bezier(.4,0,.2,1);
-  overflow-y: auto; display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column;
+  min-height: 0;
 }
+.carta-form-body { min-height: 0; }
 .carta-form-panel.open { transform: translateX(0); }
 .carta-form-header {
   display: flex; align-items: center; gap: 12px;
@@ -227,10 +229,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .carta-cost-card {
   background: var(--bg); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px; display: flex;
-  flex-direction: column; gap: 10px;
+  flex-direction: column; gap: 8px;
 }
 .carta-cost-row { display: flex; justify-content: space-between; font-size: 13px; }
-.carta-cost-row.highlight { border-top: 1px solid var(--border); padding-top: 10px; color: var(--green); font-weight: 700; }
+.carta-cost-row.highlight { color: var(--green); font-weight: 700; }
+.carta-cost-row.muted strong { color: var(--muted); }
+.carta-cost-row.danger strong { color: var(--danger); }
+.carta-cost-divider { border-top: 1px solid var(--border); margin: 4px 0; }
 
 .carta-form-footer {
   display: flex; justify-content: flex-end; gap: 10px;
