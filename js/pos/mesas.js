@@ -114,25 +114,41 @@ export function renderPlano(planoEl) {
 }
 
 // ── Drag & Drop ──────────────────────────────────────────────────
+const DRAG_THRESHOLD = 6; // px de movimiento mínimo para iniciar drag
+
 function onPointerDown(e, mesa, el, planoEl) {
+  e.preventDefault();
+  const startX = e.clientX;
+  const startY = e.clientY;
+  let moved = false;
+
   if (!editMode) {
-    selectMesa(mesa, planoEl);
+    el.setPointerCapture(e.pointerId);
+    el.addEventListener('pointerup', function up() {
+      el.removeEventListener('pointerup', up);
+      selectMesa(mesa, planoEl);
+    });
     return;
   }
-  e.preventDefault();
+
   const rect = planoEl.getBoundingClientRect();
   dragOffX = e.clientX - rect.left - mesa.pos_x;
   dragOffY = e.clientY - rect.top  - mesa.pos_y;
   dragging = { mesa, el };
-  el.style.cursor = 'grabbing';
-  el.style.zIndex = 100;
   el.setPointerCapture(e.pointerId);
 
   el.addEventListener('pointermove', onPointerMove);
   el.addEventListener('pointerup',   onPointerUp);
 
   function onPointerMove(ev) {
-    const r   = planoEl.getBoundingClientRect();
+    if (!moved) {
+      if (Math.abs(ev.clientX - startX) < DRAG_THRESHOLD &&
+          Math.abs(ev.clientY - startY) < DRAG_THRESHOLD) return;
+      moved = true;
+      el.style.cursor = 'grabbing';
+      el.style.zIndex = 100;
+    }
+    const r    = planoEl.getBoundingClientRect();
     const rawX = ev.clientX - r.left - dragOffX;
     const rawY = ev.clientY - r.top  - dragOffY;
     const x = snapVal(Math.max(0, Math.min(rawX, r.width  - MESA_SIZE)));
@@ -148,7 +164,10 @@ function onPointerDown(e, mesa, el, planoEl) {
     el.removeEventListener('pointerup',   onPointerUp);
     el.style.cursor = 'grab';
     el.style.zIndex = '';
-    if (dragging && dragging.newX !== undefined) {
+    if (!moved) {
+      // fue un click — seleccionar
+      selectMesa(mesa, planoEl);
+    } else if (dragging?.newX !== undefined) {
       await saveMesaPosition(mesa.id, dragging.newX, dragging.newY);
       mesa.pos_x = dragging.newX;
       mesa.pos_y = dragging.newY;
