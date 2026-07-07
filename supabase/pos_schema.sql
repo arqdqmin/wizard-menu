@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS public.pos_comanda_items (
   precio        numeric(12,2) DEFAULT 0,
   cantidad      integer DEFAULT 1,
   comentario    text,
-  modificadores jsonb DEFAULT '[]'
+  modificadores jsonb DEFAULT '[]',
+  estado        text NOT NULL DEFAULT 'pendiente'  -- pendiente | preparando | listo
 );
 
 ALTER TABLE public.pos_comanda_items ENABLE ROW LEVEL SECURITY;

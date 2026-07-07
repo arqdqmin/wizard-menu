@@ -649,7 +649,8 @@ import {
   cerrarMesa, confirmarCierre,
   editarVenta, volverComanda, moverMesa,
   verPreCuenta,
-  loadMonitor, prepararComanda, terminarComanda, refreshMonitor, renderMonitorCards,
+  loadMonitor, prepararComanda, terminarComanda, prepararItem, terminarItem,
+  refreshMonitor, renderMonitorCards,
 } from '/js/pos/mesas.js';
 
 // Auth
@@ -787,13 +788,29 @@ window.posMoverMesa              = (desde, hasta)  => moverMesa(desde, hasta);
 window.posVerPreCuenta           = (mid)           => verPreCuenta(mid);
 window.posMonitorPreparar        = (cid)           => prepararComanda(cid);
 window.posMonitorTerminar        = (cid)           => terminarComanda(cid);
+window.posMonitorPrepararItem    = (iid, cid)      => prepararItem(iid, cid);
+window.posMonitorTerminarItem    = (iid, cid)      => terminarItem(iid, cid);
 window.posMonitorRefresh         = ()              => refreshMonitor();
 
-// Cargar monitor cuando se activa esa vista
+// Cargar monitor + timer en tiempo real al activar la vista
+let _monitorTimerInterval = null;
 const _origSetView = window.posSetView;
 window.posSetView = (view, btn) => {
   _origSetView(view, btn);
-  if (view === 'cocina') refreshMonitor();
+  clearInterval(_monitorTimerInterval);
+  _monitorTimerInterval = null;
+  if (view === 'cocina') {
+    refreshMonitor();
+    _monitorTimerInterval = setInterval(() => {
+      document.querySelectorAll('.monitor-timer[data-ref]').forEach(el => {
+        const ref  = new Date(el.dataset.ref);
+        const diff = Date.now() - ref.getTime();
+        const mm   = Math.floor(diff / 60000).toString().padStart(2, '0');
+        const ss   = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        el.textContent = `${mm}:${ss}`;
+      });
+    }, 1000);
+  }
 };
 
 // Cerrar modales al click en backdrop

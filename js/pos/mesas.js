@@ -265,6 +265,22 @@ function _renderComandaPanel(panelEl, m) {
           onclick="posCambiarEstado('${m.id}','cuenta')">Pre-cuenta</button>
       </div>
 
+      <!-- Buscador — justo debajo de estado, dropdown hacia abajo -->
+      <div style="padding:10px 12px;border-bottom:1px solid var(--pos-border);flex-shrink:0">
+        <div style="position:relative">
+          <input type="text" id="cmd-search-${m.id}" autocomplete="off"
+            style="width:100%;padding:8px 12px;border-radius:7px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:13px;outline:none"
+            placeholder="Buscar producto…"
+            oninput="posFiltrarProductos('${m.id}',this.value)"
+            onfocus="posFiltrarProductos('${m.id}',this.value)"
+            onblur="setTimeout(()=>{const d=document.getElementById('cmd-drop-${m.id}');if(d)d.style.display='none'},150)" />
+          <div id="cmd-drop-${m.id}"
+            style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--pos-surface);
+              border:1px solid var(--pos-border);border-radius:8px;max-height:220px;overflow-y:auto;
+              z-index:50;margin-top:4px;box-shadow:0 6px 20px rgba(0,0,0,.5)"></div>
+        </div>
+      </div>
+
       <!-- Ítems confirmados -->
       <div style="flex:1;overflow-y:auto;min-height:0">
         <div id="confirmed-list-${m.id}">${_renderConfirmedItems(m.id)}</div>
@@ -276,22 +292,6 @@ function _renderComandaPanel(panelEl, m) {
           </div>
           <div id="pending-list-${m.id}">${_renderPendingItems(m.id)}</div>
         ` : `<div id="pending-list-${m.id}"></div>`}
-      </div>
-
-      <!-- Buscador -->
-      <div style="padding:10px 12px;border-top:1px solid var(--pos-border)">
-        <div style="position:relative">
-          <input type="text" id="cmd-search-${m.id}" autocomplete="off"
-            style="width:100%;padding:8px 12px;border-radius:7px;border:1px solid var(--pos-border);background:var(--pos-bg);color:var(--pos-text);font-family:inherit;font-size:13px;outline:none"
-            placeholder="Buscar producto…"
-            oninput="posFiltrarProductos('${m.id}',this.value)"
-            onfocus="posFiltrarProductos('${m.id}',this.value)"
-            onblur="setTimeout(()=>{const d=document.getElementById('cmd-drop-${m.id}');if(d)d.style.display='none'},150)" />
-          <div id="cmd-drop-${m.id}"
-            style="display:none;position:absolute;bottom:100%;left:0;right:0;background:var(--pos-surface);
-              border:1px solid var(--pos-border);border-radius:8px;max-height:200px;overflow-y:auto;
-              z-index:50;margin-bottom:4px;box-shadow:0 -4px 16px rgba(0,0,0,.4)"></div>
-        </div>
       </div>
 
       <!-- Botones confirmar (solo si hay pending) -->
@@ -894,6 +894,27 @@ export async function terminarComanda(comandaId) {
   refreshMonitor();
 }
 
+export async function prepararItem(itemId, comandaId) {
+  await supabase.from('pos_comanda_items').update({ estado: 'preparando' }).eq('id', itemId);
+  // Si la comanda estaba pendiente, pasarla a preparando
+  await supabase.from('pos_comandas')
+    .update({ estado: 'preparando', hora_preparando: new Date().toISOString() })
+    .eq('id', comandaId).eq('estado', 'pendiente');
+  refreshMonitor();
+}
+
+export async function terminarItem(itemId, comandaId) {
+  await supabase.from('pos_comanda_items').update({ estado: 'listo' }).eq('id', itemId);
+  // Si todos los ítems están listos → cerrar comanda
+  const { data: items } = await supabase
+    .from('pos_comanda_items').select('estado').eq('comanda_id', comandaId);
+  if (items?.every(i => i.estado === 'listo')) {
+    await supabase.from('pos_comandas')
+      .update({ estado: 'listo', hora_listo: new Date().toISOString() }).eq('id', comandaId);
+  }
+  refreshMonitor();
+}
+
 export async function refreshMonitor() {
   const monitorEl = document.getElementById('monitor-content');
   if (!monitorEl) return;
@@ -903,16 +924,14 @@ export async function refreshMonitor() {
 
 export function renderMonitorCards(containerEl, comandas) {
   if (!comandas.length) {
-    containerEl.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#555">
-      <i class="ti ti-chef-hat" style="font-size:48px"></i>
-      <div style="font-size:16px;font-weight:600">Sin comandas pendientes</div>
+    containerEl.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#9ca3af;width:100%">
+      <i class="ti ti-chef-hat" style="font-size:56px"></i>
+      <div style="font-size:17px;font-weight:600">Sin comandas pendientes</div>
     </div>`;
     return;
   }
 
-  const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-
-  containerEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:16px;padding:20px;align-content:flex-start">` +
+  containerEl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:20px;padding:24px;align-content:flex-start;width:100%">` +
     comandas.map(cmd => {
       const inicio = new Date(cmd.hora_inicio);
       const horaStr = inicio.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit',hour12:false});
@@ -920,56 +939,84 @@ export function renderMonitorCards(containerEl, comandas) {
       const isPreparando = cmd.estado === 'preparando';
       const items = cmd.pos_comanda_items || [];
 
-      // Timer
-      const refTime = isPreparando ? new Date(cmd.hora_preparando) : inicio;
+      // Timer inicial (se actualiza en tiempo real via data-ref)
+      const refISO  = isPreparando ? cmd.hora_preparando : cmd.hora_inicio;
+      const refTime = new Date(refISO);
       const diffMs  = Date.now() - refTime.getTime();
-      const mm = Math.floor(diffMs/60000).toString().padStart(2,'0');
-      const ss = Math.floor((diffMs%60000)/1000).toString().padStart(2,'0');
+      const mm0 = Math.floor(diffMs/60000).toString().padStart(2,'0');
+      const ss0 = Math.floor((diffMs%60000)/1000).toString().padStart(2,'0');
 
-      return `<div style="background:#fff;border-radius:12px;padding:16px;min-width:280px;max-width:320px;flex:1;
-          box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #e5e7eb;font-family:'DM Sans',sans-serif">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      return `<div style="background:#fff;border-radius:14px;padding:20px;min-width:320px;max-width:380px;flex:1;
+          box-shadow:0 4px 14px rgba(0,0,0,.1);border:1px solid #e5e7eb;font-family:'DM Sans',sans-serif;display:flex;flex-direction:column;gap:0">
+
+        <!-- Cabecera -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
           <div>
-            <div style="font-size:16px;font-weight:700;color:#111">#${cmd.numero}</div>
+            <div style="font-size:18px;font-weight:800;color:#111">#${cmd.numero}</div>
             <div style="font-size:12px;color:#6b7280;margin-top:2px">${cmd.zona_nombre||''}</div>
           </div>
-          <div style="background:${isPreparando?'#fef3c7':'#fee2e2'};color:${isPreparando?'#92400e':'#991b1b'};
-            padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${mm}:${ss}</div>
+          <div class="monitor-timer" data-ref="${refISO}"
+            style="background:${isPreparando?'#fef3c7':'#fee2e2'};color:${isPreparando?'#92400e':'#991b1b'};
+              padding:4px 12px;border-radius:20px;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">
+            ${mm0}:${ss0}
+          </div>
         </div>
 
-        <div style="display:flex;gap:8px;margin-bottom:10px;font-size:12px;color:#6b7280">
+        <!-- Info -->
+        <div style="display:flex;gap:10px;margin-bottom:14px;font-size:12px;color:#6b7280;flex-wrap:wrap">
           <span>⏱ ${horaStr}</span>
           <span>· Mesa ${cmd.mesa_numero||''}</span>
           <span>· ${cmd.personas} persona${cmd.personas!==1?'s':''}</span>
         </div>
 
-        <div style="background:#f9fafb;border-radius:8px;padding:4px 0;margin-bottom:12px;font-size:13px;color:#111">
+        <!-- Ítems con botón por ítem -->
+        <div style="background:#f9fafb;border-radius:10px;overflow:hidden;margin-bottom:14px;font-size:13px;color:#111;border:1px solid #f3f4f6">
           ${items.map(i => {
-            const mods = i.modificadores || [];
-            return `<div style="padding:6px 10px;border-bottom:1px solid #f3f4f6">
-              <span style="font-weight:600">${i.cantidad}</span> ${i.nombre}
-              ${mods.map(m => `<div style="padding-left:14px;font-size:11px;color:#6b7280">${m.cantidad||1} ${m.opcion}</div>`).join('')}
-              ${i.comentario ? `<div style="padding-left:14px;font-size:11px;color:#9ca3af;font-style:italic">💬 ${i.comentario}</div>` : ''}
+            const mods = Array.isArray(i.modificadores) ? i.modificadores : [];
+            const iEst = i.estado || 'pendiente';
+            const iDone = iEst === 'listo';
+            const iPrep = iEst === 'preparando';
+            const btnBg  = iDone ? '#22c55e' : iPrep ? '#f97316' : '#6b7280';
+            const btnTxt = iDone ? 'Listo ✓' : iPrep ? 'Terminar' : 'Preparar';
+            const btnFn  = iDone ? '' : iPrep
+              ? `posMonitorTerminarItem('${i.id}','${cmd.id}')`
+              : `posMonitorPrepararItem('${i.id}','${cmd.id}')`;
+            return `<div style="padding:8px 12px;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:10px">
+              <div style="flex:1;min-width:0">
+                <div style="${iDone?'text-decoration:line-through;color:#9ca3af':''};font-weight:600">
+                  ${i.cantidad > 1 ? `<span style="color:#6b7280">${i.cantidad}×</span> ` : ''}${i.nombre}
+                </div>
+                ${mods.map(m => `<div style="padding-left:8px;font-size:11px;color:#6b7280">· ${m.opcion||m.nombre||''}</div>`).join('')}
+                ${i.comentario ? `<div style="padding-left:8px;font-size:11px;color:#9ca3af;font-style:italic">💬 ${i.comentario}</div>` : ''}
+              </div>
+              <button onclick="${btnFn}"
+                style="flex-shrink:0;padding:4px 10px;border-radius:6px;border:none;background:${btnBg};color:#fff;
+                  font-size:11px;font-weight:700;cursor:${iDone?'default':'pointer'};font-family:inherit;white-space:nowrap">
+                ${btnTxt}
+              </button>
             </div>`;
           }).join('')}
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.04em">${cmd.cocina_nombre}</div>
-          <div style="font-size:11px;color:${isPendiente?'#6b7280':'#d97706'}">${isPendiente?'Pendiente':'Preparando…'}</div>
+        <!-- Cocina label -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em">${cmd.cocina_nombre}</div>
+          <div style="font-size:11px;color:${isPendiente?'#9ca3af':'#d97706'};font-weight:500">${isPendiente?'Pendiente':'Preparando…'}</div>
         </div>
 
-        ${isPendiente ? `
+        <!-- Botones globales comanda -->
+        <div style="display:flex;gap:8px">
           <button onclick="posMonitorPreparar('${cmd.id}')"
-            style="width:100%;padding:10px;border-radius:8px;border:none;background:#ef4444;color:#fff;
-              font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">
+            style="flex:1;padding:11px;border-radius:8px;border:none;background:${isPendiente?'#ef4444':'#f3f4f6'};
+              color:${isPendiente?'#fff':'#9ca3af'};font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">
             Preparar todo
-          </button>` : `
+          </button>
           <button onclick="posMonitorTerminar('${cmd.id}')"
-            style="width:100%;padding:10px;border-radius:8px;border:none;background:#22c55e;color:#fff;
-              font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">
-            Terminar comanda
-          </button>`}
+            style="flex:1;padding:11px;border-radius:8px;border:none;background:${isPreparando?'#22c55e':'#f3f4f6'};
+              color:${isPreparando?'#fff':'#9ca3af'};font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">
+            Terminar todo
+          </button>
+        </div>
       </div>`;
     }).join('') + `</div>`;
 }
