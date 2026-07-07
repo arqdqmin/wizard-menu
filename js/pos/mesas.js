@@ -914,19 +914,33 @@ function _renderCheckoutModal(mesaId) {
 }
 
 // Helpers checkout
+function _coSyncPago() {
+  // Mantiene el primer pago sincronizado con el total actual
+  if (!_co?.pagos?.length) return;
+  const confirmed = _confirmedItems[_co.mesaId] || [];
+  const desc = _descuentos[_co.mesaId];
+  const subtotal  = confirmed.reduce((s,i) => s + _precioItem(i)*i.cantidad, 0);
+  const descMonto = desc?.valor ? (desc.tipo==='%' ? Math.round(subtotal*desc.valor/100) : Math.min(desc.valor,subtotal)) : 0;
+  const propinaMonto = (_co.propinas||[]).reduce((s,p) => s + Number(p.monto||0), 0);
+  _co.pagos[0].monto = subtotal - descMonto + propinaMonto;
+}
+
 export function coAddPropina() {
   if (!_co) return;
   _co.propinas.push({ metodo:'Efectivo', monto:0 });
+  _coSyncPago();
   _renderCheckoutModal(_co.mesaId);
 }
 export function coRemovePropina(idx) {
   if (!_co) return;
   _co.propinas.splice(idx,1);
+  _coSyncPago();
   _renderCheckoutModal(_co.mesaId);
 }
 export function coSetPropina(idx, field, val) {
   if (!_co) return;
   _co.propinas[idx][field] = field==='monto' ? Number(val)||0 : val;
+  _coSyncPago();
   _renderCheckoutModal(_co.mesaId);
 }
 export function coAddPago() {

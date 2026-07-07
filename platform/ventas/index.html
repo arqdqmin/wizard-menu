@@ -114,12 +114,8 @@ tr:hover td { background:#fafafa; }
 </div>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { requireAuth }  from '/js/auth.js';
-
-const SUPA_URL = 'https://bqrgdtqfwkivxjcupquy.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxcmdkdHFmd2tpdnhqY3VwcXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjA3NjUsImV4cCI6MjA2MDM5Njc2NX0.tNBiJt4HXKN6mS1bAf2rrYFJbRBF0xUbdHVQbXg5GDM';
-const supabase = createClient(SUPA_URL, SUPA_KEY);
+import { supabase } from '/js/core/supabase.js';
+import { requireAuth } from '/js/core/auth.js';
 
 await requireAuth('/platform/login.html');
 
