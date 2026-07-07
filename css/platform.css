@@ -193,6 +193,15 @@ body {
   overflow: hidden;
 }
 
+/* iframe SPA */
+.platform-frame {
+  border: none;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: block;
+}
+
 /* platform-header ya no se usa, pero se mantiene por compatibilidad */
 .platform-header { display: none; }
 

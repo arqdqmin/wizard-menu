@@ -235,7 +235,7 @@ import { login, resetPassword,
          updatePassword, getSession }  from '/js/core/auth.js';
 
 const params   = new URLSearchParams(window.location.search);
-const redirect = params.get('redirect') || '/platform/dashboard.html';
+const redirect = params.get('redirect') || '/platform/index.html';
 const mode     = params.get('mode');
 
 // Detectar flujo de recovery (Supabase redirige con fragmento #access_token)
@@ -340,7 +340,7 @@ btnNP.addEventListener('click', async () => {
   try {
     await updatePassword(pw1);
     showSuccess('np-success', '¡Contraseña actualizada! Redirigiendo…');
-    setTimeout(() => window.location.href = '/platform/dashboard.html', 1800);
+    setTimeout(() => window.location.href = '/platform/index.html', 1800);
   } catch (err) {
     showError('np-error', err.message);
     setLoading(btnNP, false);

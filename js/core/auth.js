@@ -26,7 +26,8 @@ export async function requireAuth(redirectTo = LOGIN_URL) {
   const session = await getSession();
   if (!session) {
     const current = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.href = `${redirectTo}?redirect=${current}`;
+    const target = window.self !== window.top ? window.top : window;
+    target.location.href = `${redirectTo}?redirect=${current}`;
     return null;
   }
   // Actualizar last_access en background

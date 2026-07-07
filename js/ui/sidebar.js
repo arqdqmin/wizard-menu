@@ -14,8 +14,24 @@ const MODULE_URLS = {
 };
 
 export async function initShell(activeSlug, pageTitle) {
+  const shell = document.getElementById('platform-shell');
+  if (!shell) return;
+
+  // ── Modo iframe: sólo renderiza el contenedor de contenido ───
+  if (window.self !== window.top) {
+    shell.innerHTML = `
+      <div class="platform-main">
+        <main class="platform-content" id="platform-content"></main>
+      </div>`;
+    return;
+  }
+
+  // ── Autenticación (sólo en modo normal o shell) ──────────────
   const session = await getSession();
-  if (!session) return;
+  if (!session) {
+    window.location.href = '/platform/login.html';
+    return;
+  }
 
   const user = session.user;
   const profileRes = await supabase
@@ -36,8 +52,19 @@ export async function initShell(activeSlug, pageTitle) {
   const enabled  = modules.filter(m => m.habilitado);
   const disabled = modules.filter(m => !m.habilitado);
 
+  // ── Modo shell: topnav + iframe ──────────────────────────────
+  const isShell = activeSlug === '__shell__';
+
   const navItems = enabled.map(m => {
-    const url    = MODULE_URLS[m.slug] ?? '#';
+    const url = MODULE_URLS[m.slug] ?? '#';
+    if (isShell) {
+      const isActive = m.slug === 'dashboard';
+      return `<div class="topnav-item${isActive ? ' active' : ''}" data-slug="${m.slug}"
+          onclick="window._frameNav('${url}', this)">
+        <i class="ti ${m.icono ?? 'ti-circle'}"></i>
+        <span>${m.nombre}</span>
+      </div>`;
+    }
     const active = m.slug === activeSlug;
     return `<a href="${url}" class="topnav-item${active ? ' active' : ''}">
       <i class="ti ${m.icono ?? 'ti-circle'}"></i>
@@ -54,12 +81,13 @@ export async function initShell(activeSlug, pageTitle) {
         </div>`).join('')}
     </div>` : '';
 
-  const shell = document.getElementById('platform-shell');
-  if (!shell) return;
+  const contentArea = isShell
+    ? `<iframe id="platform-frame" class="platform-frame" src="/platform/dashboard.html"></iframe>`
+    : `<main class="platform-content" id="platform-content"></main>`;
 
   shell.innerHTML = `
     <nav class="platform-topnav">
-      <a class="topnav-brand" href="/platform/dashboard.html">
+      <a class="topnav-brand" href="${isShell ? 'javascript:window._frameNav(\'/platform/dashboard.html\')' : '/platform/dashboard.html'}">
         <div class="topnav-logo">
           <img src="/W LOGO.png" alt="Wizard" />
         </div>
@@ -93,9 +121,39 @@ export async function initShell(activeSlug, pageTitle) {
     </nav>
 
     <div class="platform-main">
-      <main class="platform-content" id="platform-content"></main>
+      ${contentArea}
     </div>
   `;
 
   document.getElementById('logout-btn')?.addEventListener('click', logout);
+
+  // ── Lógica exclusiva del modo shell ──────────────────────────
+  if (isShell) {
+    const frame = document.getElementById('platform-frame');
+
+    window._frameNav = (url, el) => {
+      frame.src = url;
+      document.querySelectorAll('.topnav-item[data-slug]').forEach(i => i.classList.remove('active'));
+      // Si se llama desde el brand link sin pasar el elemento
+      if (el) el.classList.add('active');
+      else {
+        const slug = Object.entries(MODULE_URLS).find(([,u]) => u === url)?.[0];
+        if (slug) document.querySelector(`[data-slug="${slug}"]`)?.classList.add('active');
+      }
+    };
+
+    // Sincroniza la pestaña activa cuando el iframe termina de cargar
+    frame.addEventListener('load', () => {
+      try {
+        const path = frame.contentWindow.location.pathname;
+        document.querySelectorAll('.topnav-item[data-slug]').forEach(i => i.classList.remove('active'));
+        for (const [slug, url] of Object.entries(MODULE_URLS)) {
+          if (path === url || path === url.replace('index.html', '') || url.startsWith(path)) {
+            document.querySelector(`[data-slug="${slug}"]`)?.classList.add('active');
+            break;
+          }
+        }
+      } catch (_) {}
+    });
+  }
 }
