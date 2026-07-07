@@ -186,9 +186,13 @@ function _renderDetalle() {
       <div class="carta-modal">
         <div class="carta-modal-title" id="modal-opcion-title">Nueva opción</div>
         <input type="hidden" id="opcion-id" />
-        <div class="carta-field-group">
-          <label class="carta-label">Nombre <span class="carta-req">*</span></label>
-          <input id="opcion-nombre" class="carta-input" type="text" placeholder="Ej: Leche entera" />
+        <div class="carta-field-group" style="position:relative">
+          <label class="carta-label">Ingrediente <span class="carta-req">*</span></label>
+          <input id="opcion-nombre" class="carta-input" type="text"
+            placeholder="Buscar ingrediente…" autocomplete="off"
+            oninput="cartaFiltrarOpcionIng(this.value)"
+            onfocus="cartaFiltrarOpcionIng(this.value)" />
+          <div id="opcion-ing-drop" class="mod-opcion-drop" style="display:none"></div>
         </div>
         <div class="carta-field-row">
           <div class="carta-field-group">
@@ -196,7 +200,7 @@ function _renderDetalle() {
             <input id="opcion-max" class="carta-input" type="number" min="1" value="1" />
           </div>
           <div class="carta-field-group">
-            <label class="carta-label">Precio adicional</label>
+            <label class="carta-label">Precio adicional ($)</label>
             <input id="opcion-precio" class="carta-input" type="number" min="0" value="0" placeholder="0" />
           </div>
         </div>
@@ -238,7 +242,30 @@ export function abrirFormOpcion(id = null) {
   document.getElementById('opcion-nombre').value = o?.nombre || '';
   document.getElementById('opcion-max').value    = o?.max_cantidad ?? 1;
   document.getElementById('opcion-precio').value = o?.precio_adicional ?? 0;
+  document.getElementById('opcion-ing-drop').style.display = 'none';
   document.getElementById('modal-opcion').style.display = 'flex';
+  setTimeout(() => document.getElementById('opcion-nombre')?.focus(), 80);
+}
+
+export function filtrarOpcionIng(val) {
+  const drop = document.getElementById('opcion-ing-drop');
+  if (!drop) return;
+  const f = val.toLowerCase();
+  const lista = f
+    ? state.ingredientes.filter(i => i.nombre.toLowerCase().includes(f)).slice(0, 30)
+    : state.ingredientes.slice(0, 30);
+  if (!lista.length) { drop.style.display = 'none'; return; }
+  drop.innerHTML = lista.map(i => `
+    <div class="mod-opcion-drop-item" onmousedown="cartaSelOpcionIng('${i.nombre.replace(/'/g,"\\'")}')">
+      ${i.nombre}
+      <span style="margin-left:auto;font-size:11px;color:var(--muted)">${i.unidad || ''}</span>
+    </div>`).join('');
+  drop.style.display = 'block';
+}
+
+export function selOpcionIng(nombre) {
+  document.getElementById('opcion-nombre').value = nombre;
+  document.getElementById('opcion-ing-drop').style.display = 'none';
 }
 
 export function cerrarModalOpcion() {
