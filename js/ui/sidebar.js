@@ -13,7 +13,7 @@ const MODULE_URLS = {
   carta:        '/platform/carta/index.html',
 };
 
-export async function initShell(activeSlug, pageTitle) {
+export async function initShell(activeSlug, pageTitle, initialModule = null) {
   const shell = document.getElementById('platform-shell');
   if (!shell) return;
 
@@ -26,7 +26,14 @@ export async function initShell(activeSlug, pageTitle) {
     return;
   }
 
-  // ── Autenticación (sólo en modo normal o shell) ──────────────
+  // ── Si se accede directamente (no iframe, no shell) → redirigir al shell ──
+  if (activeSlug !== '__shell__') {
+    const mod = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.replace(`/platform/index.html?module=${mod}`);
+    return;
+  }
+
+  // ── Autenticación ─────────────────────────────────────────────
   const session = await getSession();
   if (!session) {
     window.location.href = '/platform/login.html';
@@ -81,8 +88,9 @@ export async function initShell(activeSlug, pageTitle) {
         </div>`).join('')}
     </div>` : '';
 
+  const frameSrc = initialModule ? decodeURIComponent(initialModule) : '/platform/dashboard.html';
   const contentArea = isShell
-    ? `<iframe id="platform-frame" class="platform-frame" src="/platform/dashboard.html"></iframe>`
+    ? `<iframe id="platform-frame" class="platform-frame" src="${frameSrc}"></iframe>`
     : `<main class="platform-content" id="platform-content"></main>`;
 
   shell.innerHTML = `

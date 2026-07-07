@@ -21,7 +21,10 @@ import { initShell }   from '/js/ui/sidebar.js';
 const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
 
-await initShell('__shell__', '');
+const params        = new URLSearchParams(window.location.search);
+const initialModule = params.get('module') || null;
+
+await initShell('__shell__', '', initialModule);
 </script>
 </body>
 </html>
