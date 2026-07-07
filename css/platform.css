@@ -137,15 +137,11 @@ body {
   margin-right: 12px;
 }
 .topnav-ext-link {
-  display: flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px;
-  border-radius: 8px;
   color: var(--muted);
   text-decoration: none;
-  font-size: 18px;
-  transition: background .12s, color .12s;
 }
 .topnav-ext-link:hover { background: var(--bg); color: var(--accent); }
+.topnav-ext-link.active { background: none; color: var(--muted); }
 
 .topnav-user {
   display: flex;

@@ -62,6 +62,10 @@ export async function initShell(activeSlug, pageTitle, initialModule = null) {
   // ── Modo shell: topnav + iframe ──────────────────────────────
   const isShell = activeSlug === '__shell__';
 
+  // Sobrescribe nombres largos para la barra
+  const NAME_OVERRIDES = { 'Recursos Humanos': 'RRHH' };
+  const displayNombre = m => NAME_OVERRIDES[m.nombre] ?? m.nombre;
+
   const navItems = enabled.map(m => {
     const url = MODULE_URLS[m.slug] ?? '#';
     if (isShell) {
@@ -69,13 +73,13 @@ export async function initShell(activeSlug, pageTitle, initialModule = null) {
       return `<div class="topnav-item${isActive ? ' active' : ''}" data-slug="${m.slug}"
           onclick="window._frameNav('${url}', this)">
         <i class="ti ${m.icono ?? 'ti-circle'}"></i>
-        <span>${m.nombre}</span>
+        <span>${displayNombre(m)}</span>
       </div>`;
     }
     const active = m.slug === activeSlug;
     return `<a href="${url}" class="topnav-item${active ? ' active' : ''}">
       <i class="ti ${m.icono ?? 'ti-circle'}"></i>
-      <span>${m.nombre}</span>
+      <span>${displayNombre(m)}</span>
     </a>`;
   }).join('');
 
@@ -84,7 +88,7 @@ export async function initShell(activeSlug, pageTitle, initialModule = null) {
       ${disabled.map(m => `
         <div class="topnav-item topnav-item--soon" title="${m.nombre} (próximamente)">
           <i class="ti ${m.icono ?? 'ti-circle'}"></i>
-          <span>${m.nombre}</span>
+          <span>${displayNombre(m)}</span>
         </div>`).join('')}
     </div>` : '';
 
@@ -99,7 +103,7 @@ export async function initShell(activeSlug, pageTitle, initialModule = null) {
         <div class="topnav-logo">
           <img src="/W LOGO.png" alt="Wizard" />
         </div>
-        <span class="topnav-brand-text">Wizard</span>
+        <span class="topnav-brand-text">Wizard Platform</span>
       </a>
 
       <div class="topnav-nav">
@@ -108,11 +112,13 @@ export async function initShell(activeSlug, pageTitle, initialModule = null) {
       </div>
 
       <div class="topnav-links">
-        <a href="/talleres/" target="_blank" class="topnav-ext-link" title="Ver vitrina de talleres">
+        <a href="/talleres/" target="_blank" class="topnav-item topnav-ext-link" title="Vitrina Talleres">
           <i class="ti ti-school"></i>
+          <span>Vitrina Talleres</span>
         </a>
-        <a href="/" target="_blank" class="topnav-ext-link" title="Ver menú público">
+        <a href="/" target="_blank" class="topnav-item topnav-ext-link" title="Menú Público">
           <i class="ti ti-menu-2"></i>
+          <span>Menú Público</span>
         </a>
       </div>
 
