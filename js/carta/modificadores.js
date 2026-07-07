@@ -191,7 +191,8 @@ function _renderDetalle() {
           <input id="opcion-nombre" class="carta-input" type="text"
             placeholder="Buscar ingrediente…" autocomplete="off"
             oninput="cartaFiltrarOpcionIng(this.value)"
-            onfocus="cartaFiltrarOpcionIng(this.value)" />
+            onfocus="cartaFiltrarOpcionIng(this.value)"
+            onblur="setTimeout(()=>{ const d=document.getElementById('opcion-ing-drop'); if(d) d.style.display='none'; },150)" />
           <div id="opcion-ing-drop" class="mod-opcion-drop" style="display:none"></div>
         </div>
         <div class="carta-field-row">
@@ -270,6 +271,8 @@ export function selOpcionIng(nombre) {
 
 export function cerrarModalOpcion() {
   document.getElementById('modal-opcion').style.display = 'none';
+  const d = document.getElementById('opcion-ing-drop');
+  if (d) d.style.display = 'none';
 }
 
 export async function guardarOpcion() {
