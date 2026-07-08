@@ -150,53 +150,127 @@ export async function mostrarImpresionLiq() {
     ? `<img src="${emp.logo_url}" alt="Logo" style="width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;display:block;">`
     : '<span style="color:var(--hint);font-size:11px">LOGO</span>';
 
+  const dLic = Number(document.getElementById('d-lic').value)||0;
+  const dAus = Number(document.getElementById('d-aus').value)||0;
+  const dVac = Number(document.getElementById('d-vac').value)||0;
+  const tipoContrato = t.indefinido ? 'INDEFINIDO' : (t.tipo_contrato||'').toUpperCase();
+
   document.getElementById('liq-content').innerHTML = `
     <div class="liq-header">
       <div class="liq-logo">${logoHtml}</div>
       <div>
-        <div class="liq-empresa-nombre">${emp.nombre || ''}</div>
-        <div style="font-size:12px;color:var(--muted)">RUT ${emp.rut || ''} — ${emp.direccion || ''}</div>
+        <div class="liq-empresa-rut">${emp.rut||''} - ${emp.nombre||''}</div>
+        <div class="liq-empresa-dir">${emp.direccion||''}</div>
       </div>
     </div>
-    <div class="liq-titulo">LIQUIDACIÓN DE SUELDO — ${MESES_NOMBRES[mesActual].toUpperCase()} ${anioActual}</div>
-    <div class="liq-info-grid">
-      <div class="liq-lbl">Trabajador</div><div class="liq-val">${t.nombre||''}</div>
-      <div class="liq-lbl">RUT</div><div class="liq-val">${t.rut||''}</div>
-      <div class="liq-lbl">Cargo</div><div class="liq-val">${t.cargo||''}</div>
-      <div class="liq-lbl">Centro de negocio</div><div class="liq-val">${t.centro_negocio||''}</div>
-      <div class="liq-lbl">Tipo de contrato</div><div class="liq-val">${t.indefinido?'Indefinido':(t.tipo_contrato||'')}</div>
-      <div class="liq-lbl">Inicio contrato</div><div class="liq-val">${fmtDate(t.fecha_inicio)}</div>
-      <div class="liq-lbl">AFP</div><div class="liq-val">${t.afp||''}</div>
-      <div class="liq-lbl">Salud</div><div class="liq-val">${t.institucion_salud||''}</div>
-    </div>
+
+    <div class="liq-titulo">Liquidación de Sueldo: ${MESES_NOMBRES[mesActual]} ${anioActual}</div>
+
+    <table class="liq-table-info">
+      <tr>
+        <td class="li-lbl">Nombre del trabajador</td>
+        <td class="li-val">${(t.nombre||'').toUpperCase()}</td>
+        <td class="li-lbl">Centro de negocio</td>
+        <td class="li-val">${(t.centro_negocio||'').toUpperCase()}</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">R.U.T. Trabajador</td>
+        <td class="li-val">${t.rut||''}</td>
+        <td class="li-lbl">Inicio contrato</td>
+        <td class="li-val">${fmtDate(t.fecha_inicio)}</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Cargo</td>
+        <td class="li-val">${t.cargo||''}</td>
+        <td class="li-lbl">Fin contrato</td>
+        <td class="li-val">${t.indefinido ? '—' : fmtDate(t.fecha_termino)}</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Días Trabajados</td>
+        <td class="li-val">${c.dTrab}</td>
+        <td class="li-lbl">Previsión (AFP)</td>
+        <td class="li-val">${t.afp||''}</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Días Licencia</td>
+        <td class="li-val">${dLic}</td>
+        <td class="li-lbl">Tasa Previsional</td>
+        <td class="li-val">${fmt2(c.tasaAfp)}%</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Días Ausencia</td>
+        <td class="li-val">${dAus}</td>
+        <td class="li-lbl">% Adicional AFP</td>
+        <td class="li-val">${fmt2(c.afpAdic)}%</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Días Vacaciones</td>
+        <td class="li-val">${dVac}</td>
+        <td class="li-lbl">Inst. de Salud</td>
+        <td class="li-val">${t.institucion_salud||''}</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Tipo Contrato</td>
+        <td class="li-val">${tipoContrato}</td>
+        <td class="li-lbl">Plan Salud Cotiz.</td>
+        <td class="li-val">${fmt2(c.planSalud)}%</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Sueldo Base Original</td>
+        <td class="li-val">${fmtPesos(c.sbase)}</td>
+        <td class="li-lbl">Horas Extra Totales</td>
+        <td class="li-val">${fmt2(c.hrsExt)} hrs</td>
+      </tr>
+    </table>
+
     <div class="haberes-desc">
       <div>
-        <div class="hd-title">Haberes</div>
-        <div class="hd-row"><span class="hd-lbl">Sueldo base proporcional (${c.dTrab} días)</span><span class="hd-val">${fmtPesos(c.sueldoProp)}</span></div>
-        <div class="hd-row"><span class="hd-lbl">Horas extra (${fmt2(c.hrsExt)} hrs x1,5)</span><span class="hd-val">${fmtPesos(c.montoHrsExt)}</span></div>
-        <div class="hd-row"><span class="hd-lbl">Gratificación mensual</span><span class="hd-val">${fmtPesos(c.gratifMensual)}</span></div>
-        <div class="hd-row" style="font-weight:600"><span class="hd-lbl">Total imponible</span><span class="hd-val">${fmtPesos(c.totalImponible)}</span></div>
+        <div class="hd-title">Detalles de Haberes</div>
+        ${c.montoHrsDesc > 0 ? `<div class="hd-row"><span class="hd-lbl">Monto horas descontadas (${fmt2(c.hrsDesc)} hrs)</span><span class="hd-val neg">-${fmtPesos(c.montoHrsDesc)}</span></div>` : ''}
+        <div class="hd-row"><span class="hd-lbl">Sueldo base proporcional</span><span class="hd-val">${fmtPesos(c.sueldoProp)}</span></div>
+        ${c.hrsExt > 0 ? `<div class="hd-row"><span class="hd-lbl">Horas extras ordinarias (${fmt2(c.hrsExt)} hrs)</span><span class="hd-val">${fmtPesos(c.montoHrsExt)}</span></div>` : ''}
+        <div class="hd-row"><span class="hd-lbl">Gratificación legal mensual</span><span class="hd-val">${fmtPesos(c.gratifMensual)}</span></div>
+        <div class="hd-row hd-total"><span class="hd-lbl">Total haberes (Imponible)</span><span class="hd-val">${fmtPesos(c.totalImponible)}</span></div>
       </div>
       <div>
-        <div class="hd-title">Descuentos</div>
-        <div class="hd-row"><span class="hd-lbl">Horas descontadas (${fmt2(c.hrsDesc)} hrs)</span><span class="hd-val">${fmtPesos(c.montoHrsDesc)}</span></div>
-        <div class="hd-row"><span class="hd-lbl">${t.afp||'AFP'} (${fmt2(c.tasaAfp+c.afpAdic)}%)</span><span class="hd-val">${fmtPesos(c.totalAfp)}</span></div>
-        <div class="hd-row"><span class="hd-lbl">${t.institucion_salud||'Salud'} (${fmt2(c.planSalud)}%)</span><span class="hd-val">${fmtPesos(c.aporteSalud)}</span></div>
-        <div class="hd-row" style="font-weight:600"><span class="hd-lbl">Total leyes sociales</span><span class="hd-val">${fmtPesos(c.leyesSociales)}</span></div>
+        <div class="hd-title">Detalles de Descuentos</div>
+        <div class="hd-row"><span class="hd-lbl">Cotización previsional obligatoria</span><span class="hd-val">${fmtPesos(c.totalAfp)}</span></div>
+        <div class="hd-row"><span class="hd-lbl">Cotización de salud legal</span><span class="hd-val">${fmtPesos(c.aporteSalud)}</span></div>
+        <div class="hd-row hd-total"><span class="hd-lbl">Total descuentos previsionales</span><span class="hd-val">${fmtPesos(c.leyesSociales)}</span></div>
       </div>
     </div>
-    <div class="totales-box">
-      <div class="tot-row"><span class="tot-lbl">Total imponible</span><span>${fmtPesos(c.totalImponible)}</span></div>
-      <div class="tot-row"><span class="tot-lbl">Total descuentos</span><span>-${fmtPesos(c.leyesSociales)}</span></div>
-      <div class="tot-row"><span class="tot-lbl">Días trabajados</span><span>${c.dTrab}</span></div>
-      <div class="tot-row"><span class="tot-lbl">Días de ausencia</span><span>${document.getElementById('d-aus').value||0}</span></div>
-    </div>
+
+    <table class="liq-table-resumen">
+      <tr>
+        <td class="li-lbl">Total haberes</td>
+        <td class="li-val">${fmtPesos(c.totalImponible)}</td>
+        <td class="li-lbl">Total descuentos</td>
+        <td class="li-val">${fmtPesos(c.leyesSociales)}</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">Base imponible</td>
+        <td class="li-val">${fmtPesos(c.totalImponible)}</td>
+        <td class="li-lbl">Base tributable</td>
+        <td class="li-val">${fmtPesos(c.baseTributable)}</td>
+      </tr>
+      <tr>
+        <td class="li-lbl">RIMA</td>
+        <td class="li-val">$0</td>
+        <td class="li-lbl">Sobregiro</td>
+        <td class="li-val">$0</td>
+      </tr>
+    </table>
+
     <div class="liquido-box">
-      <div class="liquido-lbl">Sueldo líquido a pagar</div>
+      <div class="liquido-lbl">SUELDO NETO LÍQUIDO A PAGAR</div>
       <div class="liquido-val">${fmtPesos(c.sueldoLiquido)}</div>
     </div>
-    <p style="font-size:11px;color:var(--muted);margin-top:16px">Certifico haber recibido conforme la presente liquidación de sueldo correspondiente al período señalado.</p>
-    <div style="width:200px;border-top:1px solid var(--text);margin-top:32px;padding-top:4px;font-size:11px;color:var(--muted)">Firma trabajador</div>
+
+    <p class="liq-cert">Certifico que he recibido de mi empleador, la suma de <strong>${fmtPesos(c.sueldoLiquido)}</strong> pesos a mi entera satisfacción y no tengo cargo ni cobro alguno posterior que hacer por los conceptos de esta liquidación.</p>
+    <div class="liq-firma">
+      <div class="liq-firma-linea"></div>
+      <div class="liq-firma-txt">Firma del trabajador / Recibí conforme</div>
+    </div>
   `;
 
   await guardarLiquidacionDB();
