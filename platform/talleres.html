@@ -596,7 +596,7 @@ window.openEditInscripcion = function(id) {
   document.getElementById('ei-fecha').value          = ins.fecha_elegida ?? '';
   // Poblar select de taller
   const sel = document.getElementById('ei-taller');
-  sel.innerHTML = talleres.map(t => `<option value="${t.id}" ${t.id === ins.taller_id ? 'selected' : ''}>${esc(t.nombre)}</option>`).join('');
+  sel.innerHTML = talleres.map(t => `<option value="${t.id}" ${String(t.id) === String(ins.taller_id) ? 'selected' : ''}>${esc(t.nombre)}</option>`).join('');
   openModal('modal-edit-inscripcion');
 };
 
