@@ -577,10 +577,50 @@ async function renderInscripciones() {
       <td>${ins.edad??'—'}</td>
       <td>${esc(ins.nombre_apoderado??'—')}</td>
       <td>${esc(ins.telefono??'—')}</td>
-      <td><button class="btn btn-sm btn-icon danger" onclick="deleteInscripcion(${ins.id},'${esc(ins.nombre)}')" title="Eliminar"><i class="ti ti-trash"></i></button></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-icon" onclick="openEditInscripcion(${ins.id})" title="Editar"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-sm btn-icon danger" onclick="deleteInscripcion(${ins.id},'${esc(ins.nombre)}')" title="Eliminar"><i class="ti ti-trash"></i></button>
+      </td>
     </tr>`;
   }).join('');
 }
+
+window.openEditInscripcion = function(id) {
+  const ins = inscripciones.find(x => x.id === id);
+  if (!ins) return;
+  document.getElementById('ei-id').value             = ins.id;
+  document.getElementById('ei-nombre').value         = ins.nombre ?? '';
+  document.getElementById('ei-edad').value           = ins.edad ?? '';
+  document.getElementById('ei-apoderado').value      = ins.nombre_apoderado ?? '';
+  document.getElementById('ei-telefono').value       = ins.telefono ?? '';
+  document.getElementById('ei-fecha').value          = ins.fecha_elegida ?? '';
+  // Poblar select de taller
+  const sel = document.getElementById('ei-taller');
+  sel.innerHTML = talleres.map(t => `<option value="${t.id}" ${t.id === ins.taller_id ? 'selected' : ''}>${esc(t.nombre)}</option>`).join('');
+  openModal('modal-edit-inscripcion');
+};
+
+window.saveEditInscripcion = async function() {
+  const id    = parseInt(document.getElementById('ei-id').value);
+  const nombre = document.getElementById('ei-nombre').value.trim();
+  if (!nombre) { toast('El nombre es obligatorio.'); return; }
+  const body = {
+    taller_id:        parseInt(document.getElementById('ei-taller').value),
+    nombre,
+    edad:             parseInt(document.getElementById('ei-edad').value) || null,
+    nombre_apoderado: document.getElementById('ei-apoderado').value.trim() || null,
+    telefono:         document.getElementById('ei-telefono').value.trim() || null,
+    fecha_elegida:    document.getElementById('ei-fecha').value || null,
+  };
+  const btn = document.getElementById('btn-save-edit-ins');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite"></i> Guardando…';
+  const { error } = await supabase.from('taller_inscripciones').update(body).eq('id', id);
+  btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar';
+  if (error) { toast('Error al guardar: ' + error.message); return; }
+  toast('Inscripción actualizada ✓');
+  closeModal('modal-edit-inscripcion');
+  await renderInscripciones();
+};
 
 window.deleteInscripcion = async function(id, nombre) {
   if (!confirm(`¿Eliminar la inscripción de "${nombre}"?`)) return;
@@ -934,6 +974,46 @@ content.innerHTML = `
       <div class="modal-foot">
         <button class="btn" onclick="closeModal('modal-taller')">Cancelar</button>
         <button class="btn btn-accent" id="btn-save-taller"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal: Editar inscripción ─────────────────────────── -->
+  <div class="modal-backdrop" id="modal-edit-inscripcion">
+    <div class="modal-box" style="width:460px">
+      <div class="modal-title">Editar inscripción</div>
+      <input type="hidden" id="ei-id" />
+      <div class="form-group">
+        <label class="form-label">Taller</label>
+        <select class="form-input" id="ei-taller"></select>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Nombre del asistente *</label>
+        <input class="form-input" id="ei-nombre" placeholder="Nombre completo" />
+      </div>
+      <div class="form-row2" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">Edad</label>
+          <input class="form-input" type="number" id="ei-edad" placeholder="—" min="1" max="99" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha elegida</label>
+          <input class="form-input" id="ei-fecha" placeholder="Ej: Sábado 12 de julio" />
+        </div>
+      </div>
+      <div class="form-row2" style="margin-top:10px">
+        <div class="form-group">
+          <label class="form-label">Nombre apoderado</label>
+          <input class="form-input" id="ei-apoderado" placeholder="—" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="form-input" id="ei-telefono" placeholder="+56 9 …" />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" onclick="closeModal('modal-edit-inscripcion')">Cancelar</button>
+        <button class="btn btn-accent" id="btn-save-edit-ins" onclick="saveEditInscripcion()"><i class="ti ti-check"></i> Guardar</button>
       </div>
     </div>
   </div>

@@ -391,8 +391,9 @@ import { auditMenu }                           from '/js/core/audit.js';
 const _user = await requireAuth('/platform/login.html');
 if (!_user) throw new Error('No auth');
 
-window.__authToken  = await getAccessToken();
-window.__auditMenu  = auditMenu;
+window.__authToken    = await getAccessToken();
+window.__getAuthToken = getAccessToken;
+window.__auditMenu    = auditMenu;
 window.__logout     = logout;
 
 document.dispatchEvent(new CustomEvent('platform:ready'));
@@ -414,7 +415,7 @@ let bannerOrderMode=false,bannerOrderBackup=[];
 let cropState={id:null,type:null,img:null};
 
 async function sbFetch(path,opts={}){
-  const token=window.__authToken||SUPABASE_KEY;
+  const token=(window.__getAuthToken ? await window.__getAuthToken() : null)||window.__authToken||SUPABASE_KEY;
   const res=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
     headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+token,"Content-Type":"application/json","Prefer":"return=representation",...(opts.headers||{})},
     ...opts
@@ -424,7 +425,7 @@ async function sbFetch(path,opts={}){
 }
 
 async function uploadFile(file,path){
-  const token=window.__authToken||SUPABASE_KEY;
+  const token=(window.__getAuthToken ? await window.__getAuthToken() : null)||window.__authToken||SUPABASE_KEY;
   const res=await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`,{
     method:"POST",
     headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+token,"Content-Type":file.type,"cache-control":"max-age=31536000","x-upsert":"true"},
