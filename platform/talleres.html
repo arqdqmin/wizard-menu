@@ -614,9 +614,15 @@ window.saveEditInscripcion = async function() {
   };
   const btn = document.getElementById('btn-save-edit-ins');
   btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader" style="animation:spin .7s linear infinite"></i> Guardando…';
-  const { error } = await supabase.from('taller_inscripciones').update(body).eq('id', id);
+  const { error, count } = await supabase.from('taller_inscripciones').update(body).eq('id', id);
   btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i> Guardar';
   if (error) { toast('Error al guardar: ' + error.message); return; }
+  // Actualizar array local para que el render refleje el cambio inmediatamente
+  const idx = inscripciones.findIndex(x => x.id === id);
+  if (idx !== -1) {
+    const taller = talleres.find(t => String(t.id) === String(body.taller_id));
+    inscripciones[idx] = { ...inscripciones[idx], ...body, talleres: taller ? { nombre: taller.nombre } : inscripciones[idx].talleres };
+  }
   toast('Inscripción actualizada ✓');
   closeModal('modal-edit-inscripcion');
   await renderInscripciones();
