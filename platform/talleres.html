@@ -559,8 +559,7 @@ function renderInscripcionesFilter() {
     talleres.map(t => `<option value="${t.id}" ${String(t.id)===String(val)?'selected':''}>${esc(t.nombre)}</option>`).join('');
 }
 
-async function renderInscripciones() {
-  await loadInscripciones();
+function renderInscripcionesTable() {
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
   const tbody = document.getElementById('inscripciones-tbody');
   if (!inscripciones.length) {
@@ -583,6 +582,11 @@ async function renderInscripciones() {
       </td>
     </tr>`;
   }).join('');
+}
+
+async function renderInscripciones() {
+  await loadInscripciones();
+  renderInscripcionesTable();
 }
 
 window.openEditInscripcion = function(id) {
@@ -625,7 +629,7 @@ window.saveEditInscripcion = async function() {
   }
   toast('Inscripción actualizada ✓');
   closeModal('modal-edit-inscripcion');
-  await renderInscripciones();
+  renderInscripcionesTable();
 };
 
 window.deleteInscripcion = async function(id, nombre) {
