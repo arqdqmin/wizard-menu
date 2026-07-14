@@ -56,6 +56,7 @@ body {
   padding: 0 16px;
   flex-shrink: 0;
   z-index: 100;
+  overflow: hidden;
 }
 
 .topnav-brand {
@@ -86,7 +87,11 @@ body {
   align-items: center;
   gap: 2px;
   flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.topnav-nav::-webkit-scrollbar { display: none; }
 
 .topnav-item {
   display: flex;
@@ -135,7 +140,9 @@ body {
   padding-right: 12px;
   border-right: 1px solid var(--border);
   margin-right: 12px;
+  flex-shrink: 0;
 }
+@media (max-width: 1400px) { .topnav-links { display: none; } }
 .topnav-ext-link {
   color: var(--muted);
   text-decoration: none;
@@ -161,6 +168,7 @@ body {
   flex-shrink: 0;
 }
 .topnav-user-info { min-width: 0; }
+@media (max-width: 1200px) { .topnav-user-info { display: none; } }
 .topnav-user-name {
   display: block;
   font-size: 12px; font-weight: 500; color: var(--text);
