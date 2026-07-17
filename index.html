@@ -2129,7 +2129,7 @@
 
       let html = `<div class="alchemist-grid">`;
       filteredCats.forEach(cat => {
-        const catProds = products.filter(p => p.cat === cat.name);
+        const catProds = products.filter(p => p.cat === cat.name).sort((a,b) => (b.stock?1:0)-(a.stock?1:0));
         catProds.forEach(p => {
           html += `
             <article class="item-card rounded-xl shadow-sm overflow-hidden ${p.stock ? '' : 'agotado'}">
