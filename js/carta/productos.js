@@ -1,7 +1,7 @@
 import { supabase } from '/js/core/supabase.js';
 import {
   state, showToast, fmtPesos, calcMargen, calcMarkup,
-  cargarProductos, cargarIngredientes, cargarReceta,
+  cargarProductos, cargarIngredientes, cargarPreparaciones, cargarReceta,
 } from './utils.js';
 
 let _busqueda = '';
@@ -65,7 +65,8 @@ export async function abrirProducto(id) {
   if (_productoEditando) {
     _receta = await cargarReceta(_productoEditando.id);
   }
-  if (!state.ingredientes.length) await cargarIngredientes();
+  if (!state.ingredientes.length)   await cargarIngredientes();
+  if (!state.preparaciones.length)  await cargarPreparaciones();
   _renderForm(_productoEditando);
   document.getElementById('carta-form-panel').classList.add('open');
 }
@@ -181,6 +182,9 @@ function _renderForm(p) {
         <button class="carta-add-mod-btn" onclick="cartaAbrirIngPicker()">
           <i class="ti ti-plus"></i> Agregar ingrediente
         </button>
+        <button class="carta-add-mod-btn" style="margin-top:4px;color:#7c6fcf;border-color:#c4bfef" onclick="cartaAbrirPrepPickerProducto()">
+          <i class="ti ti-flask"></i> Agregar preparación propia
+        </button>
 
         <div class="carta-form-section" style="margin-top:24px">Grupos modificadores</div>
         <div id="cf-mods-lista" class="carta-mods-lista">
@@ -223,6 +227,21 @@ function _renderForm(p) {
       </div>
     </div>
 
+    <!-- Picker preparaciones propias -->
+    <div class="carta-ing-picker" id="carta-prep-picker-producto" style="display:none">
+      <div class="carta-mod-picker-header" style="color:#7c6fcf">
+        Agregar preparación propia
+        <button onclick="cartaCerrarPrepPickerProducto()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">×</button>
+      </div>
+      <div style="padding:10px 16px">
+        <input class="carta-input" type="text" placeholder="Buscar preparación…"
+          oninput="cartaFiltrarPrepProducto(this.value)" id="prep-prod-search" autocomplete="off" />
+      </div>
+      <div class="carta-mod-picker-list" id="prep-prod-picker-lista">
+        ${_renderPrepPickerLista('')}
+      </div>
+    </div>
+
     <!-- Picker modificadores -->
     <div class="carta-mod-picker" id="carta-mod-picker" style="display:none">
       <div class="carta-mod-picker-header">
@@ -247,23 +266,29 @@ function _renderForm(p) {
 }
 
 // ── Receta ────────────────────────────────────────────────────────
+const _UNIDADES_RECETA = ['unid.','g','kg','ml','l','cc','tbsp','tsp','pizca','porción'];
+
 function _renderRecetaLineas() {
   if (!_receta.length) return `<div class="carta-mods-empty">Sin ingredientes aún</div>`;
   return _receta.map((r, i) => {
-    const cUnit = r.ingredientes?.costo || 0;
-    const merma = r.merma || 0;
-    const bruto = r.cantidad_neta * (1 + merma / 100);
-    const costo = cUnit * bruto;
+    const esPrep = !!r.preparacion_id;
+    const nombre = esPrep ? (r.preparaciones?.nombre || '?') : (r.ingredientes?.nombre || '?');
+    const cUnit  = esPrep ? (r.preparaciones?.costo_por_unidad || 0) : (r.ingredientes?.costo || 0);
+    const merma  = r.merma || 0;
+    const bruto  = r.cantidad_neta * (1 + merma / 100);
+    const costo  = cUnit * bruto;
+    const badge  = esPrep
+      ? `<span style="font-size:9px;font-weight:700;background:rgba(124,111,207,.12);color:#7c6fcf;border-radius:4px;padding:1px 5px;margin-left:4px">PREP</span>`
+      : '';
     return `
     <div class="cf-receta-row">
-      <div class="cf-receta-ing">${r.ingredientes?.nombre || '?'}</div>
+      <div class="cf-receta-ing">${nombre}${badge}</div>
       <input class="carta-input cf-receta-input" type="number" min="0" step="0.01"
         value="${r.cantidad_neta}"
         onchange="cartaActualizarRecetaLinea(${i}, 'cantidad_neta', this.value)" />
       <select class="carta-select cf-receta-sel"
         onchange="cartaActualizarRecetaLinea(${i}, 'unidad', this.value)">
-        ${['unid.','g','kg','ml','l','cc','tbsp','tsp','pizca'].map(u =>
-          `<option ${r.unidad === u ? 'selected' : ''}>${u}</option>`).join('')}
+        ${_UNIDADES_RECETA.map(u => `<option ${r.unidad === u ? 'selected' : ''}>${u}</option>`).join('')}
       </select>
       <div class="cf-receta-costo">${fmtPesos(costo)}</div>
       <button class="cf-receta-del" onclick="cartaQuitarRecetaLinea(${i})">
@@ -350,6 +375,75 @@ export async function agregarIng(ingId) {
   _actualizarCostCard();
 }
 
+// ── Picker preparaciones (en producto) ───────────────────────────
+function _renderPrepPickerLista(filtro) {
+  const f = filtro.toLowerCase();
+  const lista = f
+    ? state.preparaciones.filter(p => p.nombre.toLowerCase().includes(f))
+    : state.preparaciones;
+  const yaAgregados = new Set(_receta.filter(r => r.preparacion_id).map(r => r.preparacion_id));
+  if (!lista.length) return `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Sin preparaciones. Créalas en la pestaña "Preparaciones propias".</div>`;
+  return lista.map(p => {
+    const agregado = yaAgregados.has(p.id);
+    return `
+    <div class="carta-mod-pick-item${agregado ? ' ing-ya-agregado' : ''}"
+         onclick="cartaAgregarPrepProducto('${p.id}')" style="cursor:pointer">
+      <span>${p.nombre}</span>
+      <span style="margin-left:auto;font-size:11px;color:#888;white-space:nowrap">
+        ${p.unidad || ''} · ${fmtPesos(p.costo_por_unidad)}/u${agregado ? ' ✓' : ''}
+      </span>
+    </div>`;
+  }).join('');
+}
+
+export function abrirPrepPickerProducto() {
+  const picker = document.getElementById('carta-prep-picker-producto');
+  if (picker) picker.style.display = 'flex';
+  const search = document.getElementById('prep-prod-search');
+  if (search) { search.value = ''; search.focus(); }
+  document.getElementById('prep-prod-picker-lista').innerHTML = _renderPrepPickerLista('');
+}
+
+export function cerrarPrepPickerProducto() {
+  const picker = document.getElementById('carta-prep-picker-producto');
+  if (picker) picker.style.display = 'none';
+}
+
+export function filtrarPrepProducto(val) {
+  const lista = document.getElementById('prep-prod-picker-lista');
+  if (lista) lista.innerHTML = _renderPrepPickerLista(val);
+}
+
+export async function agregarPrepProducto(prepId) {
+  const prep = state.preparaciones.find(p => p.id === prepId);
+  if (!prep) return;
+  if (_receta.find(r => r.preparacion_id === prepId)) {
+    showToast(`${prep.nombre} ya está en la receta`, 'error'); return;
+  }
+  const nuevaLinea = {
+    preparacion_id: prepId,
+    cantidad_neta: 1,
+    unidad: prep.unidad || 'unid.',
+    merma: 0,
+    preparaciones: prep,
+  };
+  if (_productoEditando) {
+    const { data, error } = await supabase.from('recetas').insert({
+      producto_id: _productoEditando.id,
+      preparacion_id: prepId,
+      cantidad_neta: 1,
+      unidad: prep.unidad || 'unid.',
+      merma: 0,
+    }).select('id').single();
+    if (error) { showToast('Error: ' + error.message, 'error'); return; }
+    nuevaLinea.id = data.id;
+  }
+  _receta.push(nuevaLinea);
+  cerrarPrepPickerProducto();
+  document.getElementById('cf-receta-lista').innerHTML = _renderRecetaLineas();
+  _actualizarCostCard();
+}
+
 // mantener compatibilidad con globales previos
 export async function confirmarIng() {}
 export function selIng() {}
@@ -378,9 +472,10 @@ export async function actualizarRecetaLinea(idx, campo, valor) {
 
 function _costoRecetaActual() {
   return _receta.reduce((s, r) => {
-    const cUnit = r.ingredientes?.costo || 0;
-    const merma = r.merma || 0;
-    const bruto = (r.cantidad_neta || 0) * (1 + merma / 100);
+    const esPrep = !!r.preparacion_id;
+    const cUnit  = esPrep ? (r.preparaciones?.costo_por_unidad || 0) : (r.ingredientes?.costo || 0);
+    const merma  = r.merma || 0;
+    const bruto  = (r.cantidad_neta || 0) * (1 + merma / 100);
     return s + cUnit * bruto;
   }, 0);
 }

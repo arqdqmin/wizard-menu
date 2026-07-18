@@ -1,11 +1,12 @@
 import { supabase } from '/js/core/supabase.js';
 
 export const state = {
-  productos:    [],
-  categorias:   [],
-  cocinas:      [],
-  modificadores:[],
-  ingredientes: [],
+  productos:      [],
+  categorias:     [],
+  cocinas:        [],
+  modificadores:  [],
+  ingredientes:   [],
+  preparaciones:  [],
   categoriaActual: null,
   mostrarInactivos: false,
 };
@@ -68,9 +69,19 @@ export async function cargarIngredientes() {
 export async function cargarReceta(productoId) {
   const { data } = await supabase
     .from('recetas')
-    .select('*, ingredientes(id, nombre, unidad, costo)')
+    .select('*, ingredientes(id, nombre, unidad, costo), preparaciones(id, nombre, unidad, costo_por_unidad)')
     .eq('producto_id', productoId);
   return data || [];
+}
+
+export async function cargarPreparaciones() {
+  const { data } = await supabase
+    .from('preparaciones')
+    .select('id, nombre, unidad, rendimiento, costo_por_unidad')
+    .eq('activo', true)
+    .order('nombre');
+  state.preparaciones = data || [];
+  return state.preparaciones;
 }
 
 export async function cargarModificadores() {

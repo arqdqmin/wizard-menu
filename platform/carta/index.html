@@ -378,7 +378,7 @@ import { requireAuth }  from '/js/core/auth.js';
 import { initShell }    from '/js/ui/sidebar.js';
 import {
   state, cargarCocinas, cargarCategorias, cargarModificadores,
-  cargarProductos, cargarIngredientes, showToast,
+  cargarProductos, cargarIngredientes, cargarPreparaciones, showToast,
 } from '/js/carta/utils.js';
 import {
   renderListaProductos, onBusqueda, toggleInactivos,
@@ -386,6 +386,7 @@ import {
   abrirPickerMod, cerrarPickerMod, confirmarMods, quitarMod,
   abrirIngPicker, cerrarIngPicker, filtrarIng, agregarIng,
   quitarRecetaLinea, actualizarRecetaLinea, actualizarCostos,
+  abrirPrepPickerProducto, cerrarPrepPickerProducto, filtrarPrepProducto, agregarPrepProducto,
 } from '/js/carta/productos.js';
 import {
   renderSidebarCategorias, renderTabCategorias,
@@ -401,6 +402,13 @@ import {
   renderTabIngredientes, abrirIngForm, cerrarIngForm,
   guardarIng, eliminarIng, filtrarIngTab,
 } from '/js/carta/ingredientes.js';
+import {
+  renderTabPreparaciones, abrirPrepForm, cerrarPrepForm,
+  guardarPrep, eliminarPrep, filtrarPrepTab,
+  abrirPrepIngPicker, cerrarPrepIngPicker, filtrarPrepIng,
+  agregarSubRecetaIng, quitarSubRecetaLinea, actualizarSubRecetaLinea,
+  actualizarCostoPrep,
+} from '/js/carta/preparaciones.js';
 
 const user = await requireAuth('/platform/login.html');
 if (!user) throw new Error('No auth');
@@ -423,6 +431,7 @@ document.getElementById('platform-content').innerHTML = `
         <button class="carta-tab" id="tab-ingredientes" onclick="cartaSetTab('ingredientes',this)">Ingredientes</button>
         <button class="carta-tab" id="tab-categorias" onclick="cartaSetTab('categorias',this)">Categorías</button>
         <button class="carta-tab" id="tab-modificadores" onclick="cartaSetTab('modificadores',this)">Grupos modificadores</button>
+        <button class="carta-tab" id="tab-preparaciones" onclick="cartaSetTab('preparaciones',this)">Preparaciones propias</button>
       </div>
       <div class="carta-content" id="carta-content">
         <div id="carta-tab-content"></div>
@@ -435,7 +444,7 @@ document.getElementById('platform-content').innerHTML = `
 `;
 
 // ── Carga inicial ────────────────────────────────────────────────
-await Promise.all([cargarCocinas(), cargarCategorias(), cargarModificadores(), cargarIngredientes()]);
+await Promise.all([cargarCocinas(), cargarCategorias(), cargarModificadores(), cargarIngredientes(), cargarPreparaciones()]);
 await cargarProductos(null);
 
 renderSidebarCategorias();
@@ -495,10 +504,11 @@ window.cartaSetTab = async (tab, btn) => {
   // Sidebar solo visible en productos
   document.querySelector('.carta-sidebar').style.display = tab === 'productos' ? '' : 'none';
 
-  if (tab === 'productos')     { _renderTabProductos(); }
-  if (tab === 'ingredientes')  { renderTabIngredientes(); }
-  if (tab === 'categorias')    { renderTabCategorias(); }
-  if (tab === 'modificadores') { renderTabModificadores(); }
+  if (tab === 'productos')      { _renderTabProductos(); }
+  if (tab === 'ingredientes')   { renderTabIngredientes(); }
+  if (tab === 'categorias')     { renderTabCategorias(); }
+  if (tab === 'modificadores')  { renderTabModificadores(); }
+  if (tab === 'preparaciones')  { renderTabPreparaciones(); }
 };
 
 window.cartaSelCat = async (catId) => {
@@ -533,6 +543,25 @@ window.cartaFiltrarIng        = (v)  => filtrarIng(v);
 window.cartaAgregarIng        = (id) => agregarIng(id);
 window.cartaQuitarRecetaLinea = (i)      => quitarRecetaLinea(i);
 window.cartaActualizarRecetaLinea = (i,c,v) => actualizarRecetaLinea(i,c,v);
+
+// Preparaciones propias
+window.cartaAbrirPrepForm           = (id)      => abrirPrepForm(id);
+window.cartaCerrarPrepForm          = ()         => cerrarPrepForm();
+window.cartaGuardarPrep             = ()         => guardarPrep();
+window.cartaEliminarPrep            = (id)       => eliminarPrep(id);
+window.cartaFiltrarPrepTab          = (v)        => filtrarPrepTab(v);
+window.cartaAbrirPrepIngPicker      = ()         => abrirPrepIngPicker();
+window.cartaCerrarPrepIngPicker     = ()         => cerrarPrepIngPicker();
+window.cartaFiltrarPrepIng          = (v)        => filtrarPrepIng(v);
+window.cartaAgregarSubRecetaIng     = (id)       => agregarSubRecetaIng(id);
+window.cartaQuitarSubRecetaLinea    = (i)        => quitarSubRecetaLinea(i);
+window.cartaActualizarSubRecetaLinea= (i,c,v)    => actualizarSubRecetaLinea(i,c,v);
+window.cartaActualizarCostoPrep     = ()         => actualizarCostoPrep();
+// Preparaciones en producto
+window.cartaAbrirPrepPickerProducto  = ()        => abrirPrepPickerProducto();
+window.cartaCerrarPrepPickerProducto = ()        => cerrarPrepPickerProducto();
+window.cartaFiltrarPrepProducto      = (v)       => filtrarPrepProducto(v);
+window.cartaAgregarPrepProducto      = (id)      => agregarPrepProducto(id);
 
 window.cartaAbrirIngForm      = (id)         => abrirIngForm(id);
 window.cartaCerrarIngForm     = ()           => cerrarIngForm();
