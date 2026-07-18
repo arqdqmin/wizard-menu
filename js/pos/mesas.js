@@ -55,7 +55,7 @@ export const ESTADO_COLOR = {
   cuenta:   { bg: '#06b6d4', text: '#fff' },
   reservada:{ bg: '#a855f7', text: '#fff' },
 };
-const MESA_SIZE = 90;
+const MESA_SIZE = 70;
 
 // ── Helpers ──────────────────────────────────────────────────────
 function _fmtPesos(n) {
