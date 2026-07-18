@@ -122,18 +122,18 @@ export function toggleSnapToGrid(btnEl) {
 export function initGrid(planoEl) { if (snapToGrid) planoEl.classList.add('grid-visible'); }
 
 // ── Tabs de zona ─────────────────────────────────────────────────
-export function renderZonaTabs(containerEl, onSwitch) {
+export function renderZonaTabs(containerEl, onSwitch, btnClass = 'pos-zone-tab') {
   containerEl.innerHTML = zonas.map(z =>
-    `<button class="pos-zone-tab ${zonaActual?.id === z.id ? 'active' : ''}" data-id="${z.id}">${z.nombre}</button>`
+    `<button class="${btnClass} ${zonaActual?.id === z.id ? 'active' : ''}" data-id="${z.id}">${z.nombre}</button>`
   ).join('');
-  containerEl.querySelectorAll('.pos-zone-tab').forEach(btn => {
-    btn.addEventListener('click', () => _switchZona(btn.dataset.id, containerEl, onSwitch));
+  containerEl.querySelectorAll(`.${btnClass}`).forEach(btn => {
+    btn.addEventListener('click', () => _switchZona(btn.dataset.id, containerEl, onSwitch, btnClass));
   });
 }
 
-async function _switchZona(id, tabsEl, onSwitch) {
+async function _switchZona(id, tabsEl, onSwitch, btnClass = 'pos-zone-tab') {
   zonaActual = zonas.find(z => z.id === id) || null;
-  tabsEl.querySelectorAll('.pos-zone-tab').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  tabsEl.querySelectorAll(`.${btnClass}`).forEach(b => b.classList.toggle('active', b.dataset.id === id));
   await loadMesas(id);
   mesaSelected = null;
   renderRightPanel(document.getElementById('pos-right-panel'));

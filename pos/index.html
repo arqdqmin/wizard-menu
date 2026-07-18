@@ -86,12 +86,48 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
 .pos-view { display: none; flex: 1; overflow: hidden; flex-direction: row; }
 .pos-view.active { display: flex; }
 
+/* ── Zonas en subbar ─────────────────────────────────────────── */
+.pos-subbar-sep { width: 1px; height: 20px; background: var(--pos-border); margin: 0 8px; }
+.pos-zone-subbtn {
+  padding: 6px 14px; font-size: 13px; font-weight: 500;
+  color: var(--pos-muted); background: none;
+  border: 1px solid transparent; border-radius: 6px;
+  cursor: pointer; font-family: inherit;
+  transition: color .13s, background .13s, border-color .13s;
+  display: flex; align-items: center; gap: 6px;
+}
+.pos-zone-subbtn::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--pos-border); flex-shrink:0; }
+.pos-zone-subbtn:hover { color: var(--pos-text); background: rgba(255,255,255,.05); }
+.pos-zone-subbtn.active { color: var(--pos-accent); border-color: rgba(184,152,42,.3); background: rgba(184,152,42,.08); }
+.pos-zone-subbtn.active::before { background: var(--pos-accent); }
+
 /* ── Sidebar izquierdo (zonas + controles) ───────────────────── */
 .pos-sidebar {
   width: 200px; background: var(--pos-surface);
   border-right: 1px solid var(--pos-border);
   display: flex; flex-direction: column;
   flex-shrink: 0; padding: 12px 0;
+  transition: width .2s, opacity .2s;
+  overflow: hidden;
+  position: relative;
+}
+.pos-sidebar.collapsed { width: 0; padding: 0; opacity: 0; pointer-events: none; }
+
+/* Toggle handle del sidebar */
+.pos-sidebar-toggle {
+  position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 48px;
+  background: var(--pos-surface);
+  border: 1px solid var(--pos-border);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--pos-muted); font-size: 11px;
+  z-index: 10; transition: background .14s;
+}
+.pos-sidebar-toggle:hover { background: rgba(255,255,255,.08); color: var(--pos-text); }
+.pos-sidebar-toggle-wrap {
+  position: relative; flex-shrink: 0;
 }
 .pos-sidebar-title {
   font-size: 10px; font-weight: 600; text-transform: uppercase;
@@ -440,31 +476,34 @@ body { font-family: 'DM Sans', sans-serif; background: var(--pos-bg); color: var
   <button class="pos-sub-btn active">Mesas</button>
   <button class="pos-sub-btn" disabled>Mostrador</button>
   <button class="pos-sub-btn" disabled>Reservas <span class="pos-soon">pronto</span></button>
+  <div class="pos-subbar-sep"></div>
+  <div id="pos-zonas-subbar" style="display:flex;align-items:center;gap:4px"></div>
 </div>
 
 <!-- ── View: Mesas ─────────────────────────────────────────────── -->
 <div class="pos-view active" id="view-mesas">
 
-  <!-- Sidebar izquierdo: zonas -->
-  <div class="pos-sidebar">
-    <div class="pos-sidebar-title">Zonas</div>
-    <div id="pos-zonas"></div>
-
-    <hr class="pos-sidebar-divider" />
-    <div class="pos-sidebar-controls">
-      <button class="pos-ctrl-btn" id="pos-edit-btn" onclick="posToggleEdit(this)">
-        <i class="ti ti-pencil"></i> Editar plano
-      </button>
-      <button class="pos-ctrl-btn" id="pos-add-mesa-btn" onclick="posOpenAddMesa()">
-        <i class="ti ti-plus"></i> Agregar mesa
-      </button>
-      <button class="pos-ctrl-btn" id="pos-add-zona-btn" onclick="posOpenAddZona()">
-        <i class="ti ti-folder-plus"></i> Nueva zona
-      </button>
-      <button class="pos-ctrl-btn active" id="pos-snap-btn" onclick="posToggleSnap(this)" title="Snap to grid: ON">
-        <i class="ti ti-grid-dots"></i> Snap to grid
-      </button>
+  <!-- Sidebar izquierdo: controles de plano -->
+  <div class="pos-sidebar-toggle-wrap">
+    <div class="pos-sidebar" id="pos-sidebar">
+      <div class="pos-sidebar-controls" style="padding:12px 10px">
+        <button class="pos-ctrl-btn" id="pos-edit-btn" onclick="posToggleEdit(this)">
+          <i class="ti ti-pencil"></i> Editar plano
+        </button>
+        <button class="pos-ctrl-btn" id="pos-add-mesa-btn" onclick="posOpenAddMesa()">
+          <i class="ti ti-plus"></i> Agregar mesa
+        </button>
+        <button class="pos-ctrl-btn" id="pos-add-zona-btn" onclick="posOpenAddZona()">
+          <i class="ti ti-folder-plus"></i> Nueva zona
+        </button>
+        <button class="pos-ctrl-btn active" id="pos-snap-btn" onclick="posToggleSnap(this)" title="Snap to grid: ON">
+          <i class="ti ti-grid-dots"></i> Snap to grid
+        </button>
+      </div>
     </div>
+    <button class="pos-sidebar-toggle" id="pos-sidebar-toggle" onclick="posToggleSidebar()" title="Mostrar/ocultar panel">
+      <i class="ti ti-chevron-left" id="pos-sidebar-toggle-icon"></i>
+    </button>
   </div>
 
   <!-- Plano -->
@@ -701,16 +740,14 @@ await loadProductos();
 
 // Carga inicial
 const zonas = await loadZonas();
-const zonasEl = document.getElementById('pos-zonas');
+const zonasSubbar = document.getElementById('pos-zonas-subbar');
 
-if (!zonas.length) {
-  zonasEl.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:#666">Sin zonas — crea una</div>';
-} else {
+if (zonas.length) {
   await loadMesas(zonas[0].id);
-  renderZonaTabs(zonasEl, () => {
+  renderZonaTabs(zonasSubbar, () => {
     renderPlano(document.getElementById('pos-plano'));
     checkEmpty();
-  });
+  }, 'pos-zone-subbtn');
   renderPlano(document.getElementById('pos-plano'));
   checkEmpty();
 }
@@ -721,6 +758,13 @@ function checkEmpty() {
 }
 
 // Exponer funciones globales
+window.posToggleSidebar  = () => {
+  const sb   = document.getElementById('pos-sidebar');
+  const icon = document.getElementById('pos-sidebar-toggle-icon');
+  sb.classList.toggle('collapsed');
+  const collapsed = sb.classList.contains('collapsed');
+  icon.className = collapsed ? 'ti ti-chevron-right' : 'ti ti-chevron-left';
+};
 window.posToggleEdit     = (btn) => toggleEditMode(btn);
 window.posOpenAddMesa    = ()    => document.getElementById('modal-add-mesa').classList.add('open');
 window.posOpenAddZona    = ()    => document.getElementById('modal-add-zona').classList.add('open');
@@ -743,10 +787,10 @@ window.posConfirmAddZona = async () => {
   if (zona) {
     document.getElementById('new-zona-nombre').value = '';
     posCloseModal('modal-add-zona');
-    const zonas = await loadZonas();
-    renderZonaTabs(document.getElementById('pos-zonas'), () => {
+    await loadZonas();
+    renderZonaTabs(document.getElementById('pos-zonas-subbar'), () => {
       renderPlano(document.getElementById('pos-plano'));
-    });
+    }, 'pos-zone-subbtn');
   }
 };
 
