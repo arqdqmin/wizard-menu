@@ -194,19 +194,60 @@ function _renderForm(p) {
           <i class="ti ti-plus"></i> Grupos modificadores
         </button>
 
-        <div class="carta-form-section" style="margin-top:24px">Otros costos</div>
-        <div class="carta-field-row">
-          <div class="carta-field-group">
-            <label class="carta-label">RRHH (mano de obra)</label>
-            <input id="cf-rrhh" class="carta-input" type="number" min="0" step="1"
-              value="${p?.costo_rrhh || ''}" placeholder="0" oninput="cartaActualizarCostos()" />
+        <div class="carta-form-section" style="margin-top:24px">Gastos generales</div>
+
+        <div class="cf-gastos-bloque">
+          <div class="cf-gastos-titulo">A. RRHH</div>
+          <div class="carta-field-row">
+            <div class="carta-field-group">
+              <label class="carta-label">Personal</label>
+              <input id="cf-rrhh" class="carta-input" type="number" min="0" step="1"
+                value="${p?.costo_rrhh || ''}" placeholder="0" oninput="cartaActualizarCostos()" />
+            </div>
+          </div>
+        </div>
+
+        <div class="cf-gastos-bloque">
+          <div class="cf-gastos-titulo">B. Gastos de operación</div>
+          <div class="carta-field-row">
+            <div class="carta-field-group">
+              <label class="carta-label">Arriendo</label>
+              <input id="cf-arriendo" class="carta-input" type="number" min="0" step="1"
+                value="${p?.costo_arriendo || ''}" placeholder="0" oninput="cartaActualizarCostos()" />
+            </div>
+            <div class="carta-field-group">
+              <label class="carta-label">Servicios básicos</label>
+              <input id="cf-servicios" class="carta-input" type="number" min="0" step="1"
+                value="${p?.costo_servicios || ''}" placeholder="0" oninput="cartaActualizarCostos()" />
+            </div>
+          </div>
+        </div>
+
+        <div class="cf-gastos-bloque">
+          <div class="cf-gastos-titulo">C. Gastos de ejecución</div>
+          <div class="carta-field-row">
+            <div class="carta-field-group">
+              <label class="carta-label">Otros</label>
+              <input id="cf-otros" class="carta-input" type="number" min="0" step="1"
+                value="${p?.costo_otros || ''}" placeholder="0" oninput="cartaActualizarCostos()" />
+            </div>
           </div>
         </div>
 
         <!-- Card costos (se actualiza dinámicamente) -->
-        <div class="carta-form-section" style="margin-top:24px">Costos</div>
-        <div class="carta-cost-card" id="cf-cost-card">
-          ${_renderCostCard(p?.precio || 0, costoReceta || p?.costo || 0, p?.costo_rrhh || 0)}
+        <div class="carta-cost-card" id="cf-cost-card" style="margin-top:12px">
+          ${_renderCostCard(p?.precio || 0, costoReceta || p?.costo || 0, p?.costo_rrhh || 0, p?.costo_arriendo || 0, p?.costo_servicios || 0, p?.costo_otros || 0, p?.utilidad_pct ?? 30)}
+        </div>
+
+        <div class="cf-gastos-bloque" style="margin-top:12px">
+          <div class="cf-gastos-titulo">D. Fórmula precio</div>
+          <div class="carta-field-row">
+            <div class="carta-field-group">
+              <label class="carta-label">Utilidad esperable %</label>
+              <input id="cf-utilidad-pct" class="carta-input" type="number" min="0" max="99" step="1"
+                value="${p?.utilidad_pct ?? 30}" placeholder="30" oninput="cartaActualizarCostos()" />
+            </div>
+          </div>
         </div>
 
       </div><!-- /col der -->
@@ -485,35 +526,76 @@ export function actualizarCostos() {
 }
 
 function _actualizarCostCard() {
-  const precio     = parseFloat(document.getElementById('cf-precio')?.value) || 0;
-  const costoManual= parseFloat(document.getElementById('cf-costo')?.value) || 0;
-  const rrhh       = parseFloat(document.getElementById('cf-rrhh')?.value) || 0;
-  const receta     = _costoRecetaActual();
-  const costoFinal = receta > 0 ? receta : costoManual;
+  const precio      = parseFloat(document.getElementById('cf-precio')?.value) || 0;
+  const costoManual = parseFloat(document.getElementById('cf-costo')?.value) || 0;
+  const rrhh        = parseFloat(document.getElementById('cf-rrhh')?.value) || 0;
+  const arriendo    = parseFloat(document.getElementById('cf-arriendo')?.value) || 0;
+  const servicios   = parseFloat(document.getElementById('cf-servicios')?.value) || 0;
+  const otros       = parseFloat(document.getElementById('cf-otros')?.value) || 0;
+  const utilidadPct = parseFloat(document.getElementById('cf-utilidad-pct')?.value) ?? 30;
+  const receta      = _costoRecetaActual();
+  const costoFinal  = receta > 0 ? receta : costoManual;
   const card = document.getElementById('cf-cost-card');
-  if (card) card.innerHTML = _renderCostCard(precio, costoFinal, rrhh);
+  if (card) card.innerHTML = _renderCostCard(precio, costoFinal, rrhh, arriendo, servicios, otros, utilidadPct);
 }
 
-function _renderCostCard(precio, costoReceta, rrhh = 0) {
-  const totalCostos = costoReceta + rrhh;
-  const iva         = precio * 0.19;             // 19% del precio de venta
-  const margenBruto = precio - totalCostos;
-  const margenPct   = precio > 0 ? (margenBruto / precio * 100) : 0;
-  const utilidad    = precio - totalCostos - iva; // precio - costos - IVA
+function _renderCostCard(precio, costoReceta, rrhh = 0, arriendo = 0, servicios = 0, otros = 0, utilidadPct = 30) {
+  const IVA_PCT  = 0.19;
+  const upct     = Math.min(Math.max(parseFloat(utilidadPct) || 0, 0), 99);
+
+  // Subtotales por bloque
+  const gastoA   = rrhh;
+  const gastoB   = arriendo + servicios;
+  const gastoC   = costoReceta + otros;
+  const subTotal = gastoA + gastoB + gastoC;
+
+  // Fórmula precio sugerido: precio_sugerido = subTotal / (1 - IVA - util/100)
+  const divisor       = 1 - IVA_PCT - upct / 100;
+  const precioSugerido = divisor > 0 && subTotal > 0 ? subTotal / divisor : 0;
+  const ivaSugerido   = precioSugerido * IVA_PCT;
+
+  // Si hay precio de venta manual, calcular su utilidad real
+  const ivaVenta      = precio * IVA_PCT;
+  const utilidadReal  = precio > 0 ? precio - subTotal - ivaVenta : null;
+  const utilidadPctR  = precio > 0 && subTotal > 0 ? ((precio - subTotal - ivaVenta) / precio * 100) : null;
 
   const row = (label, valor, cls = '') =>
     `<div class="carta-cost-row${cls ? ' ' + cls : ''}">
       <span>${label}</span><strong>${valor}</strong>
     </div>`;
 
+  const fmt0 = v => v ? fmtPesos(v) : '—';
+
   return `
-    ${row('Costo receta', costoReceta ? fmtPesos(costoReceta) : '—')}
-    ${rrhh ? row('RRHH', fmtPesos(rrhh)) : ''}
-    ${row('Margen bruto', precio && totalCostos ? margenPct.toFixed(1) + '%  (' + fmtPesos(margenBruto) + ')' : '—', 'highlight')}
+    <div class="cf-cost-bloque">
+      <div class="cf-cost-bloque-title">A. RRHH</div>
+      ${row('Personal', fmt0(rrhh))}
+    </div>
+    <div class="cf-cost-bloque">
+      <div class="cf-cost-bloque-title">B. Operación</div>
+      ${row('Arriendo', fmt0(arriendo))}
+      ${row('Servicios básicos', fmt0(servicios))}
+    </div>
+    <div class="cf-cost-bloque">
+      <div class="cf-cost-bloque-title">C. Ejecución</div>
+      ${row('Costo receta', fmt0(costoReceta))}
+      ${otros ? row('Otros', fmt0(otros)) : ''}
+    </div>
     <div class="carta-cost-divider"></div>
-    ${row('Precio de venta', precio ? fmtPesos(precio) : '—')}
-    ${row('IVA a pagar (19%)', precio ? fmtPesos(iva) : '—', 'muted')}
-    ${row('Utilidad neta', precio && totalCostos ? fmtPesos(utilidad) : '—', utilidad > 0 ? 'highlight' : 'danger')}
+    ${row('Sub total gastos (A+B+C)', subTotal ? fmtPesos(subTotal) : '—', 'highlight')}
+    <div class="carta-cost-divider"></div>
+    <div class="cf-cost-bloque">
+      <div class="cf-cost-bloque-title">D. Fórmula · Utilidad ${upct}%</div>
+      ${row('Precio de venta sugerido', precioSugerido ? fmtPesos(Math.round(precioSugerido)) : '—', 'highlight')}
+      ${row('IVA a pagar (sugerido)', ivaSugerido ? fmtPesos(Math.round(ivaSugerido)) : '—', 'muted')}
+    </div>
+    ${precio > 0 ? `
+    <div class="carta-cost-divider"></div>
+    <div class="cf-cost-bloque">
+      <div class="cf-cost-bloque-title">Precio manual ${fmtPesos(precio)}</div>
+      ${row('IVA a pagar', fmtPesos(Math.round(ivaVenta)), 'muted')}
+      ${row('Utilidad real', utilidadReal !== null ? utilidadPctR.toFixed(1) + '%  (' + fmtPesos(Math.round(utilidadReal)) + ')' : '—', utilidadReal > 0 ? 'highlight' : 'danger')}
+    </div>` : ''}
   `;
 }
 
@@ -571,7 +653,11 @@ export async function guardarProducto() {
   const catId    = document.getElementById('cf-categoria')?.value;
   const precio   = parseFloat(document.getElementById('cf-precio')?.value) || 0;
   const costoManual = parseFloat(document.getElementById('cf-costo')?.value) || 0;
-  const costoRrhh   = parseFloat(document.getElementById('cf-rrhh')?.value)  || 0;
+  const costoRrhh      = parseFloat(document.getElementById('cf-rrhh')?.value)       || 0;
+  const costoArriendo  = parseFloat(document.getElementById('cf-arriendo')?.value)   || 0;
+  const costoServicios = parseFloat(document.getElementById('cf-servicios')?.value)  || 0;
+  const costoOtros     = parseFloat(document.getElementById('cf-otros')?.value)      || 0;
+  const utilidadPct    = parseFloat(document.getElementById('cf-utilidad-pct')?.value) ?? 30;
   const costoReceta = _costoRecetaActual();
   const costo    = costoReceta > 0 ? Math.round(costoReceta * 100) / 100 : costoManual;
   const codigo   = document.getElementById('cf-codigo')?.value?.trim();
@@ -586,6 +672,8 @@ export async function guardarProducto() {
 
   const payload = {
     nombre, categoria_id: catId, precio, costo, costo_rrhh: costoRrhh,
+    costo_arriendo: costoArriendo, costo_servicios: costoServicios,
+    costo_otros: costoOtros, utilidad_pct: utilidadPct,
     codigo: codigo || null, activo, permitir_vender_solo: solo,
     controlar_stock: stock, vender_sin_stock: sinstock,
     descripcion: desc || null,
