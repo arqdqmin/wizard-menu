@@ -244,8 +244,11 @@ function _renderForm(p) {
           <div class="carta-field-row">
             <div class="carta-field-group">
               <label class="carta-label">Utilidad esperable %</label>
-              <input id="cf-utilidad-pct" class="carta-input" type="number" min="0" max="99" step="1"
-                value="${p?.utilidad_pct ?? 30}" placeholder="30" oninput="cartaActualizarCostos()" />
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="cf-utilidad-pct" class="carta-input" type="number" min="0" max="999" step="1"
+                  value="${p?.utilidad_pct ?? 30}" placeholder="30" oninput="cartaActualizarCostos()" style="flex:0 0 80px" />
+                <span id="cf-utilidad-pesos" style="font-size:13px;font-weight:700;color:var(--green);white-space:nowrap">—</span>
+              </div>
             </div>
           </div>
         </div>
@@ -541,7 +544,7 @@ function _actualizarCostCard() {
 
 function _renderCostCard(precio, costoReceta, rrhh = 0, arriendo = 0, servicios = 0, otros = 0, utilidadPct = 30) {
   const IVA_PCT  = 0.19;
-  const upct     = Math.min(Math.max(parseFloat(utilidadPct) || 0, 0), 99);
+  const upct     = Math.max(parseFloat(utilidadPct) || 0, 0);
 
   // Subtotales por bloque
   const gastoA   = rrhh;
@@ -549,10 +552,15 @@ function _renderCostCard(precio, costoReceta, rrhh = 0, arriendo = 0, servicios 
   const gastoC   = costoReceta + otros;
   const subTotal = gastoA + gastoB + gastoC;
 
-  // Fórmula precio sugerido: precio_sugerido = subTotal / (1 - IVA - util/100)
-  const divisor       = 1 - IVA_PCT - upct / 100;
-  const precioSugerido = divisor > 0 && subTotal > 0 ? subTotal / divisor : 0;
-  const ivaSugerido   = precioSugerido * IVA_PCT;
+  // Fórmula: utilidad = subTotal * utilidad% / 100  →  precio neto = subTotal + utilidad  →  precio c/IVA = precio_neto * 1.19
+  const utilidadPesos  = subTotal * upct / 100;
+  const precioNeto     = subTotal + utilidadPesos;
+  const precioSugerido = precioNeto * (1 + IVA_PCT);
+  const ivaSugerido    = precioSugerido - precioNeto;
+
+  // Actualizar span de pesos junto al input
+  const spanPesos = document.getElementById('cf-utilidad-pesos');
+  if (spanPesos) spanPesos.textContent = subTotal > 0 ? fmtPesos(Math.round(utilidadPesos)) : '—';
 
   // Si hay precio de venta manual, calcular su utilidad real
   const ivaVenta      = precio * IVA_PCT;
