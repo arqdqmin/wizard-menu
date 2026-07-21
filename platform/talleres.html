@@ -577,8 +577,8 @@ function renderInscripcionesTable() {
       <td>${esc(ins.nombre_apoderado??'—')}</td>
       <td>${esc(ins.telefono??'—')}</td>
       <td style="display:flex;gap:6px">
-        <button class="btn btn-sm btn-icon" onclick="openEditInscripcion(${ins.id})" title="Editar"><i class="ti ti-pencil"></i></button>
-        <button class="btn btn-sm btn-icon danger" onclick="deleteInscripcion(${ins.id},'${esc(ins.nombre)}')" title="Eliminar"><i class="ti ti-trash"></i></button>
+        <button class="btn btn-sm btn-icon" onclick="openEditInscripcion('${ins.id}')" title="Editar"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-sm btn-icon danger" onclick="deleteInscripcion('${ins.id}','${esc(ins.nombre)}')" title="Eliminar"><i class="ti ti-trash"></i></button>
       </td>
     </tr>`;
   }).join('');
@@ -640,7 +640,7 @@ window.deleteInscripcion = async function(id, nombre) {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) { toast('Error al eliminar'); return; }
-  inscripciones = inscripciones.filter(x => x.id !== id);
+  inscripciones = inscripciones.filter(x => String(x.id) !== String(id));
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
   await renderInscripciones();
   toast('Inscripción eliminada');
