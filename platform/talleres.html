@@ -634,16 +634,8 @@ window.saveEditInscripcion = async function() {
 
 window.deleteInscripcion = async function(id, nombre) {
   if (!confirm(`¿Eliminar la inscripción de "${nombre}"?`)) return;
-  const token = await getAuthToken();
-  const res = await fetch(`${INSC_FN}?id=${id}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    toast('Error al eliminar: ' + (body?.error || res.status));
-    return;
-  }
+  const { error } = await supabase.from('taller_inscripciones').delete().eq('id', id);
+  if (error) { toast('Error al eliminar: ' + error.message); return; }
   inscripciones = inscripciones.filter(x => String(x.id) !== String(id));
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
   renderInscripcionesTable();
