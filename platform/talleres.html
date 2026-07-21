@@ -642,7 +642,7 @@ window.deleteInscripcion = async function(id, nombre) {
   if (!res.ok) { toast('Error al eliminar'); return; }
   inscripciones = inscripciones.filter(x => String(x.id) !== String(id));
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
-  await renderInscripciones();
+  renderInscripcionesTable();
   toast('Inscripción eliminada');
 };
 
