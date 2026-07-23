@@ -590,7 +590,7 @@ async function renderInscripciones() {
 }
 
 window.openEditInscripcion = function(id) {
-  const ins = inscripciones.find(x => x.id === id);
+  const ins = inscripciones.find(x => String(x.id) === String(id));
   if (!ins) return;
   document.getElementById('ei-id').value             = ins.id;
   document.getElementById('ei-nombre').value         = ins.nombre ?? '';
@@ -634,8 +634,16 @@ window.saveEditInscripcion = async function() {
 
 window.deleteInscripcion = async function(id, nombre) {
   if (!confirm(`¿Eliminar la inscripción de "${nombre}"?`)) return;
-  const { error } = await supabase.from('taller_inscripciones').delete().eq('id', id);
-  if (error) { toast('Error al eliminar: ' + error.message); return; }
+  const token = await getAuthToken();
+  const res = await fetch(`${INSC_FN}?id=${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  }).catch(() => null);
+  if (!res || !res.ok) {
+    const body = await res?.json().catch(() => ({}));
+    toast('Error al eliminar: ' + (body?.error || res?.status || 'sin conexión'));
+    return;
+  }
   inscripciones = inscripciones.filter(x => String(x.id) !== String(id));
   document.getElementById('stat-inscritos').textContent = inscripciones.length;
   renderInscripcionesTable();
