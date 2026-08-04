@@ -35,6 +35,16 @@ serve(async (req) => {
     const isAdmin = roleNames.some((r: string) => ['super_admin', 'administrador'].includes(r));
     if (!isAdmin) return json({ error: 'Forbidden' }, 403);
 
+    // ── Cambiar contraseña (PATCH) ────────────────────────────────────────
+    if (req.method === 'PATCH') {
+      const { user_id, password: newPwd } = await req.json();
+      if (!user_id || !newPwd) return json({ error: 'user_id y password requeridos' }, 400);
+      if (newPwd.length < 6)   return json({ error: 'Mínimo 6 caracteres' }, 400);
+      const { error: pwErr } = await adminClient.auth.admin.updateUserById(user_id, { password: newPwd });
+      if (pwErr) return json({ error: pwErr.message }, 400);
+      return json({ ok: true });
+    }
+
     // ── Crear usuario ─────────────────────────────────────────────────────
     const { email, password, nombre, apellidos, cargo, role_ids } = await req.json();
 
