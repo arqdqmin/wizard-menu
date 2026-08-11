@@ -303,7 +303,10 @@ document.getElementById('platform-content').innerHTML = `
     <div class="card">
       <div class="page-header" style="margin-bottom:14px">
         <div id="a-titulo-registro" style="font-size:14px;font-weight:600"></div>
-        <button class="btn btn-accent btn-sm" onclick="wcGuardarAsistencia()"><i class="ti ti-device-floppy"></i> Guardar</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" onclick="wcImprimirAsistencia()"><i class="ti ti-printer"></i> Imprimir</button>
+          <button class="btn btn-accent btn-sm" onclick="wcGuardarAsistencia()"><i class="ti ti-device-floppy"></i> Guardar</button>
+        </div>
       </div>
 
       <div class="wc-resumen-row">
@@ -512,6 +515,55 @@ window.wcRenderTablaAsis        = ()   => renderTablaAsis();
 window.wcCambiarTipo            = (i,v) => cambiarTipo(i, v);
 window.wcCambiarHora            = (i,c,v) => cambiarHora(i, c, v);
 window.wcGuardarAsistencia      = ()   => guardarAsistencia();
+
+window.wcImprimirAsistencia = () => {
+  const titulo  = document.getElementById('a-titulo-registro')?.textContent || 'Asistencia';
+  const tabDias = document.getElementById('a-tabla-dias')?.innerHTML || '';
+  const tabSem  = document.getElementById('a-tabla-semanas')?.innerHTML || '';
+  if (!tabDias) { alert('Carga la asistencia primero.'); return; }
+
+  const resumen = ['dias','hnorm','hext','hdesc'].map(k => {
+    const el = document.getElementById('ar-' + k);
+    return `<div class="res-card"><div class="res-val">${el?.textContent || '—'}</div><div class="res-lbl">${el?.nextElementSibling?.textContent || ''}</div></div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>${titulo}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;padding:24px 32px;color:#111;font-size:11px}
+    h2{font-size:15px;font-weight:700;margin-bottom:4px}
+    .sub{font-size:11px;color:#555;margin-bottom:14px}
+    .resumen{display:flex;gap:10px;margin-bottom:16px}
+    .res-card{border:1px solid #ccc;border-radius:6px;padding:8px 14px;flex:1;text-align:center}
+    .res-val{font-size:16px;font-weight:700}
+    .res-lbl{font-size:10px;color:#666;margin-top:2px}
+    table{width:100%;border-collapse:collapse;margin-bottom:20px}
+    th{background:#f0f0f0;font-size:10px;font-weight:700;text-transform:uppercase;padding:5px 7px;text-align:left;border:1px solid #ccc}
+    td{padding:4px 7px;border:1px solid #ddd;font-size:11px}
+    .sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555;margin:16px 0 8px}
+    @media print{body{padding:12px 18px}}
+  </style></head><body>
+  <h2>${titulo}</h2>
+  <div class="sub">Generado el ${new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'long',year:'numeric'})}</div>
+  <div class="resumen">${resumen}</div>
+  <div class="sec-title">Detalle diario</div>
+  <table><thead><tr>
+    <th>Fecha</th><th>Día</th><th>Tipo</th><th>Entrada</th><th>Salida</th>
+    <th>Horario</th><th>Hrs norm.</th><th>Hrs extra</th><th>Hrs desc.</th><th>Estado</th>
+  </tr></thead><tbody>${tabDias}</tbody></table>
+  <div class="sec-title">Resumen semanal</div>
+  <table><thead><tr>
+    <th>Semana</th><th>Días</th><th>Hrs norm.</th><th>Hrs extra c/</th>
+    <th>Extra s/horario</th><th>Hrs desc. c/</th><th>Extra final</th><th>Desc. final</th>
+  </tr></thead><tbody>${tabSem}</tbody></table>
+  <script>setTimeout(()=>{window.focus();window.print();},400)<\/script>
+  </body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+};
 
 window.wcOnTrabajadorChangeLiq  = ()   => onTrabajadorChangeLiq();
 window.wcCargarTrabajadorLiq    = ()   => cargarTrabajadorLiq();
