@@ -378,7 +378,9 @@ async function loadSupabaseUsage() {
     if (data.error) throw new Error(data.error);
 
     const m = data.metrics ?? {};
+    const dbStatus = await checkDbHealth();
     el.innerHTML = `<div class="usage-grid">
+      ${dbStatusCard(dbStatus)}
       ${egressCard(m.egress_bytes)}
       ${metricCard('Storage',         formatBytes(m.storage_bytes), storageBar(m.storage_bytes),'ti-file',     'Archivos en Supabase Storage')}
       ${metricCard('Base de datos',   formatBytes(m.db_bytes),      dbBar(m.db_bytes),           'ti-database', 'Tama&ntilde;o de la base de datos')}
@@ -392,6 +394,34 @@ async function loadSupabaseUsage() {
     // Edge function no desplegada o error de red → mostrar fallback
     el.innerHTML = renderNoPat(String(e).includes('no_pat') ? '' : e.message);
   }
+}
+
+async function checkDbHealth() {
+  try {
+    const start = Date.now();
+    const { error } = await supabase.from('categories').select('id').limit(1).single();
+    const ms = Date.now() - start;
+    if (error && error.code !== 'PGRST116') throw error;
+    return { ok: true, ms };
+  } catch (_) {
+    return { ok: false, ms: null };
+  }
+}
+
+function dbStatusCard({ ok, ms }) {
+  const color  = ok ? 'var(--green)'  : '#d64040';
+  const bg     = ok ? 'var(--green-light)' : '#fdf2f2';
+  const icon   = ok ? 'ti-circle-check' : 'ti-circle-x';
+  const label  = ok ? 'Operacional' : 'Sin respuesta';
+  const sub    = ok && ms != null ? `Latencia: ${ms} ms` : 'Verifica el dashboard de Supabase';
+  return `<div class="usage-metric" style="border-color:${color}20">
+    <div class="usage-metric-label"><i class="ti ti-server" style="color:${color}"></i>Estado BD</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+      <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;${ok ? 'box-shadow:0 0 0 3px '+color+'30' : ''}"></span>
+      <span style="font-size:15px;font-weight:700;color:${color}">${label}</span>
+    </div>
+    <div class="usage-metric-sub">${sub}</div>
+  </div>`;
 }
 
 function egressCard(bytes) {
