@@ -59,7 +59,7 @@ async function syncImage(item, kind) {
 
 const [categories, productRows, bannerRows] = await Promise.all([
   getRows("categories?select=*&order=position"),
-  getRows("products?select=*&order=position"),
+  getRows("products?select=*&visible=neq.false&order=position"),
   getRows("banners?select=*&order=position"),
 ]);
 

@@ -2096,7 +2096,7 @@
     }
 
     function renderNav() {
-      const validCats = categories.filter(c => products.some(p => p.cat === c.name));
+      const validCats = categories.filter(c => products.some(p => p.cat === c.name && p.visible !== false));
       const tabsCont = document.getElementById('nav-tabs');
       
       let html = `<button onclick="setCategory('__all__')" class="nav-tab shrink-0 ${activeTab === '__all__' ? 'active-glow' : 'text-[#694724]'}">Todo</button>`;
@@ -2117,7 +2117,7 @@
     function renderMenu() {
       const main = document.getElementById('main-content');
       const filteredCats = activeTab === "__all__" 
-        ? categories.filter(c => products.some(p => p.cat === c.name))
+        ? categories.filter(c => products.some(p => p.cat === c.name && p.visible !== false))
         : categories.filter(c => c.name === activeTab);
 
       if (!filteredCats.length) {
@@ -2129,7 +2129,7 @@
 
       let html = `<div class="alchemist-grid">`;
       filteredCats.forEach(cat => {
-        const catProds = products.filter(p => p.cat === cat.name).sort((a,b) => (b.stock?1:0)-(a.stock?1:0));
+        const catProds = products.filter(p => p.cat === cat.name && p.visible !== false).sort((a,b) => (b.stock?1:0)-(a.stock?1:0));
         catProds.forEach(p => {
           html += `
             <article class="item-card rounded-xl shadow-sm overflow-hidden ${p.stock ? '' : 'agotado'}">

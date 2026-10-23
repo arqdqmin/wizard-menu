@@ -39,6 +39,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .btn-icon.stock-on:hover{background:var(--green-light)}
 .btn-icon.stock-off{color:var(--hint)}
 .btn-icon.stock-off:hover{background:var(--green-light);border-color:#a8d5be;color:var(--green)}
+.btn-icon.vis-on{color:var(--accent);border-color:#a9c5b8}
+.btn-icon.vis-on:hover{background:var(--accent-light)}
+.btn-icon.vis-off{color:var(--danger);border-color:#f5a9a9}
+.btn-icon.vis-off:hover{background:var(--danger-light)}
+.hidden-pill{position:absolute;top:8px;left:8px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.04em;background:rgba(0,0,0,.72);color:#fff}
 .layout{display:flex;min-height:calc(100vh - 58px)}
 .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:1rem 0;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto}
 .sidebar-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--hint);padding:8px 20px 4px}
@@ -337,6 +342,12 @@ input[type="file"]{display:none}
             <span class="toggle-label" id="mp-veg-tl">No</span>
           </div>
         </div>
+        <div><div class="field-label">Carta pública</div>
+          <div class="toggle-wrap">
+            <button class="toggle on" id="mp-vis-toggle" onclick="mpToggle('vis')"></button>
+            <span class="toggle-label" id="mp-vis-tl">Visible en carta</span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-foot">
@@ -407,7 +418,7 @@ const IMAGE_SIZE_WARNING = 1024 * 1024;
 
 let categories=[], products=[], banners=[];
 let activeCat="__all__";
-let mpStockOn=true, mpVegOn=false;
+let mpStockOn=true, mpVegOn=false, mpVisibleOn=true;
 let editingProductId=null;
 let categoryOrderMode=false,productOrderMode=false;
 let categoryOrderBackup=[],productOrderBackup=[],productOrderIds=[];
@@ -560,7 +571,8 @@ function renderGrid(){
 }
 
 function cardHTML(p,index,total){
-  return `<div class="card${p.stock?"":" no-stock"}${productOrderMode?" ordering":""}" id="card-${p.id}">
+  const vis = p.visible !== false;
+  return `<div class="card${p.stock?"":" no-stock"}${productOrderMode?" ordering":""}" id="card-${p.id}" style="${vis?"":"opacity:.5"}">
   ${productOrderMode?`<div class="card-order-bar"><span><i class="ti ti-grip-vertical"></i> Posición ${index+1}</span>
     <span class="card-order-buttons">
       <button onclick="moveProduct(${p.id},-1)" ${index===0?"disabled":""} title="Mover arriba"><i class="ti ti-arrow-up"></i></button>
@@ -571,6 +583,7 @@ function cardHTML(p,index,total){
     ${productOrderMode?"":`<div class="img-overlay"><span><i class="ti ti-upload"></i> ${p.img_url?"Cambiar":"Subir"} foto</span></div>`}
     ${p.img_url&&!productOrderMode?`<button class="crop-img-btn" onclick="event.stopPropagation();openCropEditor(${p.id})"><i class="ti ti-crop"></i> Recortar</button>`:""}
     <span class="stock-pill ${p.stock?"in":"out"}">${p.stock?"En stock":"Agotado"}</span>
+    ${!vis?`<span class="hidden-pill"><i class="ti ti-eye-off" style="font-size:9px"></i> Oculto</span>`:""}
     ${p.vegetarian?`<span class="veg-pill">🌿</span>`:""}
   </div>
   <input type="file" id="fi-${p.id}" accept="image/*" />
@@ -583,6 +596,7 @@ function cardHTML(p,index,total){
       <div class="card-acts">
         <button class="btn-icon btn" title="Editar" onclick="openEditProduct(${p.id})"><i class="ti ti-pencil"></i></button>
         <button class="btn-icon btn ${p.stock?"stock-on":"stock-off"}" id="sb-${p.id}" onclick="toggleStock(${p.id})"><i class="ti ti-${p.stock?"circle-check":"circle-x"}"></i></button>
+        <button class="btn-icon btn ${vis?"vis-on":"vis-off"}" id="vb-${p.id}" onclick="toggleVisible(${p.id})" title="${vis?"Ocultar de la carta":"Mostrar en la carta"}"><i class="ti ti-${vis?"eye":"eye-off"}"></i></button>
         <button class="btn-icon btn danger" onclick="delProduct(${p.id})"><i class="ti ti-trash"></i></button>
       </div>
     </div>
@@ -647,9 +661,31 @@ async function toggleStock(id){
   }catch(e){toast("Error al actualizar stock");}
 }
 
+/* Visible */
+async function toggleVisible(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const nv=p.visible===false;
+  try{
+    await sbFetch(`products?id=eq.${id}`,{method:"PATCH",body:JSON.stringify({visible:nv})});
+    p.visible=nv;
+    const card=document.getElementById("card-"+id);
+    if(card){
+      card.style.opacity=nv?"1":"0.5";
+      const pill=card.querySelector(".hidden-pill");
+      if(!nv&&!pill){
+        const stockPill=card.querySelector(".stock-pill");
+        if(stockPill){const hp=document.createElement("span");hp.className="hidden-pill";hp.innerHTML='<i class="ti ti-eye-off" style="font-size:9px"></i> Oculto';stockPill.insertAdjacentElement("afterend",hp);}
+      }else if(nv&&pill){pill.remove();}
+      const vb=document.getElementById("vb-"+id);
+      if(vb){vb.className="btn-icon btn "+(nv?"vis-on":"vis-off");vb.title=nv?"Ocultar de la carta":"Mostrar en la carta";vb.innerHTML=`<i class="ti ti-${nv?"eye":"eye-off"}"></i>`;}
+    }
+    toast(nv?"Producto visible en la carta ✓":"Producto oculto de la carta");
+  }catch(e){toast("Error al actualizar visibilidad");}
+}
+
 /* Product modal */
 function openAddProduct(){
-  editingProductId=null;mpStockOn=true;mpVegOn=false;
+  editingProductId=null;mpStockOn=true;mpVegOn=false;mpVisibleOn=true;
   document.getElementById("mp-name").value="";
   document.getElementById("mp-desc").value="";
   document.getElementById("mp-price").value="";
@@ -658,6 +694,8 @@ function openAddProduct(){
   document.getElementById("mp-tl").textContent="Disponible";
   document.getElementById("mp-veg-toggle").className="toggle";
   document.getElementById("mp-veg-tl").textContent="No";
+  document.getElementById("mp-vis-toggle").className="toggle on";
+  document.getElementById("mp-vis-tl").textContent="Visible en carta";
   document.getElementById("modal-product-title").textContent="Nuevo producto";
   const cat=categories.find(c=>c.id===activeCat);
   populateCatSelect(cat?cat.name:(categories[0]?.name||""));
@@ -667,7 +705,7 @@ function openAddProduct(){
 
 function openEditProduct(id){
   const p=products.find(x=>x.id===id);if(!p)return;
-  editingProductId=id;mpStockOn=p.stock;mpVegOn=p.vegetarian||false;
+  editingProductId=id;mpStockOn=p.stock;mpVegOn=p.vegetarian||false;mpVisibleOn=p.visible!==false;
   document.getElementById("mp-name").value=p.name;
   document.getElementById("mp-desc").value=p.description||"";
   document.getElementById("mp-price").value=p.price||"";
@@ -676,6 +714,8 @@ function openEditProduct(id){
   document.getElementById("mp-tl").textContent=p.stock?"Disponible":"Sin stock";
   document.getElementById("mp-veg-toggle").className="toggle"+(mpVegOn?" on":"");
   document.getElementById("mp-veg-tl").textContent=mpVegOn?"Sí":"No";
+  document.getElementById("mp-vis-toggle").className="toggle"+(mpVisibleOn?" on":"");
+  document.getElementById("mp-vis-tl").textContent=mpVisibleOn?"Visible en carta":"Oculto de la carta";
   document.getElementById("modal-product-title").textContent="Editar producto";
   populateCatSelect(p.cat);
   document.getElementById("modal-product").classList.add("open");
@@ -687,13 +727,14 @@ function populateCatSelect(selected){
 
 function mpToggle(type){
   if(type==="stock"){mpStockOn=!mpStockOn;document.getElementById("mp-toggle").className="toggle"+(mpStockOn?" on":"");document.getElementById("mp-tl").textContent=mpStockOn?"Disponible":"Sin stock";}
-  else{mpVegOn=!mpVegOn;document.getElementById("mp-veg-toggle").className="toggle"+(mpVegOn?" on":"");document.getElementById("mp-veg-tl").textContent=mpVegOn?"Sí":"No";}
+  else if(type==="veg"){mpVegOn=!mpVegOn;document.getElementById("mp-veg-toggle").className="toggle"+(mpVegOn?" on":"");document.getElementById("mp-veg-tl").textContent=mpVegOn?"Sí":"No";}
+  else if(type==="vis"){mpVisibleOn=!mpVisibleOn;document.getElementById("mp-vis-toggle").className="toggle"+(mpVisibleOn?" on":"");document.getElementById("mp-vis-tl").textContent=mpVisibleOn?"Visible en carta":"Oculto de la carta";}
 }
 
 async function saveProduct(){
   const name=document.getElementById("mp-name").value.trim();
   if(!name){alert("El nombre es obligatorio.");return;}
-  const body={name,description:document.getElementById("mp-desc").value,price:document.getElementById("mp-price").value,cat:document.getElementById("mp-cat").value,stock:mpStockOn,vegetarian:mpVegOn,recommendation:document.getElementById("mp-rec").value.trim()||null};
+  const body={name,description:document.getElementById("mp-desc").value,price:document.getElementById("mp-price").value,cat:document.getElementById("mp-cat").value,stock:mpStockOn,vegetarian:mpVegOn,visible:mpVisibleOn,recommendation:document.getElementById("mp-rec").value.trim()||null};
   const btn=document.getElementById("btn-save-product");
   btn.disabled=true;btn.textContent="Guardando...";
   try{
